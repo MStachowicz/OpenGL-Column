@@ -28,7 +28,8 @@ namespace Labs.Lab1
 
         protected override void OnLoad(EventArgs e)
         {
-            GL.ClearColor(Color4.White);
+            GL.ClearColor(Color4.Crimson);
+            GL.Enable(EnableCap.CullFace);
 
             float[] vertices = new float[] { -0.8f, -0.8f,
                                              -0.8f, 0.8f,
@@ -36,7 +37,8 @@ namespace Labs.Lab1
 
             GL.GenBuffers(1, out mVertexBufferObjectID);
             GL.BindBuffer(BufferTarget.ArrayBuffer, mVertexBufferObjectID);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertices.Length * sizeof(float)), vertices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertices.Length * sizeof(float)), vertices, 
+            BufferUsageHint.StaticDraw);
 
             int size;
             GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
