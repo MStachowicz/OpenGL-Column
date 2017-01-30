@@ -31,8 +31,8 @@ namespace Labs.Lab1
             GL.ClearColor(Color4.Crimson);
             GL.Enable(EnableCap.CullFace);
 
-            float[] vertices = new float[] { -0.8f, -0.8f,
-                                             -0.8f, 0.8f,
+            float[] vertices = new float[] { -0.8f, 0.8f,
+                                             -0.8f, -0.8f,
                                              0.8f, 0.8f };
 
             GL.GenBuffers(1, out mVertexBufferObjectID);
