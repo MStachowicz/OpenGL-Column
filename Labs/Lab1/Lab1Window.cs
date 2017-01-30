@@ -28,15 +28,19 @@ namespace Labs.Lab1
 
         protected override void OnLoad(EventArgs e)
         {
-            GL.ClearColor(Color4.Crimson);
+            GL.ClearColor(Color4.Green);
             GL.Enable(EnableCap.CullFace);
 
-            float[] vertices = new float[] { -0.8f, 0.8f,
-                                             -0.8f, -0.8f,
-                                             0.8f, 0.8f,
-                                             0.8f, -0.8f,
-                                             0.8f, 0.8f,
-                                             -0.8f, -0.8f };
+            //Triforce
+            float[] vertices = new float[] { -0.4f, 0f,
+                                             0.4f, 0f,
+                                             0f, 0.6f, 
+                                             -0.4f, 0f,
+                                             -0.8f, -0.6f,
+                                             0f, -0.6f, 
+                                             0.4f, 0f,
+                                             0f, -0.6f,
+                                             0.8f, -0.6f}; 
 
             GL.GenBuffers(1, out mVertexBufferObjectID);
             GL.BindBuffer(BufferTarget.ArrayBuffer, mVertexBufferObjectID);
@@ -76,7 +80,7 @@ namespace Labs.Lab1
 
             #endregion
 
-            GL.DrawArrays(PrimitiveType.Triangles, 3, 6);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, 9);
 
             this.SwapBuffers();
         }
