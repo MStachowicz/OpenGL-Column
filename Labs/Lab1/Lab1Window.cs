@@ -8,7 +8,7 @@ namespace Labs.Lab1
 {
     public class Lab1Window : GameWindow
     {
-        private int mVertexBufferObjectID;
+        private int[] mVertexBufferObjectIDArray = new int[2];
         private ShaderUtility mShader;
 
         public Lab1Window()
@@ -31,28 +31,35 @@ namespace Labs.Lab1
             GL.ClearColor(Color4.Green);
             GL.Enable(EnableCap.CullFace);
 
-            //Triforce
-            float[] vertices = new float[] { -0.4f, 0f,
-                                             0.4f, 0f,
-                                             0f, 0.6f, 
-                                             -0.4f, 0f,
-                                             -0.8f, -0.6f,
-                                             0f, -0.6f, 
-                                             0.4f, 0f,
-                                             0f, -0.6f,
-                                             0.8f, -0.6f}; 
+            float[] vertices = new float[] { -0.4f, 0f,         //V0
+                                             0.4f, 0.0f,        //V1
+                                             0.0f, 0.6f,        //V2
+                                             -0.8f, -0.6f,      //V3
+                                             0.0f, -0.6f,       //V4
+                                             0.8f, -0.6f };     //V5
+                                           
+            uint[] indices = new uint[] {0,1,2,     //triangle 1
+                                         3,4,0,     //triangle 2
+                                         4,5,1};    //triangle 3
 
-            GL.GenBuffers(1, out mVertexBufferObjectID);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, mVertexBufferObjectID);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertices.Length * sizeof(float)), vertices, 
-            BufferUsageHint.StaticDraw);
+            GL.GenBuffers(2, mVertexBufferObjectIDArray);
+
+            GL.BindBuffer(BufferTarget.ArrayBuffer, mVertexBufferObjectIDArray[0]);
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertices.Length * sizeof(float)), vertices, BufferUsageHint.StaticDraw);
+
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, mVertexBufferObjectIDArray[1]);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(indices.Length * sizeof(uint)), indices, BufferUsageHint.StaticDraw);
 
             int size;
             GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
-
             if (vertices.Length * sizeof(float) != size)
             {
                 throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+            }
+            GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
+            if (indices.Length * sizeof(uint) != size)
+            {
+                throw new ApplicationException("Index data not loaded onto graphics card correctly");
             }
 
             #region Shader Loading Code - Can be ignored for now
@@ -68,7 +75,9 @@ namespace Labs.Lab1
         {
             base.OnRenderFrame(e);
             GL.Clear(ClearBufferMask.ColorBufferBit);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, mVertexBufferObjectID);
+
+            GL.BindBuffer(BufferTarget.ArrayBuffer, mVertexBufferObjectIDArray[0]);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, mVertexBufferObjectIDArray[1]);
 
             // shader linking goes here
             #region Shader linking code - can be ignored for now
@@ -80,7 +89,7 @@ namespace Labs.Lab1
 
             #endregion
 
-            GL.DrawArrays(PrimitiveType.Triangles, 0, 9);
+            GL.DrawElements(PrimitiveType.Triangles, 9, DrawElementsType.UnsignedInt, 0);
 
             this.SwapBuffers();
         }
@@ -88,7 +97,7 @@ namespace Labs.Lab1
         protected override void OnUnload(EventArgs e)
         {
             base.OnUnload(e);
-            GL.DeleteBuffers(1, ref mVertexBufferObjectID);
+            GL.DeleteBuffers(2, mVertexBufferObjectIDArray);
             GL.UseProgram(0);
             mShader.Delete();
         }
