@@ -32,7 +32,9 @@ namespace Labs.Lab1
             GL.Enable(EnableCap.CullFace);
 
             float[] vertices = new float[] { 0.0f, 0.8f, 0.8f, 0.4f, 0.6f, -0.6f, -0.6f, -0.6f, -0.8f, 0.4f };
-            uint[] indices = new uint[] { 0, 2, 1, 0, 3, 2, 0, 4, 3 };
+            uint[] indices = new uint[] { 0, 4, 3,
+                                          2,
+                                          1 };
 
             //float[] vertices = new float[] { -0.2f, 0.8f,   //V0
             //                                 0.0f, 0.8f,    //V1
@@ -118,7 +120,7 @@ namespace Labs.Lab1
 
             #endregion
 
-            GL.DrawElements(PrimitiveType.Triangles, 9, DrawElementsType.UnsignedInt, 0);
+            GL.DrawElements(PrimitiveType.TriangleFan, 5, DrawElementsType.UnsignedInt, 0);
 
             this.SwapBuffers();
         }
