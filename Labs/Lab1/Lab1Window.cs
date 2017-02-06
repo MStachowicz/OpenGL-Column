@@ -31,10 +31,17 @@ namespace Labs.Lab1
             GL.ClearColor(Color4.Green);
             GL.Enable(EnableCap.CullFace);
 
-            float[] vertices = new float[] { 0.0f, 0.8f, 0.8f, 0.4f, 0.6f, -0.6f, -0.6f, -0.6f, -0.8f, 0.4f };
-            uint[] indices = new uint[] { 0, 4, 3,
-                                          2,
-                                          1 };
+            //float[] vertices = new float[] { 0.0f, 0.8f, 0.8f, 0.4f, 0.6f, -0.6f, -0.6f, -0.6f, -0.8f, 0.4f };
+            //uint[] indices = new uint[] { 0, 4, 3,
+            //                              2,
+            //                              1 };
+            //v4, v3, v0,v2,v1
+            float[] vertices = new float[] {-0.8f, 0.4f,
+                                            -0.6f, -0.6f,
+                                            0.0f, 0.8f,
+                                            0.6f, -0.6f,
+                                            0.8f, 0.4f };
+            uint[] indices = new uint[] { 0,1,2,3,4 };
 
             //float[] vertices = new float[] { -0.2f, 0.8f,   //V0
             //                                 0.0f, 0.8f,    //V1
@@ -120,7 +127,9 @@ namespace Labs.Lab1
 
             #endregion
 
-            GL.DrawElements(PrimitiveType.TriangleFan, 5, DrawElementsType.UnsignedInt, 0);
+
+            GL.DrawElements(PrimitiveType.TriangleStrip, 5, DrawElementsType.UnsignedInt, 0);
+            //GL.DrawElements(PrimitiveType.TriangleFan, 5, DrawElementsType.UnsignedInt, 0);
 
             this.SwapBuffers();
         }
