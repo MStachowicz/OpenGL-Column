@@ -84,6 +84,9 @@ namespace Labs.Lab2
 
             #endregion
 
+            int uColourLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uColour");
+            GL.Uniform4(uColourLocation, Color4.Red);
+
             GL.DrawElements(PrimitiveType.Triangles, 3, DrawElementsType.UnsignedInt, 0);
 
             this.SwapBuffers();
