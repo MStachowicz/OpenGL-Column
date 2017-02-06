@@ -8,7 +8,8 @@ namespace Labs.Lab2
 {
     class Lab2_1Window : GameWindow
     {        
-        private int[] mVertexBufferObjectIDArray = new int[2];
+        private int[] mTriangleVertexBufferObjectIDArray = new int[2];
+        private int[] mSquareVertexBufferObjectIDArray = new int[2];
         private ShaderUtility mShader;
 
         public Lab2_1Window()
@@ -29,15 +30,16 @@ namespace Labs.Lab2
         protected override void OnLoad(EventArgs e)
         {
             GL.ClearColor(Color4.CadetBlue);
-
+            
+            #region Triangle vertex buffer
             float[] vertices = new float[] { -0.8f, 0.8f,
                                              -0.6f, -0.4f,
                                              0.2f, 0.2f };
 
             uint[] indices = new uint[] { 0, 1, 2 };
 
-            GL.GenBuffers(2, mVertexBufferObjectIDArray);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, mVertexBufferObjectIDArray[0]);
+            GL.GenBuffers(2, mTriangleVertexBufferObjectIDArray);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, mTriangleVertexBufferObjectIDArray[0]);
             GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertices.Length * sizeof(float)), vertices, BufferUsageHint.StaticDraw);
 
             int size;
@@ -48,7 +50,7 @@ namespace Labs.Lab2
                 throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
             }
 
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, mVertexBufferObjectIDArray[1]);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, mTriangleVertexBufferObjectIDArray[1]);
             GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(indices.Length * sizeof(int)), indices, BufferUsageHint.StaticDraw);
 
             GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
@@ -57,6 +59,42 @@ namespace Labs.Lab2
             {
                 throw new ApplicationException("Index data not loaded onto graphics card correctly");
             }
+
+            #endregion
+
+            #region Square vertex buffer
+
+            //int[] mSquareVertexBufferArray = new int[2];
+
+            float[] vertices = new float[] { -0.8f, 0.8f,
+                                             -0.6f, -0.4f,
+                                             0.2f, 0.2f };
+
+            uint[] indices = new uint[] { 0, 1, 2 };
+
+            GL.GenBuffers(2, mSquareVertexBufferObjectIDArray);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, mSquareVertexBufferObjectIDArray[0]);
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertices.Length * sizeof(float)), vertices, BufferUsageHint.StaticDraw);
+
+            int size;
+            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
+
+            if (vertices.Length * sizeof(float) != size)
+            {
+                throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+            }
+
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, mTriangleVertexBufferObjectIDArray[1]);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(indices.Length * sizeof(int)), indices, BufferUsageHint.StaticDraw);
+
+            GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
+
+            if (indices.Length * sizeof(int) != size)
+            {
+                throw new ApplicationException("Index data not loaded onto graphics card correctly");
+            }
+            #endregion
+
 
             #region Shader Loading Code
 
@@ -72,8 +110,8 @@ namespace Labs.Lab2
             base.OnRenderFrame(e);
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
-            GL.BindBuffer(BufferTarget.ArrayBuffer, mVertexBufferObjectIDArray[0]);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, mVertexBufferObjectIDArray[1]);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, mTriangleVertexBufferObjectIDArray[0]);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, mTriangleVertexBufferObjectIDArray[1]);
             
             #region Shader Loading Code
             
@@ -95,7 +133,7 @@ namespace Labs.Lab2
         protected override void OnUnload(EventArgs e)
         {
             base.OnUnload(e);
-            GL.DeleteBuffers(2, mVertexBufferObjectIDArray);
+            GL.DeleteBuffers(2, mTriangleVertexBufferObjectIDArray);
             GL.UseProgram(0);
             mShader.Delete();
         }
