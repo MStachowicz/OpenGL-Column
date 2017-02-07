@@ -63,38 +63,36 @@ namespace Labs.Lab2
             #endregion
 
             #region Square vertex buffer
-
             //int[] mSquareVertexBufferArray = new int[2];
+            float[] mSquareVertices = new float[] { -0.2f, -0.4f,
+                                                    0.8f, -0.4f,
+                                                    0.8f, 0.6f,
+                                                    -0.2f, 0.6f};
 
-            float[] vertices = new float[] { -0.8f, 0.8f,
-                                             -0.6f, -0.4f,
-                                             0.2f, 0.2f };
-
-            uint[] indices = new uint[] { 0, 1, 2 };
+            uint[] mSquareVertexBufferArray = new uint[] { 0,1,2,3 }; // triangle strip = 0,1,3,2
 
             GL.GenBuffers(2, mSquareVertexBufferObjectIDArray);
             GL.BindBuffer(BufferTarget.ArrayBuffer, mSquareVertexBufferObjectIDArray[0]);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertices.Length * sizeof(float)), vertices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mSquareVertices.Length * sizeof(float)), mSquareVertices, BufferUsageHint.StaticDraw);
 
-            int size;
-            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
+            int squaresize;
+            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out squaresize);
 
-            if (vertices.Length * sizeof(float) != size)
+            if (mSquareVertices.Length * sizeof(float) != squaresize)
             {
                 throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
             }
 
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, mTriangleVertexBufferObjectIDArray[1]);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(indices.Length * sizeof(int)), indices, BufferUsageHint.StaticDraw);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, mSquareVertexBufferObjectIDArray[1]);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mSquareVertexBufferArray.Length * sizeof(int)), mSquareVertexBufferArray, BufferUsageHint.StaticDraw);
 
-            GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
+            GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out squaresize);
 
-            if (indices.Length * sizeof(int) != size)
+            if (mSquareVertexBufferArray.Length * sizeof(int) != squaresize)
             {
                 throw new ApplicationException("Index data not loaded onto graphics card correctly");
             }
             #endregion
-
 
             #region Shader Loading Code
 
@@ -127,6 +125,14 @@ namespace Labs.Lab2
 
             GL.DrawElements(PrimitiveType.Triangles, 3, DrawElementsType.UnsignedInt, 0);
 
+            #region square drawing using buffers
+            GL.Uniform4(uColourLocation, Color4.Blue);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, mSquareVertexBufferObjectIDArray[0]);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, mSquareVertexBufferObjectIDArray[1]);
+            GL.VertexAttribPointer(vPositionLocation, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
+            GL.DrawElements(PrimitiveType.TriangleFan, 4, DrawElementsType.UnsignedInt, 0);
+            #endregion
+
             this.SwapBuffers();
         }
 
@@ -134,6 +140,7 @@ namespace Labs.Lab2
         {
             base.OnUnload(e);
             GL.DeleteBuffers(2, mTriangleVertexBufferObjectIDArray);
+            GL.DeleteBuffers(2, mSquareVertexBufferObjectIDArray);
             GL.UseProgram(0);
             mShader.Delete();
         }
