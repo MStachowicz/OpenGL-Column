@@ -33,10 +33,10 @@ namespace Labs.Lab2
             GL.Enable(EnableCap.DepthTest);
 
             #region Square vertex buffer
-            float[] mSquareVertices = new float[] { -0.2f, -0.4f, 0.2f, 1.0f, 0.0f, 1.0f,
-                                                    0.8f, -0.4f, 0.2f, 1.0f, 0.0f, 1.0f,
-                                                    0.8f, 0.6f, 0.2f, 1.0f, 0.0f, 1.0f,
-                                                    -0.2f, 0.6f, 0.2f, 1.0f, 0.0f, 1.0f};
+            float[] mSquareVertices = new float[] { -0.2f, -0.4f, 0.2f, 0.0f, 0.98f, 1.0f,
+                                                    0.8f, -0.4f, 0.2f, 1.0f, 0.5f, 0.25f,
+                                                    0.8f, 0.6f, 0.2f, 1.0f, 0.0f, 0.7f,
+                                                    -0.2f, 0.6f, 0.2f, 0.7f, 0.6f, 0.9f};
 
             uint[] mSquareVertexBufferArray = new uint[] { 0,1,2,3 }; // triangle strip = 0,1,3,2
 
@@ -64,8 +64,8 @@ namespace Labs.Lab2
             #endregion
 
             #region Triangle vertex buffer
-            float[] vertices = new float[] { -0.8f, 0.8f, 0.4f, 0.0f, 1.0f, 1.0f,
-                                             -0.6f, -0.4f, 0.4f, 0.0f, 1.0f, 1.0f,
+            float[] vertices = new float[] { -0.8f, 0.8f, 0.4f, 0.0f, 0.2f, 0.3f,
+                                             -0.6f, -0.4f, 0.4f, 0.9f, 0.4f, 0.8f,
                                              0.2f, 0.2f, 0.4f, 0.0f, 1.0f, 1.0f};
             uint[] indices = new uint[] { 0, 1, 2 };
 
