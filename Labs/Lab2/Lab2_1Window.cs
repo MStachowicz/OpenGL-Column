@@ -29,14 +29,14 @@ namespace Labs.Lab2
 
         protected override void OnLoad(EventArgs e)
         {
-            GL.ClearColor(Color4.CadetBlue);         
+            GL.ClearColor(Color4.CadetBlue);
+            GL.Enable(EnableCap.DepthTest);
 
             #region Square vertex buffer
-            //int[] mSquareVertexBufferArray = new int[2];
-            float[] mSquareVertices = new float[] { -0.2f, -0.4f,
-                                                    0.8f, -0.4f,
-                                                    0.8f, 0.6f,
-                                                    -0.2f, 0.6f};
+            float[] mSquareVertices = new float[] { -0.2f, -0.4f, 0.2f,
+                                                    0.8f, -0.4f, 0.2f,
+                                                    0.8f, 0.6f, 0.2f,
+                                                    -0.2f, 0.6f, 0.2f};
 
             uint[] mSquareVertexBufferArray = new uint[] { 0,1,2,3 }; // triangle strip = 0,1,3,2
 
@@ -64,9 +64,9 @@ namespace Labs.Lab2
             #endregion
 
             #region Triangle vertex buffer
-            float[] vertices = new float[] { -0.8f, 0.8f,
-                                             -0.6f, -0.4f,
-                                             0.2f, 0.2f };
+            float[] vertices = new float[] { -0.8f, 0.8f, 0.4f,
+                                             -0.6f, -0.4f, 0.4f,
+                                             0.2f, 0.2f, 0.4f};
             uint[] indices = new uint[] { 0, 1, 2 };
 
             GL.GenBuffers(2, mTriangleVertexBufferObjectIDArray);
@@ -105,7 +105,7 @@ namespace Labs.Lab2
         protected override void OnRenderFrame(FrameEventArgs e)
         {
             base.OnRenderFrame(e);
-            GL.Clear(ClearBufferMask.ColorBufferBit);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             GL.BindBuffer(BufferTarget.ArrayBuffer, mSquareVertexBufferObjectIDArray[0]);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, mSquareVertexBufferObjectIDArray[1]);
@@ -115,7 +115,7 @@ namespace Labs.Lab2
             int vPositionLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vPosition");
             GL.EnableVertexAttribArray(vPositionLocation);
 
-            GL.VertexAttribPointer(vPositionLocation, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
+            GL.VertexAttribPointer(vPositionLocation, 2, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
 
             #endregion
 
@@ -127,7 +127,7 @@ namespace Labs.Lab2
             GL.BindBuffer(BufferTarget.ArrayBuffer, mTriangleVertexBufferObjectIDArray[0]);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, mTriangleVertexBufferObjectIDArray[1]);
 
-            GL.VertexAttribPointer(vPositionLocation, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
+            GL.VertexAttribPointer(vPositionLocation, 2, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
 
             GL.Uniform4(uColourLocation, Color4.Red);
             GL.DrawElements(PrimitiveType.Triangles, 3, DrawElementsType.UnsignedInt, 0);
