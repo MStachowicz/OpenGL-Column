@@ -31,54 +31,12 @@ namespace Labs.Lab1
             GL.ClearColor(Color4.Green);
             GL.Enable(EnableCap.CullFace);
 
-            //float[] vertices = new float[] { 0.0f, 0.8f, 0.8f, 0.4f, 0.6f, -0.6f, -0.6f, -0.6f, -0.8f, 0.4f };
-            //uint[] indices = new uint[] { 0, 4, 3,
-            //                              2,
-            //                              1 };
-            //v4, v3, v0,v2,v1
             float[] vertices = new float[] {-0.8f, 0.4f,
                                             -0.6f, -0.6f,
                                             0.0f, 0.8f,
                                             0.6f, -0.6f,
                                             0.8f, 0.4f };
             uint[] indices = new uint[] { 0,1,2,3,4 };
-
-            //float[] vertices = new float[] { -0.2f, 0.8f,   //V0
-            //                                 0.0f, 0.8f,    //V1
-            //                                 -0.4f, 0.6f,   //V2
-            //                                 -0.2f, 0.6f,   //V3
-            //                                 0.0f, 0.6f,    //V4
-            //                                 0.4f, 0.6f     //V5
-            //                                 -0.8f, 0.2f,   //V6
-            //                                 -0.6f, 0.2f,   //V7
-            //                                 -0.4f, 0.2f,   //V8
-            //                                 0.0f, 0.2f,    //V9
-            //                                 0.4f, 0.2f,    //V10
-            //                                 0.6f, 0.2f,    //V11
-            //                                 0.8f, 0.2f,    //V12
-            //                                 -0.4f, -0.2f,  //V13
-            //                                 0.2f, -0.2f,   //V14
-            //                                 -0.6f, -0.6f,  //V15
-            //                                 -0.4f, -0.6f,  //V16
-            //                                 0.2f, -0.6f,   //V17
-            //                                 0.4f, -0.6f,   //V18
-            //                                 0.6f, -0.6f,   //V19
-            //                                 0.0f, -0.2f,   //V20
-            //                                 0.4f, -0.2f }; //V21
-
-            //uint[] indices = new uint[] {4,1,0,     //Triangle 1
-            //                             3,4,0,    //Triangle 2
-            //                             6,9,2,     //Triangle 3
-            //                             2,9,5,     //Triangle 4
-            //                             9,12,5,     //Triangle 5
-            //                             17,8,7,     //Triangle 6
-            //                             16,17,7,    //Triangle 7
-            //                             9,21,10,     //Triangle 8
-            //                             9,20,21,     //Triangle 9
-            //                             10,19,11,    //Triangle 10
-            //                             10,18,19,     //Triangle 11
-            //                             14,13,17,     //Triangle 12
-            //                             13,16,17};    //Triangle 13
 
             GL.GenBuffers(2, mVertexBufferObjectIDArray);
 
