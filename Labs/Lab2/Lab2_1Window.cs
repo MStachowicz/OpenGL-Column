@@ -109,37 +109,22 @@ namespace Labs.Lab2
             base.OnRenderFrame(e);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            GL.BindBuffer(BufferTarget.ArrayBuffer, mSquareVertexBufferObjectIDArray[0]);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, mSquareVertexBufferObjectIDArray[1]);
-
-            #region Shader Loading Code 
             GL.UseProgram(mShader.ShaderProgramID);
+
             int vColourLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vColour");
             int vPositionLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vPosition");
-
-
-            GL.VertexAttribPointer(vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 *
-            sizeof(float), 0);
-            GL.VertexAttribPointer(vColourLocation, 3, VertexAttribPointerType.Float, false, 6 *
-            sizeof(float), 3 * sizeof(float));
-
-            //int vPositionLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vPosition");
             GL.EnableVertexAttribArray(vPositionLocation);
-            #endregion
 
-            int uColourLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uColour");
-
-            GL.Uniform4(uColourLocation, Color4.Blue);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, mSquareVertexBufferObjectIDArray[0]);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, mSquareVertexBufferObjectIDArray[1]);
+            GL.VertexAttribPointer(vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+            GL.VertexAttribPointer(vColourLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
             GL.DrawElements(PrimitiveType.TriangleFan, 4, DrawElementsType.UnsignedInt, 0);
 
             GL.BindBuffer(BufferTarget.ArrayBuffer, mTriangleVertexBufferObjectIDArray[0]);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, mTriangleVertexBufferObjectIDArray[1]);
-
             GL.VertexAttribPointer(vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
             GL.VertexAttribPointer(vColourLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
-            //GL.VertexAttribPointer(vPositionLocation, 2, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
-
-            GL.Uniform4(uColourLocation, Color4.Red);
             GL.DrawElements(PrimitiveType.Triangles, 3, DrawElementsType.UnsignedInt, 0);
 
             this.SwapBuffers();
