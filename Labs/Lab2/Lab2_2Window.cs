@@ -68,6 +68,39 @@ namespace Labs.Lab2
             GL.EnableVertexAttribArray(vColourLocation);
             GL.VertexAttribPointer(vColourLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
 
+         //  #region second square
+         //
+         //  mModel = ModelUtility.LoadModel(@"Utility/Models/lab22model.sjg");
+         //  mShader = new ShaderUtility(@"Lab2/Shaders/vLab22.vert", @"Lab2/Shaders/fSimple.frag");
+         //  GL.UseProgram(mShader.ShaderProgramID);
+         //  int vPositionLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vPosition");
+         //  int vColourLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vColour");
+         //
+         //  mVAO_ID = GL.GenVertexArray();
+         //  GL.GenBuffers(mVBO_IDs.Length, mVBO_IDs);
+         //
+         //  GL.BindVertexArray(mVAO_ID);
+         //  GL.BindBuffer(BufferTarget.ArrayBuffer, mVBO_IDs[0]);
+         //  GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mModel.Vertices.Length * sizeof(float)), mModel.Vertices, BufferUsageHint.StaticDraw);
+         //  GL.BindBuffer(BufferTarget.ElementArrayBuffer, mVBO_IDs[1]);
+         //  GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mModel.Indices.Length * sizeof(float)), mModel.Indices, BufferUsageHint.StaticDraw);
+         //
+         //  int size;
+         //  GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
+         //  if (mModel.Vertices.Length * sizeof(float) != size)
+         //  {
+         //      throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+         //  }
+         //
+         //  GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
+         //  if (mModel.Indices.Length * sizeof(float) != size)
+         //  {
+         //      throw new ApplicationException("Index data not loaded onto graphics card correctly");
+         //  }
+         //
+         //  #endregion
+
+
             GL.BindVertexArray(0);
 
             base.OnLoad(e);
@@ -78,14 +111,20 @@ namespace Labs.Lab2
         {
             base.OnRenderFrame(e);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-                        
+
+
+
             int uModelLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
             Matrix4 m1 = Matrix4.CreateTranslation(1, 0, 0);
             GL.UniformMatrix4(uModelLocation, true, ref m1);
 
             GL.BindVertexArray(mVAO_ID);
             GL.DrawElements(BeginMode.Triangles, mModel.Indices.Length, DrawElementsType.UnsignedInt, 0);
-            
+
+            Matrix4 m2 = Matrix4.CreateTranslation(0, 1, 0);
+            GL.UniformMatrix4(uModelLocation, true, ref m2);
+            GL.DrawElements(BeginMode.Triangles, mModel.Indices.Length, DrawElementsType.UnsignedInt, 0);
+
             GL.BindVertexArray(0);
             this.SwapBuffers();
         }
