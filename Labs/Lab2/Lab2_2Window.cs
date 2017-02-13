@@ -24,7 +24,7 @@ namespace Labs.Lab2
         }
 
         Matrix4 mView;
-
+        private const float CameraSpeed = 0.01f;
         private int[] mVBO_IDs = new int[2];
         private int mVAO_ID;
         private ShaderUtility mShader;
@@ -35,22 +35,24 @@ namespace Labs.Lab2
             base.OnKeyPress(e);
             if (e.KeyChar == 'a')
             {
-                mView = mView * Matrix4.CreateTranslation(0.01f, 0, 0);
-                int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
-                GL.UniformMatrix4(uView, true, ref mView);
+                mView = mView * Matrix4.CreateTranslation(CameraSpeed, 0, 0);
+                MoveCamera();
             }
             else if (e.KeyChar == 'd')
             {
-                mView = mView * Matrix4.CreateTranslation(-0.01f, 0, 0);
-                int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
-                GL.UniformMatrix4(uView, true, ref mView);
+                mView = mView * Matrix4.CreateTranslation(-CameraSpeed, 0, 0);
+                MoveCamera();
             }
         }
 
+        private void MoveCamera()
+        {
+            int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
+            GL.UniformMatrix4(uView, true, ref mView);
+        }
 
         protected override void OnLoad(EventArgs e)
         {
-
             // Set some GL state
             GL.ClearColor(Color4.DodgerBlue);
             GL.Enable(EnableCap.DepthTest);
@@ -118,6 +120,7 @@ namespace Labs.Lab2
             GL.DrawElements(BeginMode.Triangles, mModel.Indices.Length, DrawElementsType.UnsignedInt, 0);
 
             GL.BindVertexArray(0);
+
             this.SwapBuffers();
         }
 
