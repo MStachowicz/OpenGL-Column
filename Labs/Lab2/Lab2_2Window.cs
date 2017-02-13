@@ -23,13 +23,34 @@ namespace Labs.Lab2
         {
         }
 
+        Matrix4 mView;
+
         private int[] mVBO_IDs = new int[2];
         private int mVAO_ID;
         private ShaderUtility mShader;
         private ModelUtility mModel;
 
+        protected override void OnKeyPress(KeyPressEventArgs e)
+        {
+            base.OnKeyPress(e);
+            if (e.KeyChar == 'a')
+            {
+                mView = mView * Matrix4.CreateTranslation(0.01f, 0, 0);
+                int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
+                GL.UniformMatrix4(uView, true, ref mView);
+            }
+            else if (e.KeyChar == 'd')
+            {
+                mView = mView * Matrix4.CreateTranslation(-0.01f, 0, 0);
+                int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
+                GL.UniformMatrix4(uView, true, ref mView);
+            }
+        }
+
+
         protected override void OnLoad(EventArgs e)
         {
+
             // Set some GL state
             GL.ClearColor(Color4.DodgerBlue);
             GL.Enable(EnableCap.DepthTest);
@@ -40,6 +61,10 @@ namespace Labs.Lab2
             GL.UseProgram(mShader.ShaderProgramID);
             int vPositionLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vPosition");
             int vColourLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vColour");
+
+            mView = Matrix4.Identity;
+            int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
+            GL.UniformMatrix4(uView, true, ref mView);
 
             mVAO_ID = GL.GenVertexArray();
             GL.GenBuffers(mVBO_IDs.Length, mVBO_IDs);
@@ -68,39 +93,6 @@ namespace Labs.Lab2
             GL.EnableVertexAttribArray(vColourLocation);
             GL.VertexAttribPointer(vColourLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
 
-         //  #region second square
-         //
-         //  mModel = ModelUtility.LoadModel(@"Utility/Models/lab22model.sjg");
-         //  mShader = new ShaderUtility(@"Lab2/Shaders/vLab22.vert", @"Lab2/Shaders/fSimple.frag");
-         //  GL.UseProgram(mShader.ShaderProgramID);
-         //  int vPositionLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vPosition");
-         //  int vColourLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vColour");
-         //
-         //  mVAO_ID = GL.GenVertexArray();
-         //  GL.GenBuffers(mVBO_IDs.Length, mVBO_IDs);
-         //
-         //  GL.BindVertexArray(mVAO_ID);
-         //  GL.BindBuffer(BufferTarget.ArrayBuffer, mVBO_IDs[0]);
-         //  GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mModel.Vertices.Length * sizeof(float)), mModel.Vertices, BufferUsageHint.StaticDraw);
-         //  GL.BindBuffer(BufferTarget.ElementArrayBuffer, mVBO_IDs[1]);
-         //  GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mModel.Indices.Length * sizeof(float)), mModel.Indices, BufferUsageHint.StaticDraw);
-         //
-         //  int size;
-         //  GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
-         //  if (mModel.Vertices.Length * sizeof(float) != size)
-         //  {
-         //      throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
-         //  }
-         //
-         //  GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
-         //  if (mModel.Indices.Length * sizeof(float) != size)
-         //  {
-         //      throw new ApplicationException("Index data not loaded onto graphics card correctly");
-         //  }
-         //
-         //  #endregion
-
-
             GL.BindVertexArray(0);
 
             base.OnLoad(e);
@@ -121,8 +113,8 @@ namespace Labs.Lab2
             GL.BindVertexArray(mVAO_ID);
             GL.DrawElements(BeginMode.Triangles, mModel.Indices.Length, DrawElementsType.UnsignedInt, 0);
 
-            Matrix4 m2 = Matrix4.CreateTranslation(0, 1, 0);
-            GL.UniformMatrix4(uModelLocation, true, ref m2);
+            Matrix4 r1 = Matrix4.CreateRotationZ(0.8f);
+            GL.UniformMatrix4(uModelLocation, true, ref r1);
             GL.DrawElements(BeginMode.Triangles, mModel.Indices.Length, DrawElementsType.UnsignedInt, 0);
 
             GL.BindVertexArray(0);
