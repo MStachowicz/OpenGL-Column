@@ -13,7 +13,8 @@ namespace Labs
          * Valid tasks are L1, L2_1, L2_2, L3, Challenge, L4_1, L4_2, L5 and ACW
          */
         //private static Lab m_CurrentLab = Lab.L1;
-        private static Lab m_CurrentLab = Lab.L2_1;
+        //private static Lab m_CurrentLab = Lab.L2_1;
+        private static Lab m_CurrentLab = Lab.L2_2;
 
         #region No Changes Required Here Ever!
         /* 
