@@ -14,7 +14,8 @@ namespace Labs
          */
         //private static Lab m_CurrentLab = Lab.L1;
         //private static Lab m_CurrentLab = Lab.L2_1;
-        private static Lab m_CurrentLab = Lab.L2_2;
+        //private static Lab m_CurrentLab = Lab.L2_2;
+        private static Lab m_CurrentLab = Lab.L3;
 
         #region No Changes Required Here Ever!
         /* 

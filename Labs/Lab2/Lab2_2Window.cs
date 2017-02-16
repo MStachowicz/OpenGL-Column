@@ -122,7 +122,6 @@ namespace Labs.Lab2
             int vPositionLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vPosition");
             int vColourLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vColour");
 
-            //mView = Matrix4.Identity;
             mView = Matrix4.CreateTranslation(0, 0, -2);
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
             GL.UniformMatrix4(uView, true, ref mView);
