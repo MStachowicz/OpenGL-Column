@@ -23,6 +23,7 @@ namespace Labs.Lab2
         {
         }
 
+
         Matrix4 mView;
         private const float CameraSpeed = 0.01f;
         private int[] mVBO_IDs = new int[2];
@@ -56,35 +57,37 @@ namespace Labs.Lab2
             base.OnResize(e);
             GL.Viewport(this.ClientRectangle);
 
+            //Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(1, (float)ClientRectangle.Width / ClientRectangle.Height, 0.5f, 5);
+            //projection = Matrix4.CreatePerspectiveFieldOfView(1, (float)ClientRectangle.Width / ClientRectangle.Height, 0.5f, 5);
+
             if (mShader != null)
             {
                 int uProjectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uProjection");
-                int windowHeight = this.ClientRectangle.Height;
-                int windowWidth = this.ClientRectangle.Width;
-                if (windowHeight > windowWidth)
-                {
-                    if (windowWidth < 1)
-                    {
-                        windowWidth = 1;
-                    }
-                    float ratio = windowHeight / windowWidth;
-                    Matrix4 projection = Matrix4.CreateOrthographic(10, ratio * 10, -1, 1);
-                    GL.UniformMatrix4(uProjectionLocation, true, ref projection);
-                }
-                else
-                {
-                    if (windowHeight < 1)
-                    {
-                        windowHeight = 1;
-                    }
-                    float ratio = windowWidth / windowHeight;
-                    Matrix4 projection = Matrix4.CreateOrthographic(ratio * 10, 10, -1, 1);
-                    GL.UniformMatrix4(uProjectionLocation, true, ref projection);
-                }
+                //int windowHeight = this.ClientRectangle.Height;
+                //int windowWidth = this.ClientRectangle.Width;
+                //if (windowHeight > windowWidth)
+                //{
+                //    if (windowWidth < 1)
+                //    {
+                //        windowWidth = 1;
+                //    }
+                //    float ratio = windowHeight / windowWidth;
+                //    Matrix4 projection = Matrix4.CreateOrthographic(10, ratio * 10, -1, 1);
+                //    GL.UniformMatrix4(uProjectionLocation, true, ref projection);
+                //}
+                //else
+                //{
+                //    if (windowHeight < 1)
+                //    {
+                //        windowHeight = 1;
+                //    }
+                //    float ratio = windowWidth / windowHeight;
+                //    Matrix4 projection = Matrix4.CreateOrthographic(ratio * 10, 10, -1, 1);
+                //    GL.UniformMatrix4(uProjectionLocation, true, ref projection);
+                //}
             }
 
         }
-
 
         protected override void OnLoad(EventArgs e)
         {
@@ -99,13 +102,17 @@ namespace Labs.Lab2
             int vPositionLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vPosition");
             int vColourLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vColour");
 
-            mView = Matrix4.Identity;
+            //mView = Matrix4.Identity;
+            mView = Matrix4.CreateTranslation(0, 0, -2);
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
             GL.UniformMatrix4(uView, true, ref mView);
 
+            //
+
             // PROJECTION MATRIX
             int uProjectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uProjection");
-            Matrix4 projection = Matrix4.CreateOrthographic(10, 10, -1, 1);
+            Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView(1, (float)ClientRectangle.Width / ClientRectangle.Height, 0.5f, 5);
+            //Matrix4 projection = Matrix4.CreateOrthographic(10, 10, -1, 1);
             GL.UniformMatrix4(uProjectionLocation, true, ref projection);
 
             mVAO_ID = GL.GenVertexArray();
