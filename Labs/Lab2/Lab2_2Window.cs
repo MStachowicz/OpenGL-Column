@@ -68,6 +68,7 @@ namespace Labs.Lab2
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
             GL.UniformMatrix4(uView, true, ref mView);
 
+            // PROJECTION MATRIX
             int uProjectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uProjection");
             Matrix4 projection = Matrix4.CreateOrthographic(10, 10, -1, 1);
             GL.UniformMatrix4(uProjectionLocation, true, ref projection);
