@@ -10,8 +10,8 @@ namespace Labs.Lab2
     {
         public Lab2_2Window()
             : base(
-                800, // Width
-                600, // Height
+                1400, // Width
+                1000, // Height
                 GraphicsMode.Default,
                 "Lab 2_2 Understanding the Camera",
                 GameWindowFlags.Default,
@@ -50,6 +50,41 @@ namespace Labs.Lab2
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
             GL.UniformMatrix4(uView, true, ref mView);
         }
+
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            GL.Viewport(this.ClientRectangle);
+
+            if (mShader != null)
+            {
+                int uProjectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uProjection");
+                int windowHeight = this.ClientRectangle.Height;
+                int windowWidth = this.ClientRectangle.Width;
+                if (windowHeight > windowWidth)
+                {
+                    if (windowWidth < 1)
+                    {
+                        windowWidth = 1;
+                    }
+                    float ratio = windowHeight / windowWidth;
+                    Matrix4 projection = Matrix4.CreateOrthographic(10, ratio * 10, -1, 1);
+                    GL.UniformMatrix4(uProjectionLocation, true, ref projection);
+                }
+                else
+                {
+                    if (windowHeight < 1)
+                    {
+                        windowHeight = 1;
+                    }
+                    float ratio = windowWidth / windowHeight;
+                    Matrix4 projection = Matrix4.CreateOrthographic(ratio * 10, 10, -1, 1);
+                    GL.UniformMatrix4(uProjectionLocation, true, ref projection);
+                }
+            }
+
+        }
+
 
         protected override void OnLoad(EventArgs e)
         {
@@ -110,8 +145,6 @@ namespace Labs.Lab2
         {
             base.OnRenderFrame(e);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-
 
             int uModelLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
             Matrix4 m1 = Matrix4.CreateTranslation(1, 0, 0);
