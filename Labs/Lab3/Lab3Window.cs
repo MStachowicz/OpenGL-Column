@@ -39,6 +39,7 @@ namespace Labs.Lab3
             mShader = new ShaderUtility(@"Lab3/Shaders/vLighting.vert", @"Lab3/Shaders/fPassThrough.frag");
             GL.UseProgram(mShader.ShaderProgramID);
             int vPositionLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vPosition");
+            int vNormal = GL.GetAttribLocation(mShader.ShaderProgramID, "vNormal"); //find the index for the location of vNormal in the shader
 
             GL.GenVertexArrays(mVAO_IDs.Length, mVAO_IDs);
             GL.GenBuffers(mVBO_IDs.Length, mVBO_IDs);
@@ -62,11 +63,15 @@ namespace Labs.Lab3
             GL.EnableVertexAttribArray(vPositionLocation);
             GL.VertexAttribPointer(vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
 
+            GL.EnableVertexAttribArray(vNormal); // enable it
+            GL.VertexAttribPointer(vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float)); //added
+
             mSphereModelUtility = ModelUtility.LoadModel(@"Utility/Models/sphere.bin"); 
 
             GL.BindVertexArray(mVAO_IDs[1]);
             GL.BindBuffer(BufferTarget.ArrayBuffer, mVBO_IDs[1]);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mSphereModelUtility.Vertices.Length * sizeof(float)), mSphereModelUtility.Vertices, BufferUsageHint.StaticDraw);           
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mSphereModelUtility.Vertices.Length * sizeof(float)), mSphereModelUtility.Vertices, BufferUsageHint.StaticDraw);
+
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, mVBO_IDs[2]);
             GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mSphereModelUtility.Indices.Length * sizeof(float)), mSphereModelUtility.Indices, BufferUsageHint.StaticDraw);
 
@@ -85,11 +90,16 @@ namespace Labs.Lab3
             GL.EnableVertexAttribArray(vPositionLocation);
             GL.VertexAttribPointer(vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
 
+            GL.EnableVertexAttribArray(vNormal); // ADDITIONAL
+            GL.VertexAttribPointer(vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
+
             GL.BindVertexArray(0);
 
             mView = Matrix4.CreateTranslation(0, -1.5f, 0);
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
             GL.UniformMatrix4(uView, true, ref mView);
+
+
 
             mGroundModel = Matrix4.CreateTranslation(0, 0, -5f);
             mSphereModel = Matrix4.CreateTranslation(0, 1, -5f);        
@@ -123,6 +133,56 @@ namespace Labs.Lab3
                 mView = mView * Matrix4.CreateRotationY(-0.025f);
                 int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
                 GL.UniformMatrix4(uView, true, ref mView);            
+            }
+            if (e.KeyChar == 's')
+            {
+                mView = mView * Matrix4.CreateTranslation(0.0f, 0.0f, -0.05f);
+                int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
+                GL.UniformMatrix4(uView, true, ref mView);
+            }
+            if (e.KeyChar == 'd')
+            {
+                mView = mView * Matrix4.CreateRotationY(+0.025f);
+                int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
+                GL.UniformMatrix4(uView, true, ref mView);
+            }
+            if (e.KeyChar == 'z')
+            {
+                Vector3 t = mGroundModel.ExtractTranslation();
+                Matrix4 translation = Matrix4.CreateTranslation(t);
+                Matrix4 inverseTranslation = Matrix4.CreateTranslation(-t);
+                mGroundModel = mGroundModel * inverseTranslation * Matrix4.CreateRotationY(-0.025f) * translation;
+
+                Vector3 j = mSphereModel.ExtractTranslation();
+                Matrix4 stranslation = Matrix4.CreateTranslation(j);
+                Matrix4 sinverseTranslation = Matrix4.CreateTranslation(-j);
+                mSphereModel = mSphereModel * sinverseTranslation * Matrix4.CreateRotationY(-0.025f) * stranslation;
+            }
+            if (e.KeyChar == 'x')
+            {
+                Vector3 t = mGroundModel.ExtractTranslation();
+                Matrix4 translation = Matrix4.CreateTranslation(t);
+                Matrix4 inverseTranslation = Matrix4.CreateTranslation(-t);
+                mGroundModel = mGroundModel * inverseTranslation * Matrix4.CreateRotationY(0.025f) * translation;
+
+                Vector3 j = mSphereModel.ExtractTranslation();
+                Matrix4 stranslation = Matrix4.CreateTranslation(j);
+                Matrix4 sinverseTranslation = Matrix4.CreateTranslation(-j);
+                mSphereModel = mSphereModel * sinverseTranslation * Matrix4.CreateRotationY(0.025f) * stranslation;
+            }
+            if (e.KeyChar == 'c') // rotating sphere in sphere space
+            {
+                Vector3 t = mSphereModel.ExtractTranslation();
+                Matrix4 translation = Matrix4.CreateTranslation(t);
+                Matrix4 inverseTranslation = Matrix4.CreateTranslation(-t);
+                mSphereModel = mSphereModel * inverseTranslation * Matrix4.CreateRotationY(-0.025f) * translation;
+            }
+            if (e.KeyChar == 'v') // rotating sphere in sphere space
+            {
+                Vector3 t = mSphereModel.ExtractTranslation();
+                Matrix4 translation = Matrix4.CreateTranslation(t);
+                Matrix4 inverseTranslation = Matrix4.CreateTranslation(-t);
+                mSphereModel = mSphereModel * inverseTranslation * Matrix4.CreateRotationY(0.025f) * translation;
             }
         }
 
