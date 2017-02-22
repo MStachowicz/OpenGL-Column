@@ -99,7 +99,10 @@ namespace Labs.Lab3
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
             GL.UniformMatrix4(uView, true, ref mView);
 
-
+            int uLightDirectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLightDirection");
+            Vector3 normalisedLightDirection, lightDirection = new Vector3(-1, -1, -1);
+            Vector3.Normalize(ref lightDirection, out normalisedLightDirection);
+            GL.Uniform3(uLightDirectionLocation, normalisedLightDirection);
 
             mGroundModel = Matrix4.CreateTranslation(0, 0, -5f);
             mSphereModel = Matrix4.CreateTranslation(0, 1, -5f);        
