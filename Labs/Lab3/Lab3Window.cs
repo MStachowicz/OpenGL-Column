@@ -36,7 +36,8 @@ namespace Labs.Lab3
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.CullFace);
 
-            mShader = new ShaderUtility(@"Lab3/Shaders/vLighting.vert", @"Lab3/Shaders/fPassThrough.frag");
+       //     mShader = new ShaderUtility(@"Lab3/Shaders/vLighting.vert", @"Lab3/Shaders/fPassThrough.frag");
+            mShader = new ShaderUtility(@"Lab3/Shaders/vPassThrough.vert", @"Lab3/Shaders/fLighting.frag");
             GL.UseProgram(mShader.ShaderProgramID);
             int vPositionLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vPosition");
             int vNormal = GL.GetAttribLocation(mShader.ShaderProgramID, "vNormal"); //find the index for the location of vNormal in the shader
@@ -100,9 +101,9 @@ namespace Labs.Lab3
             GL.UniformMatrix4(uView, true, ref mView);
 
             int uLightDirectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLightPosition");
-            Vector3 lightDirection = new Vector3(2.0f, 1.0f, -8.5f);
+            Vector4 lightDirection = new Vector4(2.0f, 1.0f, -8.5f,1);
             //Vector3.Normalize(ref lightDirection, out normalisedLightDirection);
-            GL.Uniform3(uLightDirectionLocation, lightDirection);
+            GL.Uniform4(uLightDirectionLocation, lightDirection);
 
             mGroundModel = Matrix4.CreateTranslation(0, 0, -5f);
             mSphereModel = Matrix4.CreateTranslation(0, 1, -5f);        
@@ -130,24 +131,40 @@ namespace Labs.Lab3
                 mView = mView * Matrix4.CreateTranslation(0.0f, 0.0f, 0.05f);
                 int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
                 GL.UniformMatrix4(uView, true, ref mView);
+
+                int uLightDirectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLightPosition");
+                Vector4 lightPosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
+                GL.Uniform4(uLightDirectionLocation, lightPosition);
             }
             if (e.KeyChar == 'a')
             {
-                mView = mView * Matrix4.CreateRotationY(-0.025f);
+                mView = mView * Matrix4.CreateRotationY(-0.05f);
                 int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
-                GL.UniformMatrix4(uView, true, ref mView);            
+                GL.UniformMatrix4(uView, true, ref mView);
+
+                int uLightDirectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLightPosition");
+                Vector4 lightPosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
+                GL.Uniform4(uLightDirectionLocation, lightPosition);
             }
             if (e.KeyChar == 's')
             {
                 mView = mView * Matrix4.CreateTranslation(0.0f, 0.0f, -0.05f);
                 int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
                 GL.UniformMatrix4(uView, true, ref mView);
+
+                int uLightDirectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLightPosition");
+                Vector4 lightPosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
+                GL.Uniform4(uLightDirectionLocation, lightPosition);
             }
             if (e.KeyChar == 'd')
             {
-                mView = mView * Matrix4.CreateRotationY(+0.025f);
+                mView = mView * Matrix4.CreateRotationY(+0.05f);
                 int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
                 GL.UniformMatrix4(uView, true, ref mView);
+
+                int uLightDirectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLightPosition");
+                Vector4 lightPosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
+                GL.Uniform4(uLightDirectionLocation, lightPosition);
             }
             if (e.KeyChar == 'z')
             {
