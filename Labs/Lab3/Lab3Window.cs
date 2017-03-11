@@ -23,11 +23,11 @@ namespace Labs.Lab3
         {
         }
 
-        private int[] mVBO_IDs = new int[3];
-        private int[] mVAO_IDs = new int[2];
+        private int[] mVBO_IDs = new int[8];
+        private int[] mVAO_IDs = new int[5];
         private ShaderUtility mShader;
-        private ModelUtility mSphereModelUtility;
-        private Matrix4 mView, mSphereModel, mGroundModel;
+        private ModelUtility mSphereModelUtility, mStatuelUtility, mCylinderUtility;
+        private Matrix4 mView, mSphereModel, mGroundModel, mStatueModel, mStatueScale, mCylinderModel;
 
         protected override void OnLoad(EventArgs e)
         {
@@ -36,14 +36,17 @@ namespace Labs.Lab3
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.CullFace);
 
-       //     mShader = new ShaderUtility(@"Lab3/Shaders/vLighting.vert", @"Lab3/Shaders/fPassThrough.frag");
+            // mShader = new ShaderUtility(@"Lab3/Shaders/vLighting.vert", @"Lab3/Shaders/fPassThrough.frag");
             mShader = new ShaderUtility(@"Lab3/Shaders/vPassThrough.vert", @"Lab3/Shaders/fLighting.frag");
             GL.UseProgram(mShader.ShaderProgramID);
             int vPositionLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vPosition");
             int vNormal = GL.GetAttribLocation(mShader.ShaderProgramID, "vNormal"); //find the index for the location of vNormal in the shader
 
+            // Generating Vertex Array Objects and Vertex Buffer Objects
             GL.GenVertexArrays(mVAO_IDs.Length, mVAO_IDs);
             GL.GenBuffers(mVBO_IDs.Length, mVBO_IDs);
+
+            #region floor
 
             float[] vertices = new float[] {-10, 0, -10,0,1,0,
                                              -10, 0, 10,0,1,0,
@@ -66,8 +69,13 @@ namespace Labs.Lab3
 
             GL.EnableVertexAttribArray(vNormal); // enable it
             GL.VertexAttribPointer(vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float)); //added
+            #endregion
 
-            mSphereModelUtility = ModelUtility.LoadModel(@"Utility/Models/sphere.bin"); 
+            #region Sphere model
+            mSphereModelUtility = ModelUtility.LoadModel(@"Utility/Models/sphere.bin");
+
+            //GL.BindBuffer(BufferTarget.ElementArrayBuffer, mVBO_IDs[2]);
+            //GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mSphereModelUtility.Indices.Length * sizeof(float)), mSphereModelUtility.Indices, BufferUsageHint.StaticDraw);
 
             GL.BindVertexArray(mVAO_IDs[1]);
             GL.BindBuffer(BufferTarget.ArrayBuffer, mVBO_IDs[1]);
@@ -93,6 +101,71 @@ namespace Labs.Lab3
 
             GL.EnableVertexAttribArray(vNormal); // ADDITIONAL
             GL.VertexAttribPointer(vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
+            #endregion
+
+            #region statue
+            mStatuelUtility = ModelUtility.LoadModel(@"Utility/Models/model.bin");
+
+            //GL.BindBuffer(BufferTarget.ElementArrayBuffer, mVBO_IDs[3]);
+            //GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mStatuelUtility.Indices.Length * sizeof(float)), mStatuelUtility.Indices, BufferUsageHint.StaticDraw);
+
+            GL.BindVertexArray(mVAO_IDs[2]);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, mVBO_IDs[3]);
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mStatuelUtility.Vertices.Length * sizeof(float)), mStatuelUtility.Vertices, BufferUsageHint.StaticDraw);
+
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, mVBO_IDs[4]);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mStatuelUtility.Indices.Length * sizeof(float)), mStatuelUtility.Indices, BufferUsageHint.StaticDraw);
+
+            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
+            if (mStatuelUtility.Vertices.Length * sizeof(float) != size)
+            {
+                throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+            }
+
+            GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
+            if (mStatuelUtility.Indices.Length * sizeof(float) != size)
+            {
+                throw new ApplicationException("Index data not loaded onto graphics card correctly");
+            }
+            GL.EnableVertexAttribArray(vPositionLocation);
+            GL.VertexAttribPointer(vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+
+            GL.EnableVertexAttribArray(vNormal); // ADDITIONAL
+            GL.VertexAttribPointer(vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
+
+            #endregion
+
+            #region cylinder model
+            mCylinderUtility = ModelUtility.LoadModel(@"Utility/Models/cylinder.bin");
+
+            //GL.BindBuffer(BufferTarget.ElementArrayBuffer, mVBO_IDs[2]);
+            //GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mSphereModelUtility.Indices.Length * sizeof(float)), mSphereModelUtility.Indices, BufferUsageHint.StaticDraw);
+
+            GL.BindVertexArray(mVAO_IDs[3]);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, mVBO_IDs[6]);
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mCylinderUtility.Vertices.Length * sizeof(float)), mCylinderUtility.Vertices, BufferUsageHint.StaticDraw);
+
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, mVBO_IDs[7]);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mCylinderUtility.Indices.Length * sizeof(float)), mCylinderUtility.Indices, BufferUsageHint.StaticDraw);
+
+            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
+            if (mCylinderUtility.Vertices.Length * sizeof(float) != size)
+            {
+                throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+            }
+
+            GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
+            if (mCylinderUtility.Indices.Length * sizeof(float) != size)
+            {
+                throw new ApplicationException("Index data not loaded onto graphics card correctly");
+            }
+
+            GL.EnableVertexAttribArray(vPositionLocation);
+            GL.VertexAttribPointer(vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+
+            GL.EnableVertexAttribArray(vNormal); // ADDITIONAL
+            GL.VertexAttribPointer(vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
+            #endregion
 
             GL.BindVertexArray(0);
 
@@ -101,15 +174,18 @@ namespace Labs.Lab3
             GL.UniformMatrix4(uView, true, ref mView);
 
             int uLightDirectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLightPosition");
-            Vector4 lightDirection = new Vector4(2.0f, 1.0f, -8.5f,1);
+            Vector4 lightDirection = new Vector4(2.0f, 1.0f, -8.5f, 1);
             //Vector3.Normalize(ref lightDirection, out normalisedLightDirection);
             GL.Uniform4(uLightDirectionLocation, lightDirection);
 
             mGroundModel = Matrix4.CreateTranslation(0, 0, -5f);
-            mSphereModel = Matrix4.CreateTranslation(0, 1, -5f);        
+            mSphereModel = Matrix4.CreateTranslation(0, 1, -5f);
+            mStatueScale = Matrix4.CreateScale(0.7f);
+            mStatueModel = Matrix4.CreateTranslation(0, 0.9f, 0);
+            mCylinderModel = Matrix4.CreateTranslation(-5, 0, -5f);
 
             base.OnLoad(e);
-            
+
         }
 
         protected override void OnResize(EventArgs e)
@@ -127,7 +203,8 @@ namespace Labs.Lab3
         protected override void OnKeyPress(KeyPressEventArgs e)
         {
             base.OnKeyPress(e);
-            if (e.KeyChar == 'w') {
+            if (e.KeyChar == 'w')
+            {
                 mView = mView * Matrix4.CreateTranslation(0.0f, 0.0f, 0.05f);
                 int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
                 GL.UniformMatrix4(uView, true, ref mView);
@@ -205,7 +282,7 @@ namespace Labs.Lab3
                 mSphereModel = mSphereModel * inverseTranslation * Matrix4.CreateRotationY(0.025f) * translation;
             }
         }
-
+        
         protected override void OnRenderFrame(FrameEventArgs e)
         {
             base.OnRenderFrame(e);
@@ -213,18 +290,36 @@ namespace Labs.Lab3
 
 
             int uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
-            GL.UniformMatrix4(uModel, true, ref mGroundModel);  
+            GL.UniformMatrix4(uModel, true, ref mGroundModel);
 
             GL.BindVertexArray(mVAO_IDs[0]);
             GL.DrawArrays(PrimitiveType.TriangleFan, 0, 4);
 
             Matrix4 m = mSphereModel * mGroundModel;
             uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
-            GL.UniformMatrix4(uModel, true, ref m); 
+            GL.UniformMatrix4(uModel, true, ref m);
 
             GL.BindVertexArray(mVAO_IDs[1]);
             GL.DrawElements(PrimitiveType.Triangles, mSphereModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
             
+            #region Cylinder
+            Matrix4 m2 = mStatueScale * mCylinderModel * mGroundModel;
+            uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
+            GL.UniformMatrix4(uModel, true, ref m2);
+
+            GL.BindVertexArray(mVAO_IDs[3]);
+            GL.DrawElements(PrimitiveType.Triangles, mCylinderUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
+            #endregion
+
+            #region statue
+            Matrix4 m3 = mStatueModel * m2;
+            uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
+            GL.UniformMatrix4(uModel, true, ref m3); // uses the cylinder matrix.
+
+            GL.BindVertexArray(mVAO_IDs[2]);
+            GL.DrawElements(PrimitiveType.Triangles, mStatuelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
+            #endregion
+
             GL.BindVertexArray(0);
             this.SwapBuffers();
         }
