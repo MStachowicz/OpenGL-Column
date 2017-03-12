@@ -170,16 +170,16 @@ namespace Labs.Lab3
 
             GL.BindVertexArray(0);
 
-            int uLightDirectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLightPosition");
-            Vector4 lightDirection = new Vector4(2.0f, 1.0f, -8.5f, 1);
-            GL.Uniform4(uLightDirectionLocation, lightDirection);
+            //int uLightDirectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLightPosition");
+            //Vector4 lightDirection = new Vector4(2.0f, 1.0f, -8.5f, 1);
+            //GL.Uniform4(uLightDirectionLocation, lightDirection);
 
             mView = Matrix4.CreateTranslation(0, -1.5f, 0);
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
             GL.UniformMatrix4(uView, true, ref mView);
 
-            Vector4 lightPosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
-            GL.Uniform4(uLightDirectionLocation, lightPosition);
+            //Vector4 lightPosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
+            //GL.Uniform4(uLightDirectionLocation, lightPosition);
 
 
             int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
@@ -193,8 +193,49 @@ namespace Labs.Lab3
             mStatueModel = Matrix4.CreateTranslation(0, 0.9f, 0);
             mCylinderModel = Matrix4.CreateTranslation(-5, 0, -5f);
 
-            base.OnLoad(e);
 
+            // LIGHT PROPERTIES
+            int uLightPositionLocation = GL.GetUniformLocation(mShader.ShaderProgramID,"uLight.Position");
+            Vector4 lightPosition = new Vector4(2, 4, -8.5f, 1);
+            lightPosition = Vector4.Transform(lightPosition, mView);
+            GL.Uniform4(uLightPositionLocation, lightPosition);
+
+            int uAmbientLightLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight.AmbientLight");
+            Vector3 colour = new Vector3(1.0f, 1.0f, 1.0f);
+            GL.Uniform3(uAmbientLightLocation, colour);
+
+            int uDiffuseLightLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight.DiffuseLight");
+            GL.Uniform3(uDiffuseLightLocation, colour);
+
+            int uSpecularLightLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight.SpecularLight");
+            GL.Uniform3(uSpecularLightLocation, colour);
+
+            // Set to emerald
+            setMaterialProperties(0.0215f, 0.1745f, 0.0215f, 0.07568f, 0.61424f, 0.07568f, 0.633f, 0.727811f, 0.633f, 0.6f);
+
+            base.OnLoad(e);
+        }
+
+
+        private void setMaterialProperties(float AmbientR, float AmbientG, float AmbientB, 
+            float DiffuseR, float DiffuseG, float DiffuseB, 
+            float SpecularR, float SpecularG, float SpecularB, 
+            float Shininess)
+        {
+            int uAmbientReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.AmbientReflectivity");
+            Vector3 AmbientReflectivity = new Vector3(AmbientR, AmbientG, AmbientB);
+            GL.Uniform3(uAmbientReflectivityLocation, AmbientReflectivity);
+
+            int uDiffuseReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.DiffuseReflectivity");
+            Vector3 DiffuseReflectivity = new Vector3(DiffuseR, DiffuseG, DiffuseB);
+            GL.Uniform3(uDiffuseReflectivityLocation, DiffuseReflectivity);
+
+            int uSpecularReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.SpecularReflectivity");
+            Vector3 SpecularReflectivity = new Vector3(SpecularR, SpecularG, SpecularB);
+            GL.Uniform3(uSpecularReflectivityLocation, SpecularReflectivity);
+
+            int uShininessLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.Shininess");
+            GL.Uniform1(uShininessLocation, Shininess);
         }
 
         protected override void OnResize(EventArgs e)
@@ -220,9 +261,10 @@ namespace Labs.Lab3
                 GL.UniformMatrix4(uView, true, ref mView);
 
                 // Light direction
-                int uLightDirectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLightPosition");
-                Vector4 lightPosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
-                GL.Uniform4(uLightDirectionLocation, lightPosition);
+                int uLightPositionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight.Position");
+                Vector4 lightPosition = new Vector4(2, 4, -8.5f, 1);
+                lightPosition = Vector4.Transform(lightPosition, mView);
+                GL.Uniform4(uLightPositionLocation, lightPosition);
 
                 // Specular light
                 int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
@@ -236,9 +278,10 @@ namespace Labs.Lab3
                 int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
                 GL.UniformMatrix4(uView, true, ref mView);
 
-                int uLightDirectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLightPosition");
-                Vector4 lightPosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
-                GL.Uniform4(uLightDirectionLocation, lightPosition);
+                int uLightPositionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight.Position");
+                Vector4 lightPosition = new Vector4(2, 4, -8.5f, 1);
+                lightPosition = Vector4.Transform(lightPosition, mView);
+                GL.Uniform4(uLightPositionLocation, lightPosition);
 
                 // Specular light
                 int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
@@ -251,9 +294,10 @@ namespace Labs.Lab3
                 int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
                 GL.UniformMatrix4(uView, true, ref mView);
 
-                int uLightDirectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLightPosition");
-                Vector4 lightPosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
-                GL.Uniform4(uLightDirectionLocation, lightPosition);
+                int uLightPositionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight.Position");
+                Vector4 lightPosition = new Vector4(2, 4, -8.5f, 1);
+                lightPosition = Vector4.Transform(lightPosition, mView);
+                GL.Uniform4(uLightPositionLocation, lightPosition);
 
                 // Specular light
                 int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
@@ -266,9 +310,10 @@ namespace Labs.Lab3
                 int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
                 GL.UniformMatrix4(uView, true, ref mView);
 
-                int uLightDirectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLightPosition");
-                Vector4 lightPosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
-                GL.Uniform4(uLightDirectionLocation, lightPosition);
+                int uLightPositionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight.Position");
+                Vector4 lightPosition = new Vector4(2, 4, -8.5f, 1);
+                lightPosition = Vector4.Transform(lightPosition, mView);
+                GL.Uniform4(uLightPositionLocation, lightPosition);
 
                 // Specular light
                 int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
@@ -320,24 +365,42 @@ namespace Labs.Lab3
             base.OnRenderFrame(e);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
+            //Vector3 AmbientReflectivity = new Vector3(0.24725f, 0.1995f, 0.0745f);
+            //Vector3 DiffuseReflectivity = new Vector3(0.75164f, 0.60648f, 0.22648f);
+            //Vector3 SpecularReflectivity = new Vector3(0.628281f, 0.555802f, 0.366065f);
 
+
+
+            #region Ground
             int uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
             GL.UniformMatrix4(uModel, true, ref mGroundModel);
 
+            setMaterialProperties(0.02f, 0.02f, 0.02f, 0.01f, 0.01f, 0.01f, 0.4f, 0.4f, 0.4f, 0.078125f);
+
             GL.BindVertexArray(mVAO_IDs[0]);
             GL.DrawArrays(PrimitiveType.TriangleFan, 0, 4);
+            #endregion
 
+            #region Sphere
             Matrix4 m = mSphereModel * mGroundModel;
             uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
             GL.UniformMatrix4(uModel, true, ref m);
 
+            //cyan
+            setMaterialProperties(0.0f, 0.05f, 0.05f, 0.4f, 0.5f, 0.5f, 0.04f, 0.7f, 0.7f, 0.078125f);
+
             GL.BindVertexArray(mVAO_IDs[1]);
             GL.DrawElements(PrimitiveType.Triangles, mSphereModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
+            #endregion
 
             #region Cylinder
             Matrix4 m2 = mStatueScale * mCylinderModel * mGroundModel;
             uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
             GL.UniformMatrix4(uModel, true, ref m2);
+
+            // chrome
+            setMaterialProperties(0.25f, 0.25f, 0.25f, 0.4f, 0.4f, 0.4f, 0.774597f, 0.774597f, 0.774597f, 0.6f);
+
 
             GL.BindVertexArray(mVAO_IDs[3]);
             GL.DrawElements(PrimitiveType.Triangles, mCylinderUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
@@ -348,9 +411,10 @@ namespace Labs.Lab3
             uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
             GL.UniformMatrix4(uModel, true, ref m3); // uses the cylinder matrix.
 
-            GL.BindVertexArray(mVAO_IDs[2]);
-            GL.DrawElements(PrimitiveType.Triangles, mStatuelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
+            // set to gold
+            setMaterialProperties(0.0215f, 0.1745f, 0.0215f, 0.07568f, 0.61424f, 0.07568f, 0.633f, 0.727811f, 0.633f, 0.6f);
 
+            GL.BindVertexArray(mVAO_IDs[2]);
             GL.DrawElements(PrimitiveType.Triangles, mStatuelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
             #endregion
 
