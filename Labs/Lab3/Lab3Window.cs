@@ -10,8 +10,8 @@ namespace Labs.Lab3
     {
         public Lab3Window()
             : base(
-                800, // Width
-                600, // Height
+                1300, // Width
+                900, // Height
                 GraphicsMode.Default,
                 "Lab 3 Lighting and Material Properties",
                 GameWindowFlags.Default,
@@ -32,7 +32,7 @@ namespace Labs.Lab3
         protected override void OnLoad(EventArgs e)
         {
             // Set some GL state
-            GL.ClearColor(Color4.White);
+            GL.ClearColor(Color4.Black);
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.CullFace);
 

@@ -1,6 +1,7 @@
 ﻿#version 330
 uniform vec4 uLightPosition;
 uniform vec4 uEyePosition;
+float ambientLight = 0.1;
 
 in vec4 oNormal;
 in vec4 oSurfacePosition;
@@ -24,7 +25,7 @@ void main()
 
 
 
-	FragColour = vec4(vec3(diffuseFactor + specularFactor), 1);
+	FragColour = vec4(vec3(ambientLight + diffuseFactor + specularFactor), 1);
 }
 
 
