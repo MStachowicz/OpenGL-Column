@@ -42,6 +42,7 @@ namespace Labs.Lab3
             int vPositionLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vPosition");
             int vNormal = GL.GetAttribLocation(mShader.ShaderProgramID, "vNormal"); //find the index for the location of vNormal in the shader
 
+
             // Generating Vertex Array Objects and Vertex Buffer Objects
             GL.GenVertexArrays(mVAO_IDs.Length, mVAO_IDs);
             GL.GenBuffers(mVBO_IDs.Length, mVBO_IDs);
@@ -169,14 +170,22 @@ namespace Labs.Lab3
 
             GL.BindVertexArray(0);
 
+            int uLightDirectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLightPosition");
+            Vector4 lightDirection = new Vector4(2.0f, 1.0f, -8.5f, 1);
+            GL.Uniform4(uLightDirectionLocation, lightDirection);
+
             mView = Matrix4.CreateTranslation(0, -1.5f, 0);
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
             GL.UniformMatrix4(uView, true, ref mView);
 
-            int uLightDirectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLightPosition");
-            Vector4 lightDirection = new Vector4(2.0f, 1.0f, -8.5f, 1);
-            //Vector3.Normalize(ref lightDirection, out normalisedLightDirection);
-            GL.Uniform4(uLightDirectionLocation, lightDirection);
+            Vector4 lightPosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
+            GL.Uniform4(uLightDirectionLocation, lightPosition);
+
+
+            int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
+            Vector4 eyePosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
+            GL.Uniform4(uEyePosition, eyePosition);
+
 
             mGroundModel = Matrix4.CreateTranslation(0, 0, -5f);
             mSphereModel = Matrix4.CreateTranslation(0, 1, -5f);
@@ -205,13 +214,21 @@ namespace Labs.Lab3
             base.OnKeyPress(e);
             if (e.KeyChar == 'w')
             {
+                // Camera movement
                 mView = mView * Matrix4.CreateTranslation(0.0f, 0.0f, 0.05f);
                 int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
                 GL.UniformMatrix4(uView, true, ref mView);
 
+                // Light direction
                 int uLightDirectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLightPosition");
                 Vector4 lightPosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
                 GL.Uniform4(uLightDirectionLocation, lightPosition);
+
+                // Specular light
+                int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
+                Vector4 eyePosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
+                GL.Uniform4(uEyePosition, eyePosition);
+
             }
             if (e.KeyChar == 'a')
             {
@@ -222,6 +239,11 @@ namespace Labs.Lab3
                 int uLightDirectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLightPosition");
                 Vector4 lightPosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
                 GL.Uniform4(uLightDirectionLocation, lightPosition);
+
+                // Specular light
+                int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
+                Vector4 eyePosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
+                GL.Uniform4(uEyePosition, eyePosition);
             }
             if (e.KeyChar == 's')
             {
@@ -232,6 +254,11 @@ namespace Labs.Lab3
                 int uLightDirectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLightPosition");
                 Vector4 lightPosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
                 GL.Uniform4(uLightDirectionLocation, lightPosition);
+
+                // Specular light
+                int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
+                Vector4 eyePosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
+                GL.Uniform4(uEyePosition, eyePosition);
             }
             if (e.KeyChar == 'd')
             {
@@ -242,6 +269,11 @@ namespace Labs.Lab3
                 int uLightDirectionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLightPosition");
                 Vector4 lightPosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
                 GL.Uniform4(uLightDirectionLocation, lightPosition);
+
+                // Specular light
+                int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
+                Vector4 eyePosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
+                GL.Uniform4(uEyePosition, eyePosition);
             }
             if (e.KeyChar == 'z')
             {
@@ -282,7 +314,7 @@ namespace Labs.Lab3
                 mSphereModel = mSphereModel * inverseTranslation * Matrix4.CreateRotationY(0.025f) * translation;
             }
         }
-        
+
         protected override void OnRenderFrame(FrameEventArgs e)
         {
             base.OnRenderFrame(e);
@@ -301,7 +333,7 @@ namespace Labs.Lab3
 
             GL.BindVertexArray(mVAO_IDs[1]);
             GL.DrawElements(PrimitiveType.Triangles, mSphereModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
-            
+
             #region Cylinder
             Matrix4 m2 = mStatueScale * mCylinderModel * mGroundModel;
             uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
@@ -317,6 +349,8 @@ namespace Labs.Lab3
             GL.UniformMatrix4(uModel, true, ref m3); // uses the cylinder matrix.
 
             GL.BindVertexArray(mVAO_IDs[2]);
+            GL.DrawElements(PrimitiveType.Triangles, mStatuelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
+
             GL.DrawElements(PrimitiveType.Triangles, mStatuelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
             #endregion
 
