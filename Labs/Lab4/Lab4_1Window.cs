@@ -13,6 +13,7 @@ namespace Labs.Lab4
         private ShaderUtility mShader;
         private Matrix4 mSquareMatrix;
         private Vector3 mCirclePosition, mCircleVelocity;
+        private float mCircleRadius;
         private Timer mTimer;
 
         public Lab4_1Window()
@@ -93,7 +94,8 @@ namespace Labs.Lab4
             mSquareMatrix = Matrix4.CreateScale(1f) * Matrix4.CreateRotationZ(0.0f) * Matrix4.CreateTranslation(0, 0, 0);
 
             mCirclePosition = new Vector3(0.0f, 0.0f, 0.0f);
-            mCircleVelocity = new Vector3(0.2f,0.0f,0.0f);
+            mCircleVelocity = new Vector3(0.2f, 0.0f, 0.0f);
+            mCircleRadius = 0.1f;
 
 
             mTimer = new Timer();
@@ -152,7 +154,8 @@ namespace Labs.Lab4
             GL.DrawArrays(PrimitiveType.LineLoop, 0, 4);
 
             //Matrix4 circleMatrix = Matrix4.Identity;
-            Matrix4 circleMatrix = Matrix4.CreateTranslation(mCirclePosition);
+
+            Matrix4 circleMatrix = Matrix4.CreateScale(mCircleRadius) * Matrix4.CreateTranslation(mCirclePosition);
 
             GL.UniformMatrix4(uModelMatrixLocation, true, ref circleMatrix);
             GL.BindVertexArray(mVertexArrayObjectIDArray[1]);
