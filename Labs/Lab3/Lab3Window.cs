@@ -193,25 +193,26 @@ namespace Labs.Lab3
             mStatueModel = Matrix4.CreateTranslation(0, 0.9f, 0);
             mCylinderModel = Matrix4.CreateTranslation(-5, 0, -5f);
 
-
+            
             // LIGHT PROPERTIES
             int uLightPositionLocation = GL.GetUniformLocation(mShader.ShaderProgramID,"uLight.Position");
-            Vector4 lightPosition = new Vector4(2, 4, -8.5f, 1);
+            Vector4 lightPosition = new Vector4(2, 4, -8.5f, 1); 
             lightPosition = Vector4.Transform(lightPosition, mView);
             GL.Uniform4(uLightPositionLocation, lightPosition);
 
             int uAmbientLightLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight.AmbientLight");
-            Vector3 colour = new Vector3(1.0f, 1.0f, 1.0f);
-            GL.Uniform3(uAmbientLightLocation, colour);
+            Vector3 AmbientColour = new Vector3(0.5f, 0.5f, 0.5f);
+            GL.Uniform3(uAmbientLightLocation, AmbientColour);
 
             int uDiffuseLightLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight.DiffuseLight");
-            GL.Uniform3(uDiffuseLightLocation, colour);
+            Vector3 DiffuseColour = new Vector3(0.8f, 0.8f, 0.8f);
+            GL.Uniform3(uDiffuseLightLocation, DiffuseColour);
 
             int uSpecularLightLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight.SpecularLight");
-            GL.Uniform3(uSpecularLightLocation, colour);
+            Vector3 SpecularColour = new Vector3(0.03f, 0.03f, 0.03f);
+            GL.Uniform3(uSpecularLightLocation, SpecularColour);
 
-            // Set to emerald
-            setMaterialProperties(0.0215f, 0.1745f, 0.0215f, 0.07568f, 0.61424f, 0.07568f, 0.633f, 0.727811f, 0.633f, 0.6f);
+            
 
             base.OnLoad(e);
         }
@@ -365,17 +366,17 @@ namespace Labs.Lab3
             base.OnRenderFrame(e);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            //Vector3 AmbientReflectivity = new Vector3(0.24725f, 0.1995f, 0.0745f);
-            //Vector3 DiffuseReflectivity = new Vector3(0.75164f, 0.60648f, 0.22648f);
-            //Vector3 SpecularReflectivity = new Vector3(0.628281f, 0.555802f, 0.366065f);
-
-
-
             #region Ground
             int uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
             GL.UniformMatrix4(uModel, true, ref mGroundModel);
 
-            setMaterialProperties(0.02f, 0.02f, 0.02f, 0.01f, 0.01f, 0.01f, 0.4f, 0.4f, 0.4f, 0.078125f);
+            // Black rubber
+            //setMaterialProperties(0.02f, 0.02f, 0.02f, 0.01f, 0.01f, 0.01f, 0.4f, 0.4f, 0.4f, 0.078125f);
+
+           
+
+            // White rubber
+            setMaterialProperties(0.05f, 0.05f, 0.05f, 0.5f, 0.5f, 0.5f, 0.7f, 0.7f, 0.7f, 0.078125f);
 
             GL.BindVertexArray(mVAO_IDs[0]);
             GL.DrawArrays(PrimitiveType.TriangleFan, 0, 4);
@@ -399,8 +400,10 @@ namespace Labs.Lab3
             GL.UniformMatrix4(uModel, true, ref m2);
 
             // chrome
-            setMaterialProperties(0.25f, 0.25f, 0.25f, 0.4f, 0.4f, 0.4f, 0.774597f, 0.774597f, 0.774597f, 0.6f);
-
+            //setMaterialProperties(0.25f, 0.25f, 0.25f, 0.4f, 0.4f, 0.4f, 0.774597f, 0.774597f, 0.774597f, 0.6f);
+            
+            // Red plastic
+            setMaterialProperties(0.0f, 0.0f, 0.0f, 0.5f, 0.0f, 0.0f, 0.7f, 0.6f, 0.6f, 0.25f);
 
             GL.BindVertexArray(mVAO_IDs[3]);
             GL.DrawElements(PrimitiveType.Triangles, mCylinderUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
@@ -411,8 +414,13 @@ namespace Labs.Lab3
             uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
             GL.UniformMatrix4(uModel, true, ref m3); // uses the cylinder matrix.
 
-            // set to gold
-            setMaterialProperties(0.0215f, 0.1745f, 0.0215f, 0.07568f, 0.61424f, 0.07568f, 0.633f, 0.727811f, 0.633f, 0.6f);
+            // Set to emerald
+            //setMaterialProperties(0.0215f, 0.1745f, 0.0215f, 0.07568f, 0.61424f, 0.07568f, 0.633f, 0.727811f, 0.633f, 0.6f);
+
+            
+
+            // gold
+            setMaterialProperties(0.24725f, 0.1995f, 0.0745f, 0.75164f, 0.60648f, 0.22648f, 0.628281f, 0.555802f, 0.366065f, 0.4f);
 
             GL.BindVertexArray(mVAO_IDs[2]);
             GL.DrawElements(PrimitiveType.Triangles, mStatuelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
