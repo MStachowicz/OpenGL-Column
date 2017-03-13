@@ -94,7 +94,7 @@ namespace Labs.Lab4
             mSquareMatrix = Matrix4.CreateScale(1f) * Matrix4.CreateRotationZ(0.0f) * Matrix4.CreateTranslation(0, 0, 0);
 
             mCirclePosition = new Vector3(0.0f, 0.0f, 0.0f);
-            mCircleVelocity = new Vector3(0.5f, 0.4f, 0.0f);
+            mCircleVelocity = new Vector3(0.4f, 0.3f, 0.0f);
             mCircleRadius = 0.1f;
 
 
