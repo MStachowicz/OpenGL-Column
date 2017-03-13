@@ -13,6 +13,7 @@ namespace Labs.Lab4
         private ShaderUtility mShader;
         private Matrix4 mSquareMatrix;
         private Vector3 mCirclePosition;
+        private Timer mTimer;
 
         public Lab4_1Window()
             : base(
@@ -92,6 +93,10 @@ namespace Labs.Lab4
             mSquareMatrix = Matrix4.CreateScale(1f) * Matrix4.CreateRotationZ(0.0f) * Matrix4.CreateTranslation(0, 0, 0);
             mCirclePosition = new Vector3(0.0f, 0.0f, 0.0f);
 
+
+            mTimer = new Timer();
+            mTimer.Start();
+
             base.OnLoad(e);
         }
 
@@ -157,7 +162,9 @@ namespace Labs.Lab4
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             base.OnUpdateFrame(e);
-            mCirclePosition.X = mCirclePosition.X + 0.2f;
+
+            float timestep = mTimer.GetElapsedSeconds();
+            mCirclePosition.X = mCirclePosition.X + 0.2f * timestep;
         }
 
         protected override void OnUnload(EventArgs e)
