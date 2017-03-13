@@ -12,6 +12,7 @@ namespace Labs.Lab4
         private int[] mVertexBufferObjectIDArray = new int[2];
         private ShaderUtility mShader;
         private Matrix4 mSquareMatrix;
+        private Vector3 mCirclePosition;
 
         public Lab4_1Window()
             : base(
@@ -89,6 +90,7 @@ namespace Labs.Lab4
             GL.UniformMatrix4(uViewLocation, true, ref m);
 
             mSquareMatrix = Matrix4.CreateScale(1f) * Matrix4.CreateRotationZ(0.0f) * Matrix4.CreateTranslation(0, 0, 0);
+            mCirclePosition = new Vector3(0.0f, 0.0f, 0.0f);
 
             base.OnLoad(e);
         }
@@ -142,13 +144,20 @@ namespace Labs.Lab4
             GL.BindVertexArray(mVertexArrayObjectIDArray[0]);
             GL.DrawArrays(PrimitiveType.LineLoop, 0, 4);
 
-            Matrix4 circleMatrix = Matrix4.Identity;
+            //Matrix4 circleMatrix = Matrix4.Identity;
+            Matrix4 circleMatrix = Matrix4.CreateTranslation(mCirclePosition);
 
             GL.UniformMatrix4(uModelMatrixLocation, true, ref circleMatrix);
             GL.BindVertexArray(mVertexArrayObjectIDArray[1]);
             GL.DrawArrays(PrimitiveType.LineLoop, 0, 100);
 
             this.SwapBuffers();
+        }
+
+        protected override void OnUpdateFrame(FrameEventArgs e)
+        {
+            base.OnUpdateFrame(e);
+            mCirclePosition.X = mCirclePosition.X + 0.2f;
         }
 
         protected override void OnUnload(EventArgs e)
