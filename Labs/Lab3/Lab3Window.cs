@@ -193,26 +193,72 @@ namespace Labs.Lab3
             mStatueModel = Matrix4.CreateTranslation(0, 0.9f, 0);
             mCylinderModel = Matrix4.CreateTranslation(-5, 0, -5f);
 
-            
+            float AmbientIntensity = 0.8f;
+            float DiffuseIntensity = 0.7f;
+            float SpecularIntensity = 0.001f;
+
             // LIGHT PROPERTIES
-            int uLightPositionLocation = GL.GetUniformLocation(mShader.ShaderProgramID,"uLight.Position");
-            Vector4 lightPosition = new Vector4(2, 4, -8.5f, 1); 
+            #region Red Light 1
+            int uLightPositionLocation = GL.GetUniformLocation(mShader.ShaderProgramID,"uLight[0].Position");
+            Vector4 lightPosition = new Vector4(1, 4, -8.5f, 1); 
             lightPosition = Vector4.Transform(lightPosition, mView);
             GL.Uniform4(uLightPositionLocation, lightPosition);
 
-            int uAmbientLightLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight.AmbientLight");
-            Vector3 AmbientColour = new Vector3(0.5f, 0.5f, 0.5f);
+            int uAmbientLightLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[0].AmbientLight");
+            Vector3 AmbientColour = new Vector3(AmbientIntensity, 0.0f, 0.0f);
             GL.Uniform3(uAmbientLightLocation, AmbientColour);
 
-            int uDiffuseLightLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight.DiffuseLight");
-            Vector3 DiffuseColour = new Vector3(0.8f, 0.8f, 0.8f);
+            int uDiffuseLightLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[0].DiffuseLight");
+            Vector3 DiffuseColour = new Vector3(DiffuseIntensity, 0.0f, 0.0f);
             GL.Uniform3(uDiffuseLightLocation, DiffuseColour);
 
-            int uSpecularLightLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight.SpecularLight");
-            Vector3 SpecularColour = new Vector3(0.03f, 0.03f, 0.03f);
+            int uSpecularLightLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[0].SpecularLight");
+            Vector3 SpecularColour = new Vector3(SpecularIntensity, 0.0f, 0.0f);
             GL.Uniform3(uSpecularLightLocation, SpecularColour);
+            #endregion
 
-            
+            #region Green Light 2
+            int uLightPositionLocation1 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[1].Position");
+            Vector4 lightPosition1 = new Vector4(5, 4, -8.5f, 1);
+            lightPosition1 = Vector4.Transform(lightPosition1, mView);
+            GL.Uniform4(uLightPositionLocation1, lightPosition1);
+
+            int uAmbientLightLocation1 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[1].AmbientLight");
+            Vector3 AmbientColour1 = new Vector3(0.0f, AmbientIntensity, 0.0f);
+            GL.Uniform3(uAmbientLightLocation1, AmbientColour1);
+
+            int uDiffuseLightLocation1 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[1].DiffuseLight");
+            Vector3 DiffuseColour1 = new Vector3(0.0f, DiffuseIntensity, 0.0f);
+            GL.Uniform3(uDiffuseLightLocation1, DiffuseColour1);
+
+            int uSpecularLightLocation1 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[1].SpecularLight");
+            Vector3 SpecularColour1 = new Vector3(0.0f, SpecularIntensity, 0.0f);
+            GL.Uniform3(uSpecularLightLocation1, SpecularColour1);
+            #endregion
+
+            #region blue Light 3
+            int uLightPositionLocation2 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[2].Position");
+            Vector4 lightPosition2 = new Vector4(10, 4, -8.5f, 1);
+            lightPosition2 = Vector4.Transform(lightPosition2, mView);
+            GL.Uniform4(uLightPositionLocation2, lightPosition2);
+
+            int uAmbientLightLocation2 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[2].AmbientLight");
+            Vector3 AmbientColour2 = new Vector3(0.0f, 0.0f, AmbientIntensity);
+            GL.Uniform3(uAmbientLightLocation2, AmbientColour2);
+
+            int uDiffuseLightLocation2 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[2].DiffuseLight");
+            Vector3 DiffuseColour2 = new Vector3(0.0f, 0.0f, DiffuseIntensity);
+            GL.Uniform3(uDiffuseLightLocation2, DiffuseColour2);
+
+            int uSpecularLightLocation2 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[2].SpecularLight");
+            Vector3 SpecularColour2 = new Vector3(0.0f, 0.0f, SpecularIntensity);
+            GL.Uniform3(uSpecularLightLocation2, SpecularColour2);
+            #endregion
+
+
+            //int uAmbientLightLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[0].AmbientLight");
+            //Vector3 colour = new Vector3(0.1f, 0.0f, 0.0f);
+            //GL.Uniform3(uAmbientLightLocation, colour);
 
             base.OnLoad(e);
         }
@@ -429,7 +475,6 @@ namespace Labs.Lab3
             GL.BindVertexArray(0);
             this.SwapBuffers();
         }
-
         protected override void OnUnload(EventArgs e)
         {
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
