@@ -171,6 +171,11 @@ namespace Labs.Lab4
             float timestep = mTimer.GetElapsedSeconds();
             //mCirclePosition.X = mCirclePosition.X + 0.2f * timestep;
             mCirclePosition = mCirclePosition + mCircleVelocity * timestep;
+            if (mCirclePosition.X > 1)
+            {
+                mCircleVelocity = Vector3.Zero;
+            }
+
         }
 
         protected override void OnUnload(EventArgs e)
