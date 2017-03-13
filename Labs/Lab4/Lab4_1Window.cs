@@ -94,7 +94,7 @@ namespace Labs.Lab4
             mSquareMatrix = Matrix4.CreateScale(1f) * Matrix4.CreateRotationZ(0.0f) * Matrix4.CreateTranslation(0, 0, 0);
 
             mCirclePosition = new Vector3(0.0f, 0.0f, 0.0f);
-            mCircleVelocity = new Vector3(-0.3f, 0.0f, 0.0f);
+            mCircleVelocity = new Vector3(0.5f, 0.4f, 0.0f);
             mCircleRadius = 0.1f;
 
 
@@ -169,23 +169,22 @@ namespace Labs.Lab4
             base.OnUpdateFrame(e);
 
             float timestep = mTimer.GetElapsedSeconds();
-            //mCirclePosition.X = mCirclePosition.X + 0.2f * timestep;
             mCirclePosition = mCirclePosition + mCircleVelocity * timestep;
-            if (mCirclePosition.X + mCircleRadius > 1)
+            if (mCirclePosition.X + mCircleRadius > 1) // right
             {
-                mCircleVelocity = Vector3.Zero;
+                mCircleVelocity.X = -mCircleVelocity.X;
             }
-            if (mCirclePosition.X - mCircleRadius < -1)
+            if (mCirclePosition.X - mCircleRadius < -1) // left
             {
-                mCircleVelocity = Vector3.Zero;
+                mCircleVelocity.X = -mCircleVelocity.X;
             }
-            if (mCirclePosition.Y + mCircleRadius > 1)
+            if (mCirclePosition.Y + mCircleRadius > 1) // top
             {
-                mCircleVelocity = Vector3.Zero;
+                mCircleVelocity.Y = -mCircleVelocity.Y;
             }
-            if (mCirclePosition.Y - mCircleRadius < -1)
+            if (mCirclePosition.Y - mCircleRadius < -1) // bottom
             {
-                mCircleVelocity = Vector3.Zero;
+                mCircleVelocity.Y = -mCircleVelocity.Y;
             }
 
         }
