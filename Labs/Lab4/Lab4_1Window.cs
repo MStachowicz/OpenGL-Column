@@ -12,7 +12,7 @@ namespace Labs.Lab4
         private int[] mVertexBufferObjectIDArray = new int[2];
         private ShaderUtility mShader;
         private Matrix4 mSquareMatrix;
-        private Vector3 mCirclePosition;
+        private Vector3 mCirclePosition, mCircleVelocity;
         private Timer mTimer;
 
         public Lab4_1Window()
@@ -91,7 +91,9 @@ namespace Labs.Lab4
             GL.UniformMatrix4(uViewLocation, true, ref m);
 
             mSquareMatrix = Matrix4.CreateScale(1f) * Matrix4.CreateRotationZ(0.0f) * Matrix4.CreateTranslation(0, 0, 0);
+
             mCirclePosition = new Vector3(0.0f, 0.0f, 0.0f);
+            mCircleVelocity = new Vector3(0.2f,0.0f,0.0f);
 
 
             mTimer = new Timer();
@@ -164,7 +166,8 @@ namespace Labs.Lab4
             base.OnUpdateFrame(e);
 
             float timestep = mTimer.GetElapsedSeconds();
-            mCirclePosition.X = mCirclePosition.X + 0.2f * timestep;
+            //mCirclePosition.X = mCirclePosition.X + 0.2f * timestep;
+            mCirclePosition = mCirclePosition + mCircleVelocity * timestep;
         }
 
         protected override void OnUnload(EventArgs e)
