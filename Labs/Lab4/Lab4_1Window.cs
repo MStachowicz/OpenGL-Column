@@ -94,7 +94,7 @@ namespace Labs.Lab4
             mSquareMatrix = Matrix4.CreateScale(1f) * Matrix4.CreateRotationZ(0.0f) * Matrix4.CreateTranslation(0, 0, 0);
 
             mCirclePosition = new Vector3(0.0f, 0.0f, 0.0f);
-            mCircleVelocity = new Vector3(0.2f, 0.0f, 0.0f);
+            mCircleVelocity = new Vector3(-0.3f, 0.0f, 0.0f);
             mCircleRadius = 0.1f;
 
 
@@ -172,6 +172,18 @@ namespace Labs.Lab4
             //mCirclePosition.X = mCirclePosition.X + 0.2f * timestep;
             mCirclePosition = mCirclePosition + mCircleVelocity * timestep;
             if (mCirclePosition.X + mCircleRadius > 1)
+            {
+                mCircleVelocity = Vector3.Zero;
+            }
+            if (mCirclePosition.X - mCircleRadius < -1)
+            {
+                mCircleVelocity = Vector3.Zero;
+            }
+            if (mCirclePosition.Y + mCircleRadius > 1)
+            {
+                mCircleVelocity = Vector3.Zero;
+            }
+            if (mCirclePosition.Y - mCircleRadius < -1)
             {
                 mCircleVelocity = Vector3.Zero;
             }
