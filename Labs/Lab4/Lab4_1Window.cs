@@ -91,7 +91,11 @@ namespace Labs.Lab4
             Matrix4 m = Matrix4.CreateTranslation(0, 0, 0);
             GL.UniformMatrix4(uViewLocation, true, ref m);
 
-            mSquareMatrix = Matrix4.CreateScale(1f) * Matrix4.CreateRotationZ(0.0f) * Matrix4.CreateTranslation(0, 0, 0);
+
+            mSquareMatrix = Matrix4.CreateScale(1f) * Matrix4.CreateRotationZ(0.5f) * Matrix4.CreateTranslation(0.5f, 0.5f, 0);
+            //mSquareMatrix = Matrix4.CreateScale(1f) * Matrix4.CreateRotationZ(0.0f) * Matrix4.CreateTranslation(0.0f, 0.0f, 0);
+
+
 
             mCirclePosition = new Vector3(0.0f, 0.0f, 0.0f);
             mCircleVelocity = new Vector3(0.4f, 0.3f, 0.0f);
@@ -161,6 +165,26 @@ namespace Labs.Lab4
             GL.BindVertexArray(mVertexArrayObjectIDArray[1]);
             GL.DrawArrays(PrimitiveType.LineLoop, 0, 100);
 
+
+
+
+
+            //GL.Uniform4(uColourLocation, Color4.Red);
+
+            //Matrix4 m = mSquareMatrix * mSquareMatrix.Inverted();
+            //GL.UniformMatrix4(uModelMatrixLocation, true, ref m);
+            //GL.BindVertexArray(mVertexArrayObjectIDArray[0]);
+            //GL.DrawArrays(PrimitiveType.LineLoop, 0, 4);
+
+            //m = (Matrix4.CreateScale(mCircleRadius) * Matrix4.CreateTranslation(mCirclePosition)) * mSquareMatrix.Inverted();
+
+            //GL.UniformMatrix4(uModelMatrixLocation, true, ref m);
+            //GL.BindVertexArray(mVertexArrayObjectIDArray[1]);
+            //GL.DrawArrays(PrimitiveType.LineLoop, 0, 100);
+
+
+
+
             this.SwapBuffers();
         }
 
@@ -170,19 +194,24 @@ namespace Labs.Lab4
 
             float timestep = mTimer.GetElapsedSeconds();
             mCirclePosition = mCirclePosition + mCircleVelocity * timestep;
-            if (mCirclePosition.X + mCircleRadius > 1) // right
+
+            Matrix3 temp = new Matrix3(mSquareMatrix.Inverted());
+            Vector3 circleInSquareSpace = Vector3.Transform(mCirclePosition, temp);
+
+
+            if (circleInSquareSpace.X + mCircleRadius > 1) // right
             {
                 mCircleVelocity.X = -mCircleVelocity.X;
             }
-            if (mCirclePosition.X - mCircleRadius < -1) // left
+            if (circleInSquareSpace.X - mCircleRadius < -1) // left
             {
                 mCircleVelocity.X = -mCircleVelocity.X;
             }
-            if (mCirclePosition.Y + mCircleRadius > 1) // top
+            if (circleInSquareSpace.Y + mCircleRadius > 1) // top
             {
                 mCircleVelocity.Y = -mCircleVelocity.Y;
             }
-            if (mCirclePosition.Y - mCircleRadius < -1) // bottom
+            if (circleInSquareSpace.Y - mCircleRadius < -1) // bottom
             {
                 mCircleVelocity.Y = -mCircleVelocity.Y;
             }
