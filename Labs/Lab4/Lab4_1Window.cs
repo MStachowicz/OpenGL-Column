@@ -92,13 +92,13 @@ namespace Labs.Lab4
             GL.UniformMatrix4(uViewLocation, true, ref m);
 
 
-            mSquareMatrix = Matrix4.CreateScale(1f) * Matrix4.CreateRotationZ(0.5f) * Matrix4.CreateTranslation(0.5f, 0.5f, 0);
+            //mSquareMatrix = Matrix4.CreateScale(1f) * Matrix4.CreateRotationZ(0.5f) * Matrix4.CreateTranslation(0.5f, 0.5f, 0);
             //mSquareMatrix = Matrix4.CreateScale(1f) * Matrix4.CreateRotationZ(0.0f) * Matrix4.CreateTranslation(0.0f, 0.0f, 0);
-
+            mSquareMatrix = Matrix4.CreateScale(3f) * Matrix4.CreateRotationZ(0.5f) * Matrix4.CreateTranslation(0.0f, 0.0f, 0);
 
 
             mCirclePosition = new Vector3(0.0f, 0.0f, 0.0f);
-            mCircleVelocity = new Vector3(0.4f, 0.0f, 0.0f);
+            mCircleVelocity = new Vector3(0.6f, 0.0f, 0.0f);
             mCircleRadius = 0.1f;
 
 
@@ -201,19 +201,22 @@ namespace Labs.Lab4
 
             if (circleInSquareSpace.X + mCircleRadius > 1) // right
             {
-                mCircleVelocity.X = -mCircleVelocity.X;
+                //mCircleVelocity.X = -mCircleVelocity.X;
+                Vector3 normal = new Vector3(-1, 0, 0);
+                mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
             }
             if (circleInSquareSpace.X - mCircleRadius < -1) // left
             {
-                mCircleVelocity.X = -mCircleVelocity.X;
+
+                //mCircleVelocity.X = -mCircleVelocity.X;
             }
             if (circleInSquareSpace.Y + mCircleRadius > 1) // top
             {
-                mCircleVelocity.Y = -mCircleVelocity.Y;
+               // mCircleVelocity.Y = -mCircleVelocity.Y;
             }
             if (circleInSquareSpace.Y - mCircleRadius < -1) // bottom
             {
-                mCircleVelocity.Y = -mCircleVelocity.Y;
+                //mCircleVelocity.Y = -mCircleVelocity.Y;
             }
 
         }
