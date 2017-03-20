@@ -98,7 +98,7 @@ namespace Labs.Lab4
 
 
             mCirclePosition = new Vector3(0.0f, 0.0f, 0.0f);
-            mCircleVelocity = new Vector3(0.4f, 0.3f, 0.0f);
+            mCircleVelocity = new Vector3(0.4f, 0.0f, 0.0f);
             mCircleRadius = 0.1f;
 
 
@@ -195,8 +195,8 @@ namespace Labs.Lab4
             float timestep = mTimer.GetElapsedSeconds();
             mCirclePosition = mCirclePosition + mCircleVelocity * timestep;
 
-            Matrix3 temp = new Matrix3(mSquareMatrix.Inverted());
-            Vector3 circleInSquareSpace = Vector3.Transform(mCirclePosition, temp);
+            Matrix4 temp = mSquareMatrix.Inverted();
+            Vector4 circleInSquareSpace = Vector4.Transform(new Vector4(mCirclePosition, 1), temp);
 
 
             if (circleInSquareSpace.X + mCircleRadius > 1) // right
