@@ -240,10 +240,12 @@ namespace Labs.Lab4
                 // change velocity of circle 1
                 Vector3 normal = (mCirclePosition - mCirclePosition2).Normalized();
                 mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+                //mCircleVelocity = new Vector3(0.0f, 0.0f, 0.0f);
 
                 // change velocity of circle 2
                 normal = (mCirclePosition2 - mCirclePosition).Normalized();
                 mCircleVelocity2 = mCircleVelocity2 - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+                //mCircleVelocity2 = new Vector3(0.0f,0.0f,0.0f);
             }
 
 
