@@ -128,7 +128,7 @@ namespace Labs.Lab4
             //Matrix4.CreateTranslation(0.0f, 1000.0f, 0);
 
 
-            mCircle2Position = new Vector3(0.0f, 0.0f, 0.0f);
+            mCircle2Position = new Vector3(-0.8f, 0.0f, 0.0f);
             mCircle2Velocity = new Vector3(0.0f, 0.0f, 0.0f);
             mCircle2Radius = 0.4f;
 
@@ -246,7 +246,7 @@ namespace Labs.Lab4
             // Matrix4 temp = mSquareMatrix.Inverted();
             Vector4 circleInSquareSpace = Vector4.Transform(new Vector4(mCirclePosition, 1), mSquareMatrix.Inverted());
 
-
+            // Circle 1 collision with square
             if (circleInSquareSpace.X + (mCircleRadius / mSquareMatrix.ExtractScale().X) > 1) // right
             {
                 Vector3 normal = Vector3.Transform(new Vector3(1, 0, 0), mSquareMatrix.ExtractRotation());
@@ -266,6 +266,19 @@ namespace Labs.Lab4
             {
                 Vector3 normal = Vector3.Transform(new Vector3(0, -1, 0), mSquareMatrix.ExtractRotation());
                 mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+            }
+
+            Vector4 circle2InSquareSpace = Vector4.Transform(new Vector4(mCircle2Position, 1), mSquareMatrix.Inverted());
+
+            // Circle 1 collision with circle 2 making it stop
+            double x = mCirclePosition.X - mCircle2Position.X;
+            double y = mCirclePosition.Y - mCircle2Position.Y;
+
+            double distance = Math.Sqrt(Math.Pow(x,2) + Math.Pow(y, 2));
+
+            if (distance < mCircleRadius + mCircle2Radius)
+            {
+                mCircleVelocity = new Vector3(0.0f, 0.0f, 0.0f);
             }
         }
 
