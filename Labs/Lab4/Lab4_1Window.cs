@@ -361,6 +361,7 @@ namespace Labs.Lab4
                     mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
                 }
             }
+
             // BOTTOM
             LineSegment = (Vector3.Dot((mCirclePosition - bottomLeft), (bottomRight - bottomLeft).Normalized()) * (bottomRight - bottomLeft).Normalized());
             LineSegmentToCircle = bottomLeft + LineSegment - mCirclePosition;
