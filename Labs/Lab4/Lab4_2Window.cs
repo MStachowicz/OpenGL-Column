@@ -8,13 +8,12 @@ namespace Labs.Lab4
 {
     public class Lab4_2Window : GameWindow
     {
-        private int[] mVertexArrayObjectIDArray = new int[2];
-        private int[] mVertexBufferObjectIDArray = new int[2];
+        private int[] mVertexArrayObjectIDArray = new int[3];
+        private int[] mVertexBufferObjectIDArray = new int[3];
         private ShaderUtility mShader;
         private Matrix4 mSquareMatrix;
-        private Vector3 mCirclePosition;
-        private Vector3 mCircleVelocity;
-        private float mCircleRadius;
+        private Vector3 mCirclePosition, mCircleVelocity, mCirclePosition2, mCircleVelocity2;
+        private float mCircleRadius, mCircleRadius2;
         private Timer mTimer;
         Vector3 accelerationDueToGravity = new Vector3(0, -9.81f, 0);
 
@@ -101,8 +100,32 @@ namespace Labs.Lab4
             mCircleRadius = 0.2f;
             mCirclePosition = new Vector3(0, 2, 0);
             mCircleVelocity = new Vector3(2f, 2.0f, 0);
-            
+
             #endregion
+
+            #region circle 2
+
+            GL.BindVertexArray(mVertexArrayObjectIDArray[2]);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, mVertexBufferObjectIDArray[2]);
+
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertices.Length * sizeof(float)), vertices, BufferUsageHint.StaticDraw);
+
+            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
+
+            if (vertices.Length * sizeof(float) != size)
+            {
+                throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+            }
+
+            GL.EnableVertexAttribArray(vPositionLocation);
+            GL.VertexAttribPointer(vPositionLocation, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
+
+            mCircleRadius2 = 0.2f;
+            mCirclePosition2 = new Vector3(0, 2, 0);
+            mCircleVelocity2 = new Vector3(2f, 2.0f, 0);
+
+            #endregion
+
 
             int uViewLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
             Matrix4 m = Matrix4.CreateTranslation(0, 0, 0);
@@ -145,11 +168,10 @@ namespace Labs.Lab4
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             float timestep = mTimer.GetElapsedSeconds();
+
+            #region circle 1 collision with square 
+
             Vector3 oldPosition = mCirclePosition;
-
-
-
-
             // move the circle into square space by transforming it by inverse of square 1 matrix
             Vector4 circleInSquareSpace = Vector4.Transform(new Vector4(mCirclePosition, 1), mSquareMatrix.Inverted());
 
@@ -174,16 +196,43 @@ namespace Labs.Lab4
                 mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
             }
 
-
-
-
-
-
-
-
             mCirclePosition = mCirclePosition + mCircleVelocity * timestep;
             mCircleVelocity = mCircleVelocity + accelerationDueToGravity * timestep;
-            
+
+            #endregion
+
+            #region circle 2 collision with square
+
+            Vector3 oldPosition2 = mCirclePosition2;
+            Vector4 circleInSquareSpace2 = Vector4.Transform(new Vector4(mCirclePosition2, 1), mSquareMatrix.Inverted());
+
+            if (circleInSquareSpace2.X + (mCircleRadius2 / mSquareMatrix.ExtractScale().X) > 1) // right
+            {
+                Vector3 normal = Vector3.Transform(new Vector3(1, 0, 0), mSquareMatrix.ExtractRotation());
+                mCircleVelocity2 = mCircleVelocity2 - 2 * Vector3.Dot(normal, mCircleVelocity2) * normal;
+            }
+            if (circleInSquareSpace2.X - (mCircleRadius2 / mSquareMatrix.ExtractScale().X) < -1) // left
+            {
+                Vector3 normal = Vector3.Transform(new Vector3(-1, 0, 0), mSquareMatrix.ExtractRotation());
+                mCircleVelocity2 = mCircleVelocity2 - 2 * Vector3.Dot(normal, mCircleVelocity2) * normal;
+            }
+            if (circleInSquareSpace2.Y + (mCircleRadius2 / mSquareMatrix.ExtractScale().X) > 1) // top
+            {
+                Vector3 normal = Vector3.Transform(new Vector3(0, 1, 0), mSquareMatrix.ExtractRotation());
+                mCircleVelocity2 = mCircleVelocity2 - 2 * Vector3.Dot(normal, mCircleVelocity2) * normal;
+            }
+            if (circleInSquareSpace2.Y - (mCircleRadius2 / mSquareMatrix.ExtractScale().X) < -1) // bottom
+            {
+                Vector3 normal = Vector3.Transform(new Vector3(0, -1, 0), mSquareMatrix.ExtractRotation());
+                mCircleVelocity2 = mCircleVelocity2 - 2 * Vector3.Dot(normal, mCircleVelocity2) * normal;
+            }
+
+            mCirclePosition2 = mCirclePosition2 + mCircleVelocity2 * timestep;
+            mCircleVelocity2 = mCircleVelocity2 + accelerationDueToGravity * timestep;
+
+            #endregion
+
+
             base.OnUpdateFrame(e);
         }
 
@@ -204,14 +253,25 @@ namespace Labs.Lab4
 
             GL.Uniform4(uColourLocation, Color4.DodgerBlue);
 
+            // SQUARE 1
             GL.UniformMatrix4(uModelMatrixLocation, true, ref mSquareMatrix);
             GL.BindVertexArray(mVertexArrayObjectIDArray[0]);
             GL.DrawArrays(PrimitiveType.LineLoop, 0, 4);
 
+            // CIRCLE 1
             Matrix4 circleMatrix = Matrix4.CreateScale(mCircleRadius) * Matrix4.CreateTranslation(mCirclePosition);
 
             GL.UniformMatrix4(uModelMatrixLocation, true, ref circleMatrix);
             GL.BindVertexArray(mVertexArrayObjectIDArray[1]);
+            GL.DrawArrays(PrimitiveType.LineLoop, 0, 100);       
+
+            GL.Uniform4(uColourLocation, Color4.HotPink);
+
+            // CIRCLE 2
+            Matrix4 circleMatrix2 = Matrix4.CreateScale(mCircleRadius2) * Matrix4.CreateTranslation(mCirclePosition2);
+
+            GL.UniformMatrix4(uModelMatrixLocation, true, ref circleMatrix2);
+            GL.BindVertexArray(mVertexArrayObjectIDArray[2]);
             GL.DrawArrays(PrimitiveType.LineLoop, 0, 100);
 
             this.SwapBuffers();
