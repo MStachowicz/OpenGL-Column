@@ -227,9 +227,9 @@ namespace Labs.Lab4
                 mCircleVelocity2 = mCircleVelocity2 - 2 * Vector3.Dot(normal, mCircleVelocity2) * normal;
             }
 
-            mCirclePosition2 = mCirclePosition2 + mCircleVelocity2 * timestep;
-            mCircleVelocity2 = mCircleVelocity2 + accelerationDueToGravity * timestep;
 
+            mCircleVelocity2 = mCircleVelocity2 + accelerationDueToGravity * timestep;
+            mCirclePosition2 = mCirclePosition2 + mCircleVelocity2 * timestep;
             #endregion
 
 
