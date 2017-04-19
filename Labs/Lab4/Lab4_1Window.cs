@@ -127,7 +127,7 @@ namespace Labs.Lab4
             GL.UniformMatrix4(uViewLocation, true, ref m);
 
             // CIRCLE PROPERTIES
-            mCirclePosition = new Vector3(-2.0f, 0.0f, 0.0f);
+            mCirclePosition = new Vector3(-1.2f, 1.5f, 0.0f);
             mCircleVelocity = new Vector3(1.0f, 0.0f, 0.0f);
             mCircleRadius = 0.1f;
 
