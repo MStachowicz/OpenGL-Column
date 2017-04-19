@@ -94,7 +94,7 @@ namespace Labs.Lab4
             GL.VertexAttribPointer(vPositionLocation, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
 
             //mSquareMatrix2 = Matrix4.CreateScale(0.3f) * Matrix4.CreateRotationZ(0.0f) * Matrix4.CreateTranslation(-0.4f, 0.0f, 0);
-            mSquareMatrix2 = Matrix4.CreateScale(1f) * Matrix4.CreateRotationZ(0.0f) * Matrix4.CreateTranslation(0.0f, 0.0f, 0);
+            mSquareMatrix2 = Matrix4.CreateScale(1f) * Matrix4.CreateRotationZ(0.5f) * Matrix4.CreateTranslation(0.0f, 0.0f, 0);
 
             #endregion
 
@@ -128,7 +128,7 @@ namespace Labs.Lab4
 
             // CIRCLE PROPERTIES
             mCirclePosition = new Vector3(1.5f, 1.5f, 0.0f);
-            mCircleVelocity = new Vector3(-0.5f, -0.5f, 0.0f);
+            mCircleVelocity = new Vector3(-1.0f, -1.0f, 0.0f);
             mCircleRadius = 0.1f;
 
             #endregion
@@ -273,10 +273,11 @@ namespace Labs.Lab4
             base.OnUpdateFrame(e);
 
             float timestep = mTimer.GetElapsedSeconds();
+            mCirclePosition = mCirclePosition + mCircleVelocity * timestep; // move the circle on this update
 
-            #region Circle 1 collision with square
+            #region Circle 1 collision with square 1
 
-            mCirclePosition = mCirclePosition + mCircleVelocity * timestep;
+            // move the circle into square space by transforming it by inverse of square 1 matrix
             Vector4 circleInSquareSpace = Vector4.Transform(new Vector4(mCirclePosition, 1), mSquareMatrix.Inverted());
 
             if (circleInSquareSpace.X + (mCircleRadius / mSquareMatrix.ExtractScale().X) > 1) // right
@@ -316,61 +317,80 @@ namespace Labs.Lab4
 
             #endregion      
 
-            #region circle collision with outside of square 2
+            #region circle 1 collision with square 2 outside
+
+            // move the circle into square 2 space to perform collision detection
+            circleInSquareSpace = Vector4.Transform(new Vector4(mCirclePosition, 1), mSquareMatrix2.Inverted());
 
             // Square Vertices
-            Vector3 topLeft = new Vector3(-1.0f, 1.0f, 0.0f);
-            Vector3 bottomLeft = new Vector3(-1.0f, -1.0f, 0.0f);
-            Vector3 topRight = new Vector3(1.0f, 1.0f, 0.0f);
-            Vector3 bottomRight = new Vector3(1.0f, -1.0f, 0.0f);
+            Vector4 topLeft = new Vector4(-1.0f, 1.0f, 0.0f, 1f);
+            //topLeft = Vector4.Transform(topLeft, mSquareMatrix2.Inverted());
+            Vector4 bottomLeft = new Vector4(-1.0f, -1.0f, 0.0f, 1f);
+            //bottomLeft = Vector4.Transform(topLeft, mSquareMatrix2.Inverted());
+            Vector4 topRight = new Vector4(1.0f, 1.0f, 0.0f, 1f);
+            //topRight = Vector4.Transform(topLeft, mSquareMatrix2.Inverted());
+            Vector4 bottomRight = new Vector4(1.0f, -1.0f, 0.0f, 1f);
+            //bottomRight = Vector4.Transform(topLeft, mSquareMatrix2.Inverted());
 
-            Vector3 LineSegment;
+            Vector4 LineSegment;
+            Vector4 LineSegmentToCircle;
             float LineSegmentf;
 
             // LEFT
-            LineSegment = (Vector3.Dot((mCirclePosition - bottomLeft), (topLeft - bottomLeft).Normalized()) * (topLeft - bottomLeft).Normalized());
-            LineSegmentf = (Vector3.Dot((mCirclePosition - bottomLeft), (topLeft - bottomLeft).Normalized()));
-            Vector3 LineSegmentToCircle = bottomLeft + LineSegment - mCirclePosition;
+            LineSegment = (Vector4.Dot((circleInSquareSpace - bottomLeft), (topLeft - bottomLeft).Normalized()) * (topLeft - bottomLeft).Normalized());
+            LineSegmentf = (Vector4.Dot((circleInSquareSpace - bottomLeft), (topLeft - bottomLeft).Normalized()));
+            LineSegmentToCircle = bottomLeft + LineSegment - circleInSquareSpace;
             if (LineSegmentToCircle.Length < mCircleRadius)
             {
                 if (LineSegmentf > 0 && LineSegment.Length < (topLeft - bottomLeft).Length) // nested if checks if circle passing above the square
                 {
                     Vector3 normal = Vector3.Transform(new Vector3(-1, 0, 0), mSquareMatrix2.ExtractRotation());
+                   // mCircleVelocity = Vector3.Transform((mCircleVelocity), mSquareMatrix2.ExtractRotation().Inverted());
                     mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+                    //mCircleVelocity = Vector3.Transform(mCircleVelocity, mSquareMatrix2.ExtractRotation());
                 }
             }
             // TOP        
-            LineSegment = (Vector3.Dot((mCirclePosition - topLeft), (topRight - topLeft).Normalized()) * (topRight - topLeft).Normalized());
-            LineSegmentToCircle = topRight + LineSegment - mCirclePosition;
+            LineSegment = (Vector4.Dot((circleInSquareSpace - topLeft), (topRight - topLeft).Normalized()) * (topRight - topLeft).Normalized());
+            LineSegmentf = (Vector4.Dot((circleInSquareSpace - topLeft), (topRight - topLeft).Normalized()));
+            LineSegmentToCircle = topLeft + LineSegment - circleInSquareSpace;
             if (LineSegmentToCircle.Length < mCircleRadius)
             {
                 if (LineSegmentf > 0 && LineSegment.Length < (topRight - topLeft).Length)
                 {
                     Vector3 normal = Vector3.Transform(new Vector3(0, 1, 0), mSquareMatrix2.ExtractRotation());
+                   // mCircleVelocity = Vector3.Transform((mCircleVelocity), mSquareMatrix2.ExtractRotation().Inverted());
                     mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+                   // mCircleVelocity = Vector3.Transform(mCircleVelocity, mSquareMatrix2.ExtractRotation());
                 }
             }
             // RIGHT
-            LineSegment = (Vector3.Dot((mCirclePosition - bottomRight), (topRight - bottomRight).Normalized()) * (topRight - bottomRight).Normalized());
-            LineSegmentToCircle = bottomRight + LineSegment - mCirclePosition;
+            LineSegment = (Vector4.Dot((circleInSquareSpace - bottomRight), (topRight - bottomRight).Normalized()) * (topRight - bottomRight).Normalized());
+            LineSegmentf = (Vector4.Dot((circleInSquareSpace - bottomRight), (topRight - bottomRight).Normalized()));
+            LineSegmentToCircle = bottomRight + LineSegment - circleInSquareSpace;
             if (LineSegmentToCircle.Length < mCircleRadius)
             {
                 if (LineSegmentf > 0 && LineSegment.Length < (topRight - bottomRight).Length)
                 {
                     Vector3 normal = Vector3.Transform(new Vector3(1, 0, 0), mSquareMatrix2.ExtractRotation());
+                    //mCircleVelocity = Vector3.Transform((mCircleVelocity), mSquareMatrix2.ExtractRotation().Inverted());
                     mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+                   // mCircleVelocity = Vector3.Transform(mCircleVelocity, mSquareMatrix2.ExtractRotation());
                 }
             }
 
             // BOTTOM
-            LineSegment = (Vector3.Dot((mCirclePosition - bottomLeft), (bottomRight - bottomLeft).Normalized()) * (bottomRight - bottomLeft).Normalized());
-            LineSegmentToCircle = bottomLeft + LineSegment - mCirclePosition;
+            LineSegment = (Vector4.Dot((circleInSquareSpace - bottomLeft), (bottomRight - bottomLeft).Normalized()) * (bottomRight - bottomLeft).Normalized());
+            LineSegmentf = (Vector4.Dot((circleInSquareSpace - bottomLeft), (bottomRight - bottomLeft).Normalized()));
+            LineSegmentToCircle = bottomLeft + LineSegment - circleInSquareSpace;
             if (LineSegmentToCircle.Length < mCircleRadius)
             {
                 if (LineSegmentf > 0 && LineSegment.Length < (bottomRight - bottomLeft).Length)
                 {
                     Vector3 normal = Vector3.Transform(new Vector3(0, -1, 0), mSquareMatrix2.ExtractRotation());
+                    //mCircleVelocity = Vector3.Transform((mCircleVelocity), mSquareMatrix2.ExtractRotation().Inverted());
                     mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+                   // mCircleVelocity = Vector3.Transform(mCircleVelocity, mSquareMatrix2.ExtractRotation());
                 }
             }
 
@@ -381,46 +401,54 @@ namespace Labs.Lab4
             double cornerDistance;
 
             // TOP LEFT COLLISION
-            cornerX = mCirclePosition.X - topLeft.X;
-            cornerY = mCirclePosition.Y - topLeft.Y;
+            cornerX = circleInSquareSpace.X - topLeft.X;
+            cornerY = circleInSquareSpace.Y - topLeft.Y;
             cornerDistance = Math.Sqrt(Math.Pow(cornerX, 2) + Math.Pow(cornerY, 2));
 
             if (cornerDistance < mCircleRadius)
             {
                 Vector3 normal = (mCirclePosition - new Vector3((float)cornerX, (float)cornerY, 0)).Normalized();
+               // mCircleVelocity = Vector3.Transform((mCircleVelocity), mSquareMatrix2.ExtractRotation().Inverted());
                 mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+               // mCircleVelocity = Vector3.Transform(mCircleVelocity, mSquareMatrix2.ExtractRotation());
             }
-            
+
             // TOP RIGHT COLLISION
-            cornerX = mCirclePosition.X - topRight.X;
-            cornerY = mCirclePosition.Y - topRight.Y;
+            cornerX = circleInSquareSpace.X - topRight.X;
+            cornerY = circleInSquareSpace.Y - topRight.Y;
             cornerDistance = Math.Sqrt(Math.Pow(cornerX, 2) + Math.Pow(cornerY, 2));
 
             if (cornerDistance < mCircleRadius)
             {
                 Vector3 normal = (mCirclePosition - new Vector3((float)cornerX, (float)cornerY, 0)).Normalized();
+                //mCircleVelocity = Vector3.Transform((mCircleVelocity), mSquareMatrix2.ExtractRotation().Inverted());
                 mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+                //mCircleVelocity = Vector3.Transform(mCircleVelocity, mSquareMatrix2.ExtractRotation());
             }
 
             // BOTTOM RIGHT
-            cornerX = mCirclePosition.X - bottomRight.X;
-            cornerY = mCirclePosition.Y - bottomRight.Y;
+            cornerX = circleInSquareSpace.X - bottomRight.X;
+            cornerY = circleInSquareSpace.Y - bottomRight.Y;
             cornerDistance = Math.Sqrt(Math.Pow(cornerX, 2) + Math.Pow(cornerY, 2));
 
             if (cornerDistance < mCircleRadius)
             {
                 Vector3 normal = (mCirclePosition - new Vector3((float)cornerX, (float)cornerY, 0)).Normalized();
+                //mCircleVelocity = Vector3.Transform((mCircleVelocity), mSquareMatrix2.ExtractRotation().Inverted());
                 mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+                //mCircleVelocity = Vector3.Transform(mCircleVelocity, mSquareMatrix2.ExtractRotation());
             }
             // BOTTOM LEFT
-            cornerX = mCirclePosition.X - bottomLeft.X;
-            cornerY = mCirclePosition.Y - bottomLeft.Y;
+            cornerX = circleInSquareSpace.X - bottomLeft.X;
+            cornerY = circleInSquareSpace.Y - bottomLeft.Y;
             cornerDistance = Math.Sqrt(Math.Pow(cornerX, 2) + Math.Pow(cornerY, 2));
 
             if (cornerDistance < mCircleRadius)
             {
                 Vector3 normal = (mCirclePosition - new Vector3((float)cornerX, (float)cornerY, 0)).Normalized();
+                //mCircleVelocity = Vector3.Transform((mCircleVelocity), mSquareMatrix2.ExtractRotation().Inverted());
                 mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+                //mCircleVelocity = Vector3.Transform(mCircleVelocity, mSquareMatrix2.ExtractRotation());
             }
 
             #endregion

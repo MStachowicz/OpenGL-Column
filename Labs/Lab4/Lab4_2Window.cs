@@ -40,6 +40,9 @@ namespace Labs.Lab4
             int vPositionLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vPosition");
             GL.UseProgram(mShader.ShaderProgramID);
 
+
+            #region square
+
             float[] vertices = new float[] { 
                    -1f, -1f,
                    1f, -1f,
@@ -65,6 +68,11 @@ namespace Labs.Lab4
             GL.EnableVertexAttribArray(vPositionLocation);
             GL.VertexAttribPointer(vPositionLocation, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
 
+            mSquareMatrix = Matrix4.CreateScale(4f) * Matrix4.CreateRotationZ(0.0f) * Matrix4.CreateTranslation(0, 0, 0);
+            #endregion
+
+            #region circle
+
             vertices = new float[200];
 
             for (int i = 0; i < 100; ++i)
@@ -72,6 +80,7 @@ namespace Labs.Lab4
                 vertices[2 * i] = (float)Math.Cos(MathHelper.DegreesToRadians(i * 360.0 / 100));
                 vertices[2 * i + 1] = (float)Math.Cos(MathHelper.DegreesToRadians(90.0 + i * 360.0 / 100));
             }
+
 
             GL.BindVertexArray(mVertexArrayObjectIDArray[1]);
             GL.BindBuffer(BufferTarget.ArrayBuffer, mVertexBufferObjectIDArray[1]);
@@ -88,14 +97,15 @@ namespace Labs.Lab4
             GL.EnableVertexAttribArray(vPositionLocation);
             GL.VertexAttribPointer(vPositionLocation, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
 
+            mCircleRadius = 0.2f;
+            mCirclePosition = new Vector3(0, 2, 0);
+            mCircleVelocity = new Vector3(2f, 0, 0);
+            
+            #endregion
+
             int uViewLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
             Matrix4 m = Matrix4.CreateTranslation(0, 0, 0);
             GL.UniformMatrix4(uViewLocation, true, ref m);
-
-            mCircleRadius = 0.2f;
-            mCirclePosition = new Vector3(0, 2, 0);
-            mCircleVelocity = new Vector3(0, 0, 0);
-            mSquareMatrix = Matrix4.CreateScale(4f) * Matrix4.CreateRotationZ(0.0f) * Matrix4.CreateTranslation(0, 0, 0);
 
             base.OnLoad(e);
 
