@@ -16,6 +16,7 @@ namespace Labs.Lab4
         private Vector3 mCircleVelocity;
         private float mCircleRadius;
         private Timer mTimer;
+        Vector3 accelerationDueToGravity = new Vector3(0, -9.81f, 0);
 
         public Lab4_2Window()
             : base(
@@ -148,6 +149,7 @@ namespace Labs.Lab4
 
 
 
+
             // move the circle into square space by transforming it by inverse of square 1 matrix
             Vector4 circleInSquareSpace = Vector4.Transform(new Vector4(mCirclePosition, 1), mSquareMatrix.Inverted());
 
@@ -180,6 +182,7 @@ namespace Labs.Lab4
 
 
             mCirclePosition = mCirclePosition + mCircleVelocity * timestep;
+            mCircleVelocity = mCircleVelocity + accelerationDueToGravity * timestep;
             
             base.OnUpdateFrame(e);
         }
