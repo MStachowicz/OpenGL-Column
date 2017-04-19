@@ -8,13 +8,18 @@ namespace Labs.Lab4
 {
     public class Lab4_1Window : GameWindow
     {
-        private int[] mVertexArrayObjectIDArray = new int[3];
-        private int[] mVertexBufferObjectIDArray = new int[3];
         private ShaderUtility mShader;
-        private Matrix4 mSquareMatrix;
-        private Vector3 mCirclePosition, mCircleVelocity;
-        private Vector3 mCirclePosition2, mCircle2Velocity;
+
+        private int[] mVertexArrayObjectIDArray = new int[4];
+        private int[] mVertexBufferObjectIDArray = new int[4];
+
+        // 2 Squares
+        private Matrix4 mSquareMatrix, mSquareMatrix2;
+
+        // 2 Circles
+        private Vector3 mCirclePosition, mCircleVelocity, mCirclePosition2, mCircle2Velocity;
         private float mCircleRadius, mCircle2Radius;
+
         private Timer mTimer;
 
         public Lab4_1Window()
@@ -67,6 +72,28 @@ namespace Labs.Lab4
 
             GL.EnableVertexAttribArray(vPositionLocation);
             GL.VertexAttribPointer(vPositionLocation, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
+
+            mSquareMatrix = Matrix4.CreateScale(3f, 2f, 1f) * Matrix4.CreateRotationZ(0.5f) * Matrix4.CreateTranslation(0.5f, 0.5f, 0);
+
+            #endregion
+
+            #region Square 2
+
+            GL.BindVertexArray(mVertexArrayObjectIDArray[3]);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, mVertexBufferObjectIDArray[3]);
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertices.Length * sizeof(float)), vertices, BufferUsageHint.StaticDraw);
+
+            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
+
+            if (vertices.Length * sizeof(float) != size)
+            {
+                throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+            }
+
+            GL.EnableVertexAttribArray(vPositionLocation);
+            GL.VertexAttribPointer(vPositionLocation, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
+
+            mSquareMatrix2 = Matrix4.CreateScale(1f) * Matrix4.CreateRotationZ(0.0f) * Matrix4.CreateTranslation(0.0f, 0.0f, 0);
 
             #endregion
 
@@ -123,21 +150,11 @@ namespace Labs.Lab4
             m = Matrix4.CreateTranslation(0, 0, 0);
             GL.UniformMatrix4(uViewLocation, true, ref m);
 
-
-            mSquareMatrix = Matrix4.CreateScale(3f, 2f, 1f) * Matrix4.CreateRotationZ(0.5f) * Matrix4.CreateTranslation(0.5f, 0.5f, 0);
-            //Matrix4.CreateTranslation(0.0f, 1000.0f, 0);
-
-
-            mCirclePosition2 = new Vector3(-0.8f, 0.0f, 0.0f);
+            mCirclePosition2 = new Vector3(-6.8f, 0.0f, 0.0f);
             mCircle2Velocity = new Vector3(0.0f, 0.0f, 0.0f);
             mCircle2Radius = 0.4f;
 
             #endregion
-
-
-
-
-
 
 
             mTimer = new Timer();
@@ -199,6 +216,10 @@ namespace Labs.Lab4
             GL.BindVertexArray(mVertexArrayObjectIDArray[0]);
             GL.DrawArrays(PrimitiveType.LineLoop, 0, 4);
 
+            // Square 2
+            GL.UniformMatrix4(uModelMatrixLocation, true, ref mSquareMatrix2);
+            GL.BindVertexArray(mVertexArrayObjectIDArray[3]);
+            GL.DrawArrays(PrimitiveType.LineLoop, 0, 4);
 
             // Circle 1
             Matrix4 circleMatrix = Matrix4.CreateScale(mCircleRadius) * Matrix4.CreateTranslation(mCirclePosition);
@@ -212,13 +233,21 @@ namespace Labs.Lab4
             GL.BindVertexArray(mVertexArrayObjectIDArray[2]);
             GL.DrawArrays(PrimitiveType.LineLoop, 0, 100);
 
+
+
             // Following code redraws the scene in square space in red
             GL.Uniform4(uColourLocation, Color4.Red); // set to red
 
-            //Square
+            // Square
             Matrix4 m = mSquareMatrix * mSquareMatrix.Inverted();
             GL.UniformMatrix4(uModelMatrixLocation, true, ref m);
             GL.BindVertexArray(mVertexArrayObjectIDArray[0]);
+            GL.DrawArrays(PrimitiveType.LineLoop, 0, 4);
+           
+            // Square 2
+            m = mSquareMatrix2 * mSquareMatrix.Inverted();
+            GL.UniformMatrix4(uModelMatrixLocation, true, ref m);
+            GL.BindVertexArray(mVertexArrayObjectIDArray[3]);
             GL.DrawArrays(PrimitiveType.LineLoop, 0, 4);
 
             // Circle 1
@@ -230,8 +259,9 @@ namespace Labs.Lab4
             // Circle 2
             m = (Matrix4.CreateScale(mCircle2Radius) * Matrix4.CreateTranslation(mCirclePosition2)) * mSquareMatrix.Inverted();
             GL.UniformMatrix4(uModelMatrixLocation, true, ref m);
-            GL.BindVertexArray(mVertexArrayObjectIDArray[1]);
+            GL.BindVertexArray(mVertexArrayObjectIDArray[2]);
             GL.DrawArrays(PrimitiveType.LineLoop, 0, 100);
+
 
             this.SwapBuffers();
         }
@@ -267,11 +297,6 @@ namespace Labs.Lab4
                 Vector3 normal = Vector3.Transform(new Vector3(0, -1, 0), mSquareMatrix.ExtractRotation());
                 mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
             }
-
-
-
-
-
 
 
 
