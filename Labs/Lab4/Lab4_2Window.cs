@@ -196,8 +196,8 @@ namespace Labs.Lab4
                 mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
             }
 
-            mCirclePosition = mCirclePosition + mCircleVelocity * timestep;
             mCircleVelocity = mCircleVelocity + accelerationDueToGravity * timestep;
+            mCirclePosition = mCirclePosition + mCircleVelocity * timestep;
 
             #endregion
 
@@ -225,6 +225,25 @@ namespace Labs.Lab4
             {
                 Vector3 normal = Vector3.Transform(new Vector3(0, -1, 0), mSquareMatrix.ExtractRotation());
                 mCircleVelocity2 = mCircleVelocity2 - 2 * Vector3.Dot(normal, mCircleVelocity2) * normal;
+            }
+
+            #endregion
+
+            #region circle 1 collision with circle 2
+
+            double x = mCirclePosition.X - mCirclePosition2.X;
+            double y = mCirclePosition.Y - mCirclePosition2.Y;
+            double distance = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
+
+            if (distance < mCircleRadius + mCircleRadius2)
+            {
+                // change velocity of circle 1
+                Vector3 normal = (mCirclePosition - mCirclePosition2).Normalized();
+                mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+
+                // change velocity of circle 2
+                normal = (mCirclePosition2 - mCirclePosition).Normalized();
+                mCircleVelocity2 = mCircleVelocity2 - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
             }
 
 
