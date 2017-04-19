@@ -15,7 +15,7 @@ namespace Labs.Lab4
         private Vector3 mCirclePosition, mCircleVelocity, mCirclePosition2, mCircleVelocity2;
         private float mCircleRadius, mCircleRadius2;
         private Timer mTimer;
-        Vector3 accelerationDueToGravity = new Vector3(0, -9.81f, 0);
+        Vector3 accelerationDueToGravity = new Vector3(0, 0, 0);
 
         public Lab4_2Window()
             : base(
@@ -98,8 +98,8 @@ namespace Labs.Lab4
             GL.VertexAttribPointer(vPositionLocation, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
 
             mCircleRadius = 0.2f;
-            mCirclePosition = new Vector3(0, 2, 0);
-            mCircleVelocity = new Vector3(2f, 2.0f, 0);
+            mCirclePosition = new Vector3(-2.0f, 2.0f, 0.0f);
+            mCircleVelocity = new Vector3(2.0f, 0.0f, 0.0f);
 
             #endregion
 
@@ -121,8 +121,8 @@ namespace Labs.Lab4
             GL.VertexAttribPointer(vPositionLocation, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
 
             mCircleRadius2 = 0.2f;
-            mCirclePosition2 = new Vector3(0, 2, 0);
-            mCircleVelocity2 = new Vector3(2f, 2.0f, 0);
+            mCirclePosition2 = new Vector3(2.0f, 2.0f, 0.0f);
+            mCircleVelocity2 = new Vector3(0.0f, 0.0f, 0.0f);
 
             #endregion
 
