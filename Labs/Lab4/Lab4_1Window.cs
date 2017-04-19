@@ -13,7 +13,7 @@ namespace Labs.Lab4
         private ShaderUtility mShader;
         private Matrix4 mSquareMatrix;
         private Vector3 mCirclePosition, mCircleVelocity;
-        private Vector3 mCircle2Position, mCircle2Velocity;
+        private Vector3 mCirclePosition2, mCircle2Velocity;
         private float mCircleRadius, mCircle2Radius;
         private Timer mTimer;
 
@@ -128,7 +128,7 @@ namespace Labs.Lab4
             //Matrix4.CreateTranslation(0.0f, 1000.0f, 0);
 
 
-            mCircle2Position = new Vector3(-0.8f, 0.0f, 0.0f);
+            mCirclePosition2 = new Vector3(-0.8f, 0.0f, 0.0f);
             mCircle2Velocity = new Vector3(0.0f, 0.0f, 0.0f);
             mCircle2Radius = 0.4f;
 
@@ -207,7 +207,7 @@ namespace Labs.Lab4
             GL.DrawArrays(PrimitiveType.LineLoop, 0, 100);
 
             // Circle 2
-            Matrix4 circle2Matrix = Matrix4.CreateScale(mCircle2Radius) * Matrix4.CreateTranslation(mCircle2Position);
+            Matrix4 circle2Matrix = Matrix4.CreateScale(mCircle2Radius) * Matrix4.CreateTranslation(mCirclePosition2);
             GL.UniformMatrix4(uModelMatrixLocation, true, ref circle2Matrix);
             GL.BindVertexArray(mVertexArrayObjectIDArray[2]);
             GL.DrawArrays(PrimitiveType.LineLoop, 0, 100);
@@ -228,7 +228,7 @@ namespace Labs.Lab4
             GL.DrawArrays(PrimitiveType.LineLoop, 0, 100);
 
             // Circle 2
-            m = (Matrix4.CreateScale(mCircle2Radius) * Matrix4.CreateTranslation(mCircle2Position)) * mSquareMatrix.Inverted();
+            m = (Matrix4.CreateScale(mCircle2Radius) * Matrix4.CreateTranslation(mCirclePosition2)) * mSquareMatrix.Inverted();
             GL.UniformMatrix4(uModelMatrixLocation, true, ref m);
             GL.BindVertexArray(mVertexArrayObjectIDArray[1]);
             GL.DrawArrays(PrimitiveType.LineLoop, 0, 100);
@@ -268,17 +268,23 @@ namespace Labs.Lab4
                 mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
             }
 
-            Vector4 circle2InSquareSpace = Vector4.Transform(new Vector4(mCircle2Position, 1), mSquareMatrix.Inverted());
 
-            // Circle 1 collision with circle 2 making it stop
-            double x = mCirclePosition.X - mCircle2Position.X;
-            double y = mCirclePosition.Y - mCircle2Position.Y;
 
-            double distance = Math.Sqrt(Math.Pow(x,2) + Math.Pow(y, 2));
+
+
+
+
+
+
+            // Circle 1 collision with circle 2 
+            double x = mCirclePosition.X - mCirclePosition2.X;
+            double y = mCirclePosition.Y - mCirclePosition2.Y;
+            double distance = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2));
 
             if (distance < mCircleRadius + mCircle2Radius)
             {
-                mCircleVelocity = new Vector3(0.0f, 0.0f, 0.0f);
+                Vector3 normal = (mCirclePosition - mCirclePosition2).Normalized();
+                mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
             }
         }
 
