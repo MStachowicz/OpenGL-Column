@@ -99,7 +99,7 @@ namespace Labs.Lab4
 
             mCircleRadius = 0.2f;
             mCirclePosition = new Vector3(0, 2, 0);
-            mCircleVelocity = new Vector3(2f, 0, 0);
+            mCircleVelocity = new Vector3(2f, 2.0f, 0);
             
             #endregion
 
@@ -145,6 +145,40 @@ namespace Labs.Lab4
         {
             float timestep = mTimer.GetElapsedSeconds();
             Vector3 oldPosition = mCirclePosition;
+
+
+
+            // move the circle into square space by transforming it by inverse of square 1 matrix
+            Vector4 circleInSquareSpace = Vector4.Transform(new Vector4(mCirclePosition, 1), mSquareMatrix.Inverted());
+
+            if (circleInSquareSpace.X + (mCircleRadius / mSquareMatrix.ExtractScale().X) > 1) // right
+            {
+                Vector3 normal = Vector3.Transform(new Vector3(1, 0, 0), mSquareMatrix.ExtractRotation());
+                mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+            }
+            if (circleInSquareSpace.X - (mCircleRadius / mSquareMatrix.ExtractScale().X) < -1) // left
+            {
+                Vector3 normal = Vector3.Transform(new Vector3(-1, 0, 0), mSquareMatrix.ExtractRotation());
+                mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+            }
+            if (circleInSquareSpace.Y + (mCircleRadius / mSquareMatrix.ExtractScale().X) > 1) // top
+            {
+                Vector3 normal = Vector3.Transform(new Vector3(0, 1, 0), mSquareMatrix.ExtractRotation());
+                mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+            }
+            if (circleInSquareSpace.Y - (mCircleRadius / mSquareMatrix.ExtractScale().X) < -1) // bottom
+            {
+                Vector3 normal = Vector3.Transform(new Vector3(0, -1, 0), mSquareMatrix.ExtractRotation());
+                mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+            }
+
+
+
+
+
+
+
+
             mCirclePosition = mCirclePosition + mCircleVelocity * timestep;
             
             base.OnUpdateFrame(e);
