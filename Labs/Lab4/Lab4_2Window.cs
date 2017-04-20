@@ -120,7 +120,7 @@ namespace Labs.Lab4
             GL.EnableVertexAttribArray(vPositionLocation);
             GL.VertexAttribPointer(vPositionLocation, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
 
-            mCircleRadius2 = 0.2f;
+            mCircleRadius2 = 0.4f;
             mCirclePosition2 = new Vector3(2.0f, -2.0f, 0.0f);
             mCircleVelocity2 = new Vector3(0.0f, 2.0f, 0.0f);
 
