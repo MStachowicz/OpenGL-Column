@@ -13,9 +13,10 @@ namespace Labs.Lab4
         private ShaderUtility mShader;
         private Matrix4 mSquareMatrix;
         private Vector3 mCirclePosition, mCircleVelocity, mCirclePosition2, mCircleVelocity2;
-        private float mCircleRadius, mCircleRadius2;
+        private float mCircleRadius, mCircleRadius2, mCircleVolume, mCircleVolume2, mCircleMass, mCircleMass2;
         private Timer mTimer;
-        Vector3 accelerationDueToGravity = new Vector3(0, -9.81f, 0);
+        Vector3 accelerationDueToGravity = new Vector3(0, 0, 0);
+        float steelDensity = 7.8f;
 
         public Lab4_2Window()
             : base(
@@ -98,8 +99,10 @@ namespace Labs.Lab4
             GL.VertexAttribPointer(vPositionLocation, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
 
             mCircleRadius = 0.2f;
-            mCirclePosition = new Vector3(-2.0f, 2.0f, 0.0f);
-            mCircleVelocity = new Vector3(2.0f, 0.0f, 0.0f);
+            mCirclePosition = new Vector3(-2.5f, 2.0f, 0.0f);
+            mCircleVelocity = new Vector3(1.0f, 0.0f, 0.0f);
+            mCircleVolume = (4 / 3) * (float)Math.PI * (float)Math.Pow(mCircleRadius, 3);
+            mCircleMass = steelDensity * mCircleVolume;
 
             #endregion
 
@@ -120,9 +123,11 @@ namespace Labs.Lab4
             GL.EnableVertexAttribArray(vPositionLocation);
             GL.VertexAttribPointer(vPositionLocation, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
 
-            mCircleRadius2 = 0.4f;
-            mCirclePosition2 = new Vector3(2.0f, -2.0f, 0.0f);
-            mCircleVelocity2 = new Vector3(0.0f, 2.0f, 0.0f);
+            mCircleRadius2 = 0.7f;
+            mCirclePosition2 = new Vector3(0.0f, 2.0f, 0.0f);
+            mCircleVelocity2 = new Vector3(-1.0f, 0.0f, 0.0f);
+            mCircleVolume2 = (4 / 3) * (float)Math.PI * (float)Math.Pow(mCircleRadius2, 3);
+            mCircleMass2 = steelDensity * mCircleVolume2;
 
             #endregion
 
@@ -251,47 +256,33 @@ namespace Labs.Lab4
 
             if (distance < mCircleRadius + mCircleRadius2)
             {
-                //// change velocity of circle 1
-                //Vector3 normal = (mCirclePosition - mCirclePosition2).Normalized();
-                //mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
-                ////mCircleVelocity = new Vector3(0.0f, 0.0f, 0.0f);
+                Vector3 circle1Momentumbefore = mCircleMass * mCircleVelocity;
+                Vector3 circle2Momentumbefore = mCircleMass2 * mCircleVelocity2;
+                Vector3 totalmomentumbefore = circle1Momentumbefore + circle2Momentumbefore;
 
-                //// change velocity of circle 2
-                //normal = (mCirclePosition2 - mCirclePosition).Normalized();
-                //mCircleVelocity2 = mCircleVelocity2 - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;         
-                ////mCircleVelocity2 = new Vector3(0.0f,0.0f,0.0f);
+                //Vector3 collisionDirection = (mCirclePosition2 - mCirclePosition).Normalized();
 
-                Vector3 collisionDirection = (mCirclePosition2 - mCirclePosition).Normalized();
+                //Vector3 m = Vector3.Dot(mCircleVelocity, collisionDirection ) * collisionDirection;
+                //Vector3 m1 = Vector3.Dot(mCircleVelocity2, -collisionDirection) * -collisionDirection;
 
-                Vector3 m = Vector3.Dot(mCircleVelocity, collisionDirection ) * collisionDirection;
+                //Vector3 circleVelocityBeforeCollision = mCircleVelocity;
+                //Vector3 circleVelocityBeforeCollision2 = mCircleVelocity2;
 
-                Vector3 m1 = Vector3.Dot(mCircleVelocity2, -collisionDirection) * -collisionDirection;
-                mCircleVelocity = 
+                Vector3 m1 = mCircleVelocity;
+                //mCircleVelocity2 = m;
 
-
-                mCircleVelocity = m1;
-                mCircleVelocity2 = m;
+                // mass adjustment
+                mCircleVelocity = (((mCircleMass - mCircleMass2) / (mCircleMass + mCircleMass2)) * mCircleVelocity) + (((2 * mCircleMass2) / (mCircleMass + mCircleMass2)) * mCircleVelocity2);
+                mCircleVelocity2 = (((mCircleMass2 - mCircleMass) / (mCircleMass2 + mCircleMass)) * mCircleVelocity2) + (((2 * mCircleMass) / (mCircleMass2 + mCircleMass)) * m1);
 
 
-
-
-
-
+                Vector3 circle1Momentumafter = mCircleMass * mCircleVelocity;
+                Vector3 circle2Momentumafter = mCircleMass2 * mCircleVelocity2;
+                Vector3 totalmomentumafter = circle1Momentumafter + circle2Momentumafter;
+           }
 
 
 
-
-
-
-
-
-                //Vector3 temp = mCircleVelocity;
-                //mCircleVelocity = mCircleVelocity2;
-                //mCircleVelocity2 = temp;
-            }
-
-
-            
             #endregion
 
 
