@@ -15,7 +15,7 @@ namespace Labs.Lab4
         private Vector3 mCirclePosition, mCircleVelocity, mCirclePosition2, mCircleVelocity2;
         private float mCircleRadius, mCircleRadius2;
         private Timer mTimer;
-        Vector3 accelerationDueToGravity = new Vector3(0, 0, 0);
+        Vector3 accelerationDueToGravity = new Vector3(0, -9.81f, 0);
 
         public Lab4_2Window()
             : base(
@@ -98,7 +98,7 @@ namespace Labs.Lab4
             GL.VertexAttribPointer(vPositionLocation, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
 
             mCircleRadius = 0.2f;
-            mCirclePosition = new Vector3(-2.0f, 2.3f, 0.0f);
+            mCirclePosition = new Vector3(-2.0f, 2.0f, 0.0f);
             mCircleVelocity = new Vector3(2.0f, 0.0f, 0.0f);
 
             #endregion
@@ -121,8 +121,8 @@ namespace Labs.Lab4
             GL.VertexAttribPointer(vPositionLocation, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
 
             mCircleRadius2 = 0.2f;
-            mCirclePosition2 = new Vector3(2.0f, 2.0f, 0.0f);
-            mCircleVelocity2 = new Vector3(0.0f, 0.0f, 0.0f);
+            mCirclePosition2 = new Vector3(2.0f, -2.0f, 0.0f);
+            mCircleVelocity2 = new Vector3(0.0f, 2.0f, 0.0f);
 
             #endregion
 
@@ -179,9 +179,9 @@ namespace Labs.Lab4
             Vector4 circleInSquareSpace = Vector4.Transform(new Vector4(mCirclePosition, 1), mSquareMatrix.Inverted());
 
 
-            Vector3 nextCircleVelocity = mCircleVelocity + accelerationDueToGravity * timestep * framesAheadToCheck;
-            Vector3 nextPosition = mCirclePosition + nextCircleVelocity * timestep * framesAheadToCheck;
-            Vector4 nextPositionInSquareSpace = Vector4.Transform(new Vector4(nextPosition, 1), mSquareMatrix.Inverted());
+            //Vector3 nextCircleVelocity = mCircleVelocity + accelerationDueToGravity * timestep * framesAheadToCheck;
+            //Vector3 nextPosition = mCirclePosition + nextCircleVelocity * timestep * framesAheadToCheck;
+            //Vector4 nextPositionInSquareSpace = Vector4.Transform(new Vector4(nextPosition, 1), mSquareMatrix.Inverted());
 
             if (circleInSquareSpace.X + (mCircleRadius / mSquareMatrix.ExtractScale().X) > 1) // right
             {
@@ -216,9 +216,9 @@ namespace Labs.Lab4
             Vector4 circleInSquareSpace2 = Vector4.Transform(new Vector4(mCirclePosition2, 1), mSquareMatrix.Inverted());
 
 
-            Vector3 nextCircleVelocity2 = mCircleVelocity2 + accelerationDueToGravity * framesAheadToCheck;
-            Vector3 nextPosition2 = mCirclePosition2 + nextCircleVelocity2 * timestep * framesAheadToCheck;
-            Vector4 nextPositionInSquareSpace2 = Vector4.Transform(new Vector4(nextPosition, 1), mSquareMatrix.Inverted());
+            //Vector3 nextCircleVelocity2 = mCircleVelocity2 + accelerationDueToGravity * framesAheadToCheck;
+            //Vector3 nextPosition2 = mCirclePosition2 + nextCircleVelocity2 * timestep * framesAheadToCheck;
+            //Vector4 nextPositionInSquareSpace2 = Vector4.Transform(new Vector4(nextPosition2, 1), mSquareMatrix.Inverted());
 
             if (circleInSquareSpace2.X + (mCircleRadius2 / mSquareMatrix.ExtractScale().X) > 1) // right
             {
@@ -261,11 +261,27 @@ namespace Labs.Lab4
                 //mCircleVelocity2 = mCircleVelocity2 - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;         
                 ////mCircleVelocity2 = new Vector3(0.0f,0.0f,0.0f);
 
-                Vector3 n = (mCirclePosition2 - mCirclePosition).Normalized();
-                Vector3 m = Vector3.Dot(mCircleVelocity, n ) * n;
+                Vector3 collisionDirection = (mCirclePosition2 - mCirclePosition).Normalized();
 
+                Vector3 m = Vector3.Dot(mCircleVelocity, collisionDirection ) * collisionDirection;
+
+                Vector3 m1 = Vector3.Dot(mCircleVelocity2, -collisionDirection) * -collisionDirection;
+                mCircleVelocity = 
+
+
+                mCircleVelocity = m1;
                 mCircleVelocity2 = m;
-                mCircleVelocity = mCircleVelocity - m;
+
+
+
+
+
+
+
+
+
+
+
 
 
 
