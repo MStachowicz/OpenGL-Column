@@ -98,7 +98,7 @@ namespace Labs.Lab4
             GL.VertexAttribPointer(vPositionLocation, 2, VertexAttribPointerType.Float, false, 2 * sizeof(float), 0);
 
             mCircleRadius = 0.2f;
-            mCirclePosition = new Vector3(-2.0f, 2.0f, 0.0f);
+            mCirclePosition = new Vector3(-2.0f, 2.3f, 0.0f);
             mCircleVelocity = new Vector3(2.0f, 0.0f, 0.0f);
 
             #endregion
@@ -261,9 +261,17 @@ namespace Labs.Lab4
                 //mCircleVelocity2 = mCircleVelocity2 - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;         
                 ////mCircleVelocity2 = new Vector3(0.0f,0.0f,0.0f);
 
-                Vector3 temp = mCircleVelocity;
-                mCircleVelocity = mCircleVelocity2;
-                mCircleVelocity2 = temp;
+                Vector3 n = (mCirclePosition2 - mCirclePosition).Normalized();
+                Vector3 m = Vector3.Dot(mCircleVelocity, n ) * n;
+
+                mCircleVelocity2 = m;
+                mCircleVelocity = mCircleVelocity - m;
+
+
+
+                //Vector3 temp = mCircleVelocity;
+                //mCircleVelocity = mCircleVelocity2;
+                //mCircleVelocity2 = temp;
             }
 
 
