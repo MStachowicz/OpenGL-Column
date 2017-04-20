@@ -36,7 +36,7 @@ namespace Labs.Lab3
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.CullFace);
 
-            // mShader = new ShaderUtility(@"Lab3/Shaders/vLighting.vert", @"Lab3/Shaders/fPassThrough.frag");
+
             mShader = new ShaderUtility(@"Lab3/Shaders/vPassThrough.vert", @"Lab3/Shaders/fLighting.frag");
             GL.UseProgram(mShader.ShaderProgramID);
             int vPositionLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vPosition");
@@ -254,12 +254,7 @@ namespace Labs.Lab3
             Vector3 SpecularColour2 = new Vector3(0.0f, 0.0f, SpecularIntensity);
             GL.Uniform3(uSpecularLightLocation2, SpecularColour2);
             #endregion
-
-
-            //int uAmbientLightLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[0].AmbientLight");
-            //Vector3 colour = new Vector3(0.1f, 0.0f, 0.0f);
-            //GL.Uniform3(uAmbientLightLocation, colour);
-
+     
             base.OnLoad(e);
         }
 

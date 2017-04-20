@@ -64,6 +64,9 @@
     <Compile Include="Utility\ShaderUtility.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ACW\fragmentShader.frag" />
+    <None Include="ACW\Shaders\fragmentShader.frag" />
+    <None Include="ACW\Shaders\vertexShader.vert" />
     <None Include="App.config" />
     <None Include="Lab2\Shaders\fSimple.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -116,7 +119,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="ACW\Shaders\" />
     <Folder Include="Challenge\Shaders\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
