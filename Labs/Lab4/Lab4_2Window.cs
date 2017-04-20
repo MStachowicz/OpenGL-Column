@@ -168,12 +168,20 @@ namespace Labs.Lab4
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             float timestep = mTimer.GetElapsedSeconds();
+            int framesAheadToCheck = 10;
 
             #region circle 1 collision with square 
 
             Vector3 oldPosition = mCirclePosition;
+            mCircleVelocity = mCircleVelocity + accelerationDueToGravity * timestep;
+            mCirclePosition = mCirclePosition + mCircleVelocity * timestep;
             // move the circle into square space by transforming it by inverse of square 1 matrix
             Vector4 circleInSquareSpace = Vector4.Transform(new Vector4(mCirclePosition, 1), mSquareMatrix.Inverted());
+
+
+            Vector3 nextCircleVelocity = mCircleVelocity + accelerationDueToGravity * timestep * framesAheadToCheck;
+            Vector3 nextPosition = mCirclePosition + nextCircleVelocity * timestep * framesAheadToCheck;
+            Vector4 nextPositionInSquareSpace = Vector4.Transform(new Vector4(nextPosition, 1), mSquareMatrix.Inverted());
 
             if (circleInSquareSpace.X + (mCircleRadius / mSquareMatrix.ExtractScale().X) > 1) // right
             {
@@ -196,15 +204,21 @@ namespace Labs.Lab4
                 mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
             }
 
-            mCircleVelocity = mCircleVelocity + accelerationDueToGravity * timestep;
-            mCirclePosition = mCirclePosition + mCircleVelocity * timestep;
+            
 
             #endregion
 
             #region circle 2 collision with square
 
             Vector3 oldPosition2 = mCirclePosition2;
+            mCircleVelocity2 = mCircleVelocity2 + accelerationDueToGravity * timestep;
+            mCirclePosition2 = mCirclePosition2 + mCircleVelocity2 * timestep;
             Vector4 circleInSquareSpace2 = Vector4.Transform(new Vector4(mCirclePosition2, 1), mSquareMatrix.Inverted());
+
+
+            Vector3 nextCircleVelocity2 = mCircleVelocity2 + accelerationDueToGravity * framesAheadToCheck;
+            Vector3 nextPosition2 = mCirclePosition2 + nextCircleVelocity2 * timestep * framesAheadToCheck;
+            Vector4 nextPositionInSquareSpace2 = Vector4.Transform(new Vector4(nextPosition, 1), mSquareMatrix.Inverted());
 
             if (circleInSquareSpace2.X + (mCircleRadius2 / mSquareMatrix.ExtractScale().X) > 1) // right
             {
@@ -237,20 +251,23 @@ namespace Labs.Lab4
 
             if (distance < mCircleRadius + mCircleRadius2)
             {
-                // change velocity of circle 1
-                Vector3 normal = (mCirclePosition - mCirclePosition2).Normalized();
-                mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
-                //mCircleVelocity = new Vector3(0.0f, 0.0f, 0.0f);
+                //// change velocity of circle 1
+                //Vector3 normal = (mCirclePosition - mCirclePosition2).Normalized();
+                //mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+                ////mCircleVelocity = new Vector3(0.0f, 0.0f, 0.0f);
 
-                // change velocity of circle 2
-                normal = (mCirclePosition2 - mCirclePosition).Normalized();
-                mCircleVelocity2 = mCircleVelocity2 - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
-                //mCircleVelocity2 = new Vector3(0.0f,0.0f,0.0f);
+                //// change velocity of circle 2
+                //normal = (mCirclePosition2 - mCirclePosition).Normalized();
+                //mCircleVelocity2 = mCircleVelocity2 - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;         
+                ////mCircleVelocity2 = new Vector3(0.0f,0.0f,0.0f);
+
+                Vector3 temp = mCircleVelocity;
+                mCircleVelocity = mCircleVelocity2;
+                mCircleVelocity2 = temp;
             }
 
 
-            mCircleVelocity2 = mCircleVelocity2 + accelerationDueToGravity * timestep;
-            mCirclePosition2 = mCirclePosition2 + mCircleVelocity2 * timestep;
+            
             #endregion
 
 
