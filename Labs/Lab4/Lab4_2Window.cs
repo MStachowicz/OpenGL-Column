@@ -274,9 +274,13 @@ namespace Labs.Lab4
                 //mCircleVelocity2 = m;
 
                 // mass adjustment
-                mCircleVelocity = (((mCircleMass - mCircleMass2) / (mCircleMass + mCircleMass2)) * mCircleVelocity) + (((2 * mCircleMass2) / (mCircleMass + mCircleMass2)) * mCircleVelocity2);
-                mCircleVelocity2 = (((mCircleMass2 - mCircleMass) / (mCircleMass2 + mCircleMass)) * mCircleVelocity2) + (((2 * mCircleMass) / (mCircleMass2 + mCircleMass)) * m1);
+                //mCircleVelocity = (((mCircleMass - mCircleMass2) / (mCircleMass + mCircleMass2)) * mCircleVelocity) + (((2 * mCircleMass2) / (mCircleMass + mCircleMass2)) * mCircleVelocity2);
+                //mCircleVelocity2 = (((mCircleMass2 - mCircleMass) / (mCircleMass2 + mCircleMass)) * mCircleVelocity2) + (((2 * mCircleMass) / (mCircleMass2 + mCircleMass)) * m1);
 
+                float restitution = 0.5f;
+
+                mCircleVelocity = ((mCircleMass * mCircleVelocity) + (mCircleMass2 * mCircleVelocity2) + (restitution * mCircleMass2 * (mCircleVelocity2 - mCircleVelocity))) / (mCircleMass + mCircleMass2);
+                mCircleVelocity2 = ((mCircleMass2 * mCircleVelocity2) + (mCircleMass * m1) + (restitution * mCircleMass * (m1 - mCircleVelocity2))) / (mCircleMass2 + mCircleMass);
 
                 Vector3 circle1Momentumafter = mCircleMass * mCircleVelocity;
                 Vector3 circle2Momentumafter = mCircleMass2 * mCircleVelocity2;
