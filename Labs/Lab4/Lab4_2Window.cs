@@ -16,7 +16,7 @@ namespace Labs.Lab4
         private float mCircleRadius, mCircleRadius2, mCircleVolume, mCircleVolume2, mCircleMass, mCircleMass2, mCircleDensity, mCircleDensity2;
         private Timer mTimer;
         Vector3 accelerationDueToGravity = new Vector3(0, -9.81f, 0);
-        float steelDensity = 7.8f;
+        float restitution = 0.7f;
 
         public Lab4_2Window()
             : base(
@@ -193,25 +193,25 @@ namespace Labs.Lab4
             if (circleInSquareSpace.X + (mCircleRadius / mSquareMatrix.ExtractScale().X) > 1) // right
             {
                 Vector3 normal = Vector3.Transform(new Vector3(1, 0, 0), mSquareMatrix.ExtractRotation());
-                mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+                mCircleVelocity = mCircleVelocity - (1 + restitution) * Vector3.Dot(normal, mCircleVelocity) * normal;
             }
             if (circleInSquareSpace.X - (mCircleRadius / mSquareMatrix.ExtractScale().X) < -1) // left
             {
                 Vector3 normal = Vector3.Transform(new Vector3(-1, 0, 0), mSquareMatrix.ExtractRotation());
-                mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+                mCircleVelocity = mCircleVelocity - (1 + restitution) * Vector3.Dot(normal, mCircleVelocity) * normal;
             }
             if (circleInSquareSpace.Y + (mCircleRadius / mSquareMatrix.ExtractScale().X) > 1) // top
             {
                 Vector3 normal = Vector3.Transform(new Vector3(0, 1, 0), mSquareMatrix.ExtractRotation());
-                mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+                mCircleVelocity = mCircleVelocity - (1 + restitution) * Vector3.Dot(normal, mCircleVelocity) * normal;
             }
             if (circleInSquareSpace.Y - (mCircleRadius / mSquareMatrix.ExtractScale().X) < -1) // bottom
             {
                 Vector3 normal = Vector3.Transform(new Vector3(0, -1, 0), mSquareMatrix.ExtractRotation());
-                mCircleVelocity = mCircleVelocity - 2 * Vector3.Dot(normal, mCircleVelocity) * normal;
+                mCircleVelocity = mCircleVelocity - (1 + restitution) * Vector3.Dot(normal, mCircleVelocity) * normal;
             }
 
-            
+
 
             #endregion
 
@@ -230,22 +230,22 @@ namespace Labs.Lab4
             if (circleInSquareSpace2.X + (mCircleRadius2 / mSquareMatrix.ExtractScale().X) > 1) // right
             {
                 Vector3 normal = Vector3.Transform(new Vector3(1, 0, 0), mSquareMatrix.ExtractRotation());
-                mCircleVelocity2 = mCircleVelocity2 - 2 * Vector3.Dot(normal, mCircleVelocity2) * normal;
+                mCircleVelocity2 = mCircleVelocity2 - (1 + restitution) * Vector3.Dot(normal, mCircleVelocity2) * normal;
             }
             if (circleInSquareSpace2.X - (mCircleRadius2 / mSquareMatrix.ExtractScale().X) < -1) // left
             {
                 Vector3 normal = Vector3.Transform(new Vector3(-1, 0, 0), mSquareMatrix.ExtractRotation());
-                mCircleVelocity2 = mCircleVelocity2 - 2 * Vector3.Dot(normal, mCircleVelocity2) * normal;
+                mCircleVelocity2 = mCircleVelocity2 - (1 + restitution) * Vector3.Dot(normal, mCircleVelocity2) * normal;
             }
             if (circleInSquareSpace2.Y + (mCircleRadius2 / mSquareMatrix.ExtractScale().X) > 1) // top
             {
                 Vector3 normal = Vector3.Transform(new Vector3(0, 1, 0), mSquareMatrix.ExtractRotation());
-                mCircleVelocity2 = mCircleVelocity2 - 2 * Vector3.Dot(normal, mCircleVelocity2) * normal;
+                mCircleVelocity2 = mCircleVelocity2 - (1 + restitution) * Vector3.Dot(normal, mCircleVelocity2) * normal;
             }
             if (circleInSquareSpace2.Y - (mCircleRadius2 / mSquareMatrix.ExtractScale().X) < -1) // bottom
             {
                 Vector3 normal = Vector3.Transform(new Vector3(0, -1, 0), mSquareMatrix.ExtractRotation());
-                mCircleVelocity2 = mCircleVelocity2 - 2 * Vector3.Dot(normal, mCircleVelocity2) * normal;
+                mCircleVelocity2 = mCircleVelocity2 - (1 + restitution) * Vector3.Dot(normal, mCircleVelocity2) * normal;
             }
 
             #endregion
@@ -261,23 +261,8 @@ namespace Labs.Lab4
                 Vector3 circle1Momentumbefore = mCircleMass * mCircleVelocity;
                 Vector3 circle2Momentumbefore = mCircleMass2 * mCircleVelocity2;
                 Vector3 totalmomentumbefore = circle1Momentumbefore + circle2Momentumbefore;
-
-                //Vector3 collisionDirection = (mCirclePosition2 - mCirclePosition).Normalized();
-
-                //Vector3 m = Vector3.Dot(mCircleVelocity, collisionDirection ) * collisionDirection;
-                //Vector3 m1 = Vector3.Dot(mCircleVelocity2, -collisionDirection) * -collisionDirection;
-
-                //Vector3 circleVelocityBeforeCollision = mCircleVelocity;
-                //Vector3 circleVelocityBeforeCollision2 = mCircleVelocity2;
-
+            
                 Vector3 m1 = mCircleVelocity;
-                //mCircleVelocity2 = m;
-
-                // mass adjustment
-                //mCircleVelocity = (((mCircleMass - mCircleMass2) / (mCircleMass + mCircleMass2)) * mCircleVelocity) + (((2 * mCircleMass2) / (mCircleMass + mCircleMass2)) * mCircleVelocity2);
-                //mCircleVelocity2 = (((mCircleMass2 - mCircleMass) / (mCircleMass2 + mCircleMass)) * mCircleVelocity2) + (((2 * mCircleMass) / (mCircleMass2 + mCircleMass)) * m1);
-
-                float restitution = 0.5f;
 
                 mCircleVelocity = ((mCircleMass * mCircleVelocity) + (mCircleMass2 * mCircleVelocity2) + (restitution * mCircleMass2 * (mCircleVelocity2 - mCircleVelocity))) / (mCircleMass + mCircleMass2);
                 mCircleVelocity2 = ((mCircleMass2 * mCircleVelocity2) + (mCircleMass * m1) + (restitution * mCircleMass * (m1 - mCircleVelocity2))) / (mCircleMass2 + mCircleMass);
@@ -287,10 +272,7 @@ namespace Labs.Lab4
                 Vector3 totalmomentumafter = circle1Momentumafter + circle2Momentumafter;
            }
 
-
-
             #endregion
-
 
             base.OnUpdateFrame(e);
         }
