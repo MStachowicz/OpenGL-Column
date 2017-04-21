@@ -37,6 +37,10 @@ namespace Labs.ACW
         private float mSphereRadius, mSphereVolume, mSphereMass, mSphereDensity;
         private Vector3 mSpherePosition, mSphereVelocity;
 
+
+        private Timer mTimer;
+
+
         protected override void OnLoad(EventArgs e)
         {
             // Set some GL state
@@ -196,9 +200,9 @@ namespace Labs.ACW
             // SPHERE PROPERTIES
             mSphereScale = Matrix4.CreateScale(2.0f);
             mSphereModel = Matrix4.CreateTranslation(0, 1, -5f);
-
-            mSphereRadius = 0.2f;
-            mSpherePosition = new Vector3(-2.0f, 2.0f, 0.0f);
+            
+            mSphereRadius = 1f; // TODO check if this value
+            mSpherePosition = mSphereModel.ExtractTranslation(); //new Vector3(-2.0f, 2.0f, 0.0f);
             mSphereVelocity = new Vector3(2.0f, 0.0f, 0.0f);
             mSphereVolume = (4 / 3) * (float)Math.PI * (float)Math.Pow(mSphereRadius, 3);
             mSphereDensity = 1f;
@@ -210,7 +214,12 @@ namespace Labs.ACW
             #endregion
 
 
-            GL.BindVertexArray(0);        
+            GL.BindVertexArray(0);
+
+
+            mTimer = new Timer();
+            mTimer.Start();
+
 
             base.OnLoad(e);
         }
@@ -236,7 +245,12 @@ namespace Labs.ACW
 
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
-            
+            float timestep = mTimer.GetElapsedSeconds();
+
+
+
+
+
 
             base.OnUpdateFrame(e);
         }
@@ -314,6 +328,27 @@ namespace Labs.ACW
             GL.DeleteVertexArrays(mVAO_IDs.Length, mVAO_IDs);
             mShader.Delete();
             base.OnUnload(e);
+        }
+    }
+
+    public class Timer
+    {
+        DateTime mLastTime;
+
+        public Timer()
+        { }
+
+        public void Start()
+        {
+            mLastTime = DateTime.Now;
+        }
+
+        public float GetElapsedSeconds()
+        {
+            DateTime now = DateTime.Now;
+            TimeSpan elasped = now - mLastTime;
+            mLastTime = now;
+            return (float)elasped.Ticks / TimeSpan.TicksPerSecond;
         }
     }
 }
