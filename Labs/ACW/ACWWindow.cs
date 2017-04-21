@@ -26,19 +26,22 @@ namespace Labs.ACW
         private ShaderUtility mShader;
         private ModelUtility mSphereModelUtility;
 
-        private Matrix4 mView, mSphereModel, mSphereScale, mGroundModel;
+        private Matrix4 mView;
 
         private int[] mVAO_IDs = new int[2];
         private int[] mVBO_IDs = new int[3];
 
-        Vector3 accelerationDueToGravity = new Vector3(0, 0f, 0);
+        private Timer mTimer;
+
+        Matrix4 accelerationDueToGravity = Matrix4.CreateTranslation(new Vector3(0.0f, -9.81f, 0.0f));
         float restitution = 1f;
 
+        // Ground properties
+        private Matrix4 mGroundModel;
+
+        // Sphere properties
         private float mSphereRadius, mSphereVolume, mSphereMass, mSphereDensity;
-        private Vector3 mSpherePosition, mSphereVelocity;
-
-
-        private Timer mTimer;
+        private Matrix4 mSpherePosition, mSphereVelocity, mSphereScale;
 
 
         protected override void OnLoad(EventArgs e)
@@ -129,10 +132,9 @@ namespace Labs.ACW
             #endregion
 
             #endregion
-      
+
 
             #endregion
-
 
 
             // Generating Vertex Array Objects and Vertex Buffer Objects
@@ -165,7 +167,8 @@ namespace Labs.ACW
             GL.EnableVertexAttribArray(vNormal); // enable it
             GL.VertexAttribPointer(vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float)); //added
 
-            mGroundModel = Matrix4.CreateTranslation(0, 0, -5f);           
+            // GROUND PROPERTIES
+            mGroundModel = Matrix4.CreateTranslation(0, 0, -5f);
 
             #endregion
 
@@ -198,16 +201,13 @@ namespace Labs.ACW
             GL.VertexAttribPointer(vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
 
             // SPHERE PROPERTIES
-            mSphereScale = Matrix4.CreateScale(2.0f);
-            mSphereModel = Matrix4.CreateTranslation(0, 1, -5f);
-            
-            mSphereRadius = 1f; // TODO check if this value
-            mSpherePosition = mSphereModel.ExtractTranslation(); //new Vector3(-2.0f, 2.0f, 0.0f);
-            mSphereVelocity = new Vector3(2.0f, 0.0f, 0.0f);
+            mSphereScale = Matrix4.CreateScale(1.0f);
+            mSpherePosition = Matrix4.CreateTranslation(0, 10, -15f);
+            mSphereRadius = 4f; // TODO check if this value
+            mSphereVelocity = Matrix4.CreateTranslation(new Vector3(0.0f, 0.0f, 0.0f));
             mSphereVolume = (4 / 3) * (float)Math.PI * (float)Math.Pow(mSphereRadius, 3);
             mSphereDensity = 1f;
             mSphereMass = mSphereDensity * mSphereVolume;
-
 
             #endregion
 
@@ -247,7 +247,34 @@ namespace Labs.ACW
         {
             float timestep = mTimer.GetElapsedSeconds();
 
+            // Updating sphere 1 velocity + position
+            mSphereVelocity = mSphereVelocity + accelerationDueToGravity * timestep;
+            mSpherePosition = mSpherePosition + mSphereVelocity * timestep;
 
+            #region Sphere collision with ground
+
+            // RIGHT
+            if (mSpherePosition.ExtractTranslation().X + (mSphereRadius / mGroundModel.ExtractScale().X) > 1) // 
+            {
+                // COLLISION RESPONSE
+            }
+            // LEFT
+            if (mSpherePosition.ExtractTranslation().X - (mSphereRadius / mGroundModel.ExtractScale().X) < -1) // 
+            {
+                // COLLISION RESPONSE
+            }
+            // TOP
+            if (mSpherePosition.ExtractTranslation().Y + (mSphereRadius / mGroundModel.ExtractScale().X) > 1) // 
+            {
+                // COLLISION RESPONSE
+            }
+            // BOTTOM
+            if (mSpherePosition.ExtractTranslation().Y - (mSphereRadius / mGroundModel.ExtractScale().X) < -1) // 
+            {
+                // COLLISION RESPONSE
+            }
+
+            #endregion
 
 
 
@@ -301,7 +328,7 @@ namespace Labs.ACW
 
             #region Sphere
             // Link the sphere matrix to the shader
-            Matrix4 m = mSphereModel * mGroundModel; 
+            Matrix4 m = mSpherePosition;
             uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
             GL.UniformMatrix4(uModel, true, ref m);
 
