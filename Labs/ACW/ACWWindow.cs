@@ -10,8 +10,8 @@ namespace Labs.ACW
     {
         public ACWWindow()
             : base(
-                800, // Width
-                600, // Height
+                1600, // Width
+                1200, // Height
                 GraphicsMode.Default,
                 "Assessed Coursework",
                 GameWindowFlags.Default,
@@ -24,12 +24,11 @@ namespace Labs.ACW
         }
 
         private ShaderUtility mShader;
-        private ModelUtility mSphereModelUtility;
 
         private Matrix4 mView;
 
-        private int[] mVAO_IDs = new int[2];
-        private int[] mVBO_IDs = new int[3];
+        private int[] mVAO_IDs = new int[3];
+        private int[] mVBO_IDs = new int[5];
 
         private Timer mTimer;
 
@@ -40,8 +39,14 @@ namespace Labs.ACW
         private Matrix4 mGroundModel;
 
         // Sphere properties
+        private ModelUtility mSphereModelUtility;
         private float mSphereRadius, mSphereVolume, mSphereMass, mSphereDensity;
         private Matrix4 mSpherePosition, mSphereVelocity, mSphereScale;
+
+        // Cube properties
+        private ModelUtility mCubeModelUtility;
+        //private float mSphereRadius, mSphereVolume, mSphereMass, mSphereDensity;
+        //private Matrix4 mSpherePosition, mSphereVelocity, mSphereScale;
 
 
         protected override void OnLoad(EventArgs e)
@@ -211,6 +216,33 @@ namespace Labs.ACW
 
             #endregion
 
+            #region cube model
+
+            mCubeModelUtility = ModelUtility.LoadModel(@"Utility/Models/cube.sjg");
+
+            GL.BindVertexArray(mVAO_IDs[2]);
+
+            GL.BindBuffer(BufferTarget.ArrayBuffer, mVBO_IDs[3]);
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mCubeModelUtility.Vertices.Length * sizeof(float)), mCubeModelUtility.Vertices, BufferUsageHint.StaticDraw);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, mVBO_IDs[4]);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mCubeModelUtility.Indices.Length * sizeof(float)), mCubeModelUtility.Indices, BufferUsageHint.StaticDraw);
+
+            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
+            if (mCubeModelUtility.Vertices.Length * sizeof(float) != size)
+            {
+                throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+            }
+
+            GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
+            if (mCubeModelUtility.Indices.Length * sizeof(float) != size)
+            {
+                throw new ApplicationException("Index data not loaded onto graphics card correctly");
+            }
+
+            GL.EnableVertexAttribArray(vPositionLocation);
+            GL.VertexAttribPointer(vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+            #endregion
+
             #endregion
 
 
@@ -337,6 +369,18 @@ namespace Labs.ACW
 
             GL.BindVertexArray(mVAO_IDs[1]);
             GL.DrawElements(PrimitiveType.Triangles, mSphereModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
+            #endregion
+
+
+            #region Cube
+
+            Matrix4 mCubePosition = Matrix4.CreateTranslation(0, 5, -15f);
+            uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
+            GL.UniformMatrix4(uModel, true, ref mCubePosition);
+
+            GL.BindVertexArray(mVAO_IDs[2]);
+            GL.DrawElements(PrimitiveType.Triangles, mCubeModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
+
             #endregion
 
             #endregion
