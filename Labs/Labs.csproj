@@ -64,7 +64,6 @@
     <Compile Include="Utility\ShaderUtility.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ACW\fragmentShader.frag" />
     <None Include="ACW\Shaders\fragmentShader.frag" />
     <None Include="ACW\Shaders\vertexShader.vert" />
     <None Include="App.config" />
@@ -108,7 +107,7 @@
     <None Include="Utility\Models\cylinder.bin">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Utility\Models\lab22model.sjg">
+    <None Include="Utility\Models\cube.sjg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Utility\Models\model.bin">

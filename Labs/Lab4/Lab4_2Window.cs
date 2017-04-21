@@ -39,8 +39,8 @@ namespace Labs.Lab4
 
             mShader = new ShaderUtility(@"Lab4/Shaders/vLab4.vert", @"Lab4/Shaders/fLab4.frag");
             int vPositionLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vPosition");
-            GL.UseProgram(mShader.ShaderProgramID);
 
+            GL.UseProgram(mShader.ShaderProgramID);
 
             #region square
 

@@ -411,11 +411,6 @@ namespace Labs.Lab3
             int uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
             GL.UniformMatrix4(uModel, true, ref mGroundModel);
 
-            // Black rubber
-            //setMaterialProperties(0.02f, 0.02f, 0.02f, 0.01f, 0.01f, 0.01f, 0.4f, 0.4f, 0.4f, 0.078125f);
-
-           
-
             // White rubber
             setMaterialProperties(0.05f, 0.05f, 0.05f, 0.5f, 0.5f, 0.5f, 0.7f, 0.7f, 0.7f, 0.078125f);
 
