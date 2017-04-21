@@ -36,7 +36,7 @@ namespace Labs.ACW
         float restitution = 1f;
 
         // Ground properties
-        private Matrix4 mGroundModel;
+        private Matrix4 mGroundPosition;
 
         // Sphere properties
         private ModelUtility mSphereModelUtility;
@@ -48,6 +48,34 @@ namespace Labs.ACW
         //private float mSphereRadius, mSphereVolume, mSphereMass, mSphereDensity;
         //private Matrix4 mSpherePosition, mSphereVelocity, mSphereScale;
 
+        private void loadGround(int pPositionLocation, int pNormal, Matrix4 pPosition)
+        {
+            int size;
+
+            float[] vertices = new float[] {-10, 0, -10,0,1,0,
+                                             -10, 0, 10,0,1,0,
+                                             10, 0, 10,0,1,0,
+                                             10, 0, -10,0,1,0,};
+
+            GL.BindVertexArray(mVAO_IDs[0]);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, mVBO_IDs[0]);
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertices.Length * sizeof(float)), vertices, BufferUsageHint.StaticDraw);
+
+            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
+            if (vertices.Length * sizeof(float) != size)
+            {
+                throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+            }
+
+            GL.EnableVertexAttribArray(pPositionLocation);
+            GL.VertexAttribPointer(pPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+
+            GL.EnableVertexAttribArray(pNormal); // enable it
+            GL.VertexAttribPointer(pNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float)); //added
+
+            // GROUND PROPERTIES
+            mGroundPosition = pPosition;
+        }
 
         protected override void OnLoad(EventArgs e)
         {
@@ -150,30 +178,11 @@ namespace Labs.ACW
             #region Loading in models 
 
             #region ground model
-
-            float[] vertices = new float[] {-10, 0, -10,0,1,0,
-                                             -10, 0, 10,0,1,0,
-                                             10, 0, 10,0,1,0,
-                                             10, 0, -10,0,1,0,};
-
-            GL.BindVertexArray(mVAO_IDs[0]);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, mVBO_IDs[0]);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertices.Length * sizeof(float)), vertices, BufferUsageHint.StaticDraw);
-
-            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
-            if (vertices.Length * sizeof(float) != size)
-            {
-                throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
-            }
-
-            GL.EnableVertexAttribArray(vPositionLocation);
-            GL.VertexAttribPointer(vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
-
-            GL.EnableVertexAttribArray(vNormal); // enable it
-            GL.VertexAttribPointer(vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float)); //added
-
             // GROUND PROPERTIES
-            mGroundModel = Matrix4.CreateTranslation(0, 0, -5f);
+            mGroundPosition = Matrix4.CreateTranslation(0, 0, -5f);
+
+            loadGround(vPositionLocation, vNormal, mGroundPosition);
+
 
             #endregion
 
@@ -286,22 +295,22 @@ namespace Labs.ACW
             #region Sphere collision with ground
 
             // RIGHT
-            if (mSpherePosition.ExtractTranslation().X + (mSphereRadius / mGroundModel.ExtractScale().X) > 1) // 
+            if (mSpherePosition.ExtractTranslation().X + (mSphereRadius / mGroundPosition.ExtractScale().X) > 1) // 
             {
                 // COLLISION RESPONSE
             }
             // LEFT
-            if (mSpherePosition.ExtractTranslation().X - (mSphereRadius / mGroundModel.ExtractScale().X) < -1) // 
+            if (mSpherePosition.ExtractTranslation().X - (mSphereRadius / mGroundPosition.ExtractScale().X) < -1) // 
             {
                 // COLLISION RESPONSE
             }
             // TOP
-            if (mSpherePosition.ExtractTranslation().Y + (mSphereRadius / mGroundModel.ExtractScale().X) > 1) // 
+            if (mSpherePosition.ExtractTranslation().Y + (mSphereRadius / mGroundPosition.ExtractScale().X) > 1) // 
             {
                 // COLLISION RESPONSE
             }
             // BOTTOM
-            if (mSpherePosition.ExtractTranslation().Y - (mSphereRadius / mGroundModel.ExtractScale().X) < -1) // 
+            if (mSpherePosition.ExtractTranslation().Y - (mSphereRadius / mGroundPosition.ExtractScale().X) < -1) // 
             {
                 // COLLISION RESPONSE
             }
@@ -348,7 +357,7 @@ namespace Labs.ACW
             #region Ground
             // Link ground matrix to the shader
             uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
-            GL.UniformMatrix4(uModel, true, ref mGroundModel);
+            GL.UniformMatrix4(uModel, true, ref mGroundPosition);
 
             // White rubber
             setMaterialProperties(0.05f, 0.05f, 0.05f, 0.5f, 0.5f, 0.5f, 0.7f, 0.7f, 0.7f, 0.078125f);
@@ -374,7 +383,7 @@ namespace Labs.ACW
 
             #region Cube
 
-            Matrix4 mCubePosition = Matrix4.CreateTranslation(0, 5, -15f);
+            Matrix4 mCubePosition = Matrix4.CreateScale(5f) * Matrix4.CreateTranslation(0, 5, -15f);
             uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
             GL.UniformMatrix4(uModel, true, ref mCubePosition);
 
@@ -421,5 +430,11 @@ namespace Labs.ACW
             mLastTime = now;
             return (float)elasped.Ticks / TimeSpan.TicksPerSecond;
         }
+    }
+
+    public class Ground
+    {
+        Matrix4 Position = Matrix4.CreateTranslation(0.0f,0.0f,0.0f);
+
     }
 }
