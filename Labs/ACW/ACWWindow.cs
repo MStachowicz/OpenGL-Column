@@ -10,8 +10,8 @@ namespace Labs.ACW
     {
         public ACWWindow()
             : base(
-                1600, // Width
-                1200, // Height
+                800, // Width
+                600, // Height
                 GraphicsMode.Default,
                 "Assessed Coursework",
                 GameWindowFlags.Default,
@@ -24,7 +24,6 @@ namespace Labs.ACW
         }
 
         private ShaderUtility mShader;
-
         private Matrix4 mView;
 
         private int[] mVAO_IDs = new int[3];
@@ -32,50 +31,15 @@ namespace Labs.ACW
 
         private Timer mTimer;
 
-        Matrix4 accelerationDueToGravity = Matrix4.CreateTranslation(new Vector3(0.0f, -9.81f, 0.0f));
+        public Matrix4 accelerationDueToGravity = Matrix4.CreateTranslation(new Vector3(0.0f, -9.81f, 0.0f));
         float restitution = 1f;
-
-        // Ground properties
-        private Matrix4 mGroundPosition;
-
-        // Sphere properties
-        private ModelUtility mSphereModelUtility;
-        private float mSphereRadius, mSphereVolume, mSphereMass, mSphereDensity;
-        private Matrix4 mSpherePosition, mSphereVelocity, mSphereScale;
 
         // Cube properties
         private ModelUtility mCubeModelUtility;
-        //private float mSphereRadius, mSphereVolume, mSphereMass, mSphereDensity;
-        //private Matrix4 mSpherePosition, mSphereVelocity, mSphereScale;
 
-        private void loadGround(int pPositionLocation, int pNormal, Matrix4 pPosition)
-        {
-            int size;
-
-            float[] vertices = new float[] {-10, 0, -10,0,1,0,
-                                             -10, 0, 10,0,1,0,
-                                             10, 0, 10,0,1,0,
-                                             10, 0, -10,0,1,0,};
-
-            GL.BindVertexArray(mVAO_IDs[0]);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, mVBO_IDs[0]);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertices.Length * sizeof(float)), vertices, BufferUsageHint.StaticDraw);
-
-            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
-            if (vertices.Length * sizeof(float) != size)
-            {
-                throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
-            }
-
-            GL.EnableVertexAttribArray(pPositionLocation);
-            GL.VertexAttribPointer(pPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
-
-            GL.EnableVertexAttribArray(pNormal); // enable it
-            GL.VertexAttribPointer(pNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float)); //added
-
-            // GROUND PROPERTIES
-            mGroundPosition = pPosition;
-        }
+        // Objects
+        CubeFace floor;
+        Sphere sphere1;
 
         protected override void OnLoad(EventArgs e)
         {
@@ -92,8 +56,8 @@ namespace Labs.ACW
             int vPositionLocation = GL.GetAttribLocation(mShader.ShaderProgramID, "vPosition");
             int vNormal = GL.GetAttribLocation(mShader.ShaderProgramID, "vNormal"); //find the index for the location of vNormal in the shader
 
-            mView = Matrix4.CreateTranslation(0, -1.5f, 0);
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
+            mView = Matrix4.CreateTranslation(0, -1.5f, 0);
             GL.UniformMatrix4(uView, true, ref mView);
 
             int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
@@ -178,50 +142,19 @@ namespace Labs.ACW
             #region Loading in models 
 
             #region ground model
-            // GROUND PROPERTIES
-            mGroundPosition = Matrix4.CreateTranslation(0, 0, -5f);
 
-            loadGround(vPositionLocation, vNormal, mGroundPosition);
-
+            floor = new CubeFace(mShader, mVAO_IDs, mVBO_IDs);
+            floor.load(vPositionLocation, vNormal);
+            floor.setPosition(Matrix4.CreateTranslation(0.0f, 0.0f, -5.0f));
 
             #endregion
 
             #region Sphere model
-            mSphereModelUtility = ModelUtility.LoadModel(@"Utility/Models/sphere.bin");
 
-            GL.BindVertexArray(mVAO_IDs[1]);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, mVBO_IDs[1]);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mSphereModelUtility.Vertices.Length * sizeof(float)), mSphereModelUtility.Vertices, BufferUsageHint.StaticDraw);
-
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, mVBO_IDs[2]);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mSphereModelUtility.Indices.Length * sizeof(float)), mSphereModelUtility.Indices, BufferUsageHint.StaticDraw);
-
-            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
-            if (mSphereModelUtility.Vertices.Length * sizeof(float) != size)
-            {
-                throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
-            }
-
-            GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
-            if (mSphereModelUtility.Indices.Length * sizeof(float) != size)
-            {
-                throw new ApplicationException("Index data not loaded onto graphics card correctly");
-            }
-
-            GL.EnableVertexAttribArray(vPositionLocation);
-            GL.VertexAttribPointer(vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
-
-            GL.EnableVertexAttribArray(vNormal);
-            GL.VertexAttribPointer(vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
-
-            // SPHERE PROPERTIES
-            mSphereScale = Matrix4.CreateScale(1.0f);
-            mSpherePosition = Matrix4.CreateTranslation(0, 10, -15f);
-            mSphereRadius = 4f; // TODO check if this value
-            mSphereVelocity = Matrix4.CreateTranslation(new Vector3(0.0f, 0.0f, 0.0f));
-            mSphereVolume = (4 / 3) * (float)Math.PI * (float)Math.Pow(mSphereRadius, 3);
-            mSphereDensity = 1f;
-            mSphereMass = mSphereDensity * mSphereVolume;
+            sphere1 = new Sphere(mShader, mVAO_IDs, mVBO_IDs);
+            sphere1.load(vPositionLocation, vNormal);
+            sphere1.setPosition(Matrix4.CreateTranslation(0.0f, 5.0f, -15.0f));
+            sphere1.setVelocity(Matrix4.CreateTranslation(0.0f, 8.0f, 0.0f));
 
             #endregion
 
@@ -257,10 +190,8 @@ namespace Labs.ACW
 
             GL.BindVertexArray(0);
 
-
             mTimer = new Timer();
             mTimer.Start();
-
 
             base.OnLoad(e);
         }
@@ -268,7 +199,46 @@ namespace Labs.ACW
         protected override void OnKeyPress(KeyPressEventArgs e)
         {
             base.OnKeyPress(e);
+
+            float cameraSpeed = 1.0f;
+
+            if (e.KeyChar == 'w')
+            {
+                // Camera movement
+                mView = mView * Matrix4.CreateTranslation(0.0f, -cameraSpeed, 0.0f);
+                int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
+                GL.UniformMatrix4(uView, true, ref mView);
+            }
+            if (e.KeyChar == 'a')
+            {
+                // Camera movement
+                mView = mView * Matrix4.CreateTranslation(cameraSpeed, 0.0f, 0.0f);
+                int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
+                GL.UniformMatrix4(uView, true, ref mView);
+            }
+            if (e.KeyChar == 's')
+            {
+                // Camera movement
+                mView = mView * Matrix4.CreateTranslation(0.0f, cameraSpeed, 0.0f);
+                int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
+                GL.UniformMatrix4(uView, true, ref mView);
+            }
+            if (e.KeyChar == 'd')
+            {
+                // Camera movement
+                mView = mView * Matrix4.CreateTranslation(-cameraSpeed, 0.0f, 0.0f);
+                int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
+                GL.UniformMatrix4(uView, true, ref mView);
+            }
+            if (e.KeyChar == 'q')
+            {
+            }
+            if (e.KeyChar == 'e')
+            {
+            }
         }
+
+
 
         protected override void OnResize(EventArgs e)
         {
@@ -288,32 +258,30 @@ namespace Labs.ACW
         {
             float timestep = mTimer.GetElapsedSeconds();
 
-            // Updating sphere 1 velocity + position
-            mSphereVelocity = mSphereVelocity + accelerationDueToGravity * timestep;
-            mSpherePosition = mSpherePosition + mSphereVelocity * timestep;
+            sphere1.update(timestep, accelerationDueToGravity);
 
             #region Sphere collision with ground
 
-            // RIGHT
-            if (mSpherePosition.ExtractTranslation().X + (mSphereRadius / mGroundPosition.ExtractScale().X) > 1) // 
-            {
-                // COLLISION RESPONSE
-            }
-            // LEFT
-            if (mSpherePosition.ExtractTranslation().X - (mSphereRadius / mGroundPosition.ExtractScale().X) < -1) // 
-            {
-                // COLLISION RESPONSE
-            }
-            // TOP
-            if (mSpherePosition.ExtractTranslation().Y + (mSphereRadius / mGroundPosition.ExtractScale().X) > 1) // 
-            {
-                // COLLISION RESPONSE
-            }
-            // BOTTOM
-            if (mSpherePosition.ExtractTranslation().Y - (mSphereRadius / mGroundPosition.ExtractScale().X) < -1) // 
-            {
-                // COLLISION RESPONSE
-            }
+            //// RIGHT
+            //if (mSpherePosition.ExtractTranslation().X + (mSphereRadius / mGroundPosition.ExtractScale().X) > 1) // 
+            //{
+            //    // COLLISION RESPONSE
+            //}
+            //// LEFT
+            //if (mSpherePosition.ExtractTranslation().X - (mSphereRadius / mGroundPosition.ExtractScale().X) < -1) // 
+            //{
+            //    // COLLISION RESPONSE
+            //}
+            //// TOP
+            //if (mSpherePosition.ExtractTranslation().Y + (mSphereRadius / mGroundPosition.ExtractScale().X) > 1) // 
+            //{
+            //    // COLLISION RESPONSE
+            //}
+            //// BOTTOM
+            //if (mSpherePosition.ExtractTranslation().Y - (mSphereRadius / mGroundPosition.ExtractScale().X) < -1) // 
+            //{
+            //    // COLLISION RESPONSE
+            //}
 
             #endregion
 
@@ -321,27 +289,6 @@ namespace Labs.ACW
 
 
             base.OnUpdateFrame(e);
-        }
-
-        private void setMaterialProperties(float AmbientR, float AmbientG, float AmbientB,
-    float DiffuseR, float DiffuseG, float DiffuseB,
-    float SpecularR, float SpecularG, float SpecularB,
-    float Shininess)
-        {
-            int uAmbientReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.AmbientReflectivity");
-            Vector3 AmbientReflectivity = new Vector3(AmbientR, AmbientG, AmbientB);
-            GL.Uniform3(uAmbientReflectivityLocation, AmbientReflectivity);
-
-            int uDiffuseReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.DiffuseReflectivity");
-            Vector3 DiffuseReflectivity = new Vector3(DiffuseR, DiffuseG, DiffuseB);
-            GL.Uniform3(uDiffuseReflectivityLocation, DiffuseReflectivity);
-
-            int uSpecularReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.SpecularReflectivity");
-            Vector3 SpecularReflectivity = new Vector3(SpecularR, SpecularG, SpecularB);
-            GL.Uniform3(uSpecularReflectivityLocation, SpecularReflectivity);
-
-            int uShininessLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.Shininess");
-            GL.Uniform1(uShininessLocation, Shininess);
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
@@ -354,32 +301,9 @@ namespace Labs.ACW
 
             #region Rendering models
 
-            #region Ground
-            // Link ground matrix to the shader
-            uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
-            GL.UniformMatrix4(uModel, true, ref mGroundPosition);
+            floor.Render();
 
-            // White rubber
-            setMaterialProperties(0.05f, 0.05f, 0.05f, 0.5f, 0.5f, 0.5f, 0.7f, 0.7f, 0.7f, 0.078125f);
-
-            // Bind the ground array and draw it
-            GL.BindVertexArray(mVAO_IDs[0]);
-            GL.DrawArrays(PrimitiveType.TriangleFan, 0, 4);
-            #endregion
-
-            #region Sphere
-            // Link the sphere matrix to the shader
-            Matrix4 m = mSpherePosition;
-            uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
-            GL.UniformMatrix4(uModel, true, ref m);
-
-            // cyan
-            //setMaterialProperties(0.0f, 0.05f, 0.05f, 0.4f, 0.5f, 0.5f, 0.04f, 0.7f, 0.7f, 0.078125f);
-
-            GL.BindVertexArray(mVAO_IDs[1]);
-            GL.DrawElements(PrimitiveType.Triangles, mSphereModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
-            #endregion
-
+            sphere1.render();
 
             #region Cube
 
@@ -432,9 +356,169 @@ namespace Labs.ACW
         }
     }
 
-    public class Ground
+    public class CubeFace
     {
-        Matrix4 Position = Matrix4.CreateTranslation(0.0f,0.0f,0.0f);
+        Matrix4 Position = Matrix4.CreateTranslation(0.0f, 0.0f, 0.0f);
+        float[] vertices = new float[] {-10, 0, -10,0,1,0,
+                                             -10, 0, 10,0,1,0,
+                                             10, 0, 10,0,1,0,
+                                             10, 0, -10,0,1,0,};
+        ShaderUtility mShader;
+        int[] vertexArrayObject;
+        int[] vertexBufferObject;
 
+        public CubeFace(ShaderUtility pShader, int[] pVertexArrayObject, int[] pVertexBufferObject)
+        {
+            mShader = pShader;
+            vertexArrayObject = pVertexArrayObject;
+            vertexBufferObject = pVertexBufferObject;
+        }
+
+        public void setPosition(Matrix4 pPosition)
+        {
+            Position = pPosition;
+        }
+
+        public void load(int pPositionLocation, int pNormal)
+        {
+            int size;
+
+            GL.BindVertexArray(vertexArrayObject[0]);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject[0]);
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertices.Length * sizeof(float)), vertices, BufferUsageHint.StaticDraw);
+
+            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
+            if (vertices.Length * sizeof(float) != size)
+            {
+                throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+            }
+
+            GL.EnableVertexAttribArray(pPositionLocation);
+            GL.VertexAttribPointer(pPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+
+            GL.EnableVertexAttribArray(pNormal); // enable it
+            GL.VertexAttribPointer(pNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float)); //added
+        }
+
+        public void Render()
+        {
+            // Link ground matrix to the shader
+            int uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
+            GL.UniformMatrix4(uModel, true, ref Position);
+
+            // White rubber
+            setMaterialProperties(0.05f, 0.05f, 0.05f, 0.5f, 0.5f, 0.5f, 0.7f, 0.7f, 0.7f, 0.078125f);
+
+            // Bind the ground array and draw it
+            GL.BindVertexArray(vertexArrayObject[0]);
+            GL.DrawArrays(PrimitiveType.TriangleFan, 0, 4);
+        }
+
+
+        private void setMaterialProperties(float AmbientR, float AmbientG, float AmbientB,
+    float DiffuseR, float DiffuseG, float DiffuseB,
+    float SpecularR, float SpecularG, float SpecularB,
+    float Shininess)
+        {
+            int uAmbientReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.AmbientReflectivity");
+            Vector3 AmbientReflectivity = new Vector3(AmbientR, AmbientG, AmbientB);
+            GL.Uniform3(uAmbientReflectivityLocation, AmbientReflectivity);
+
+            int uDiffuseReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.DiffuseReflectivity");
+            Vector3 DiffuseReflectivity = new Vector3(DiffuseR, DiffuseG, DiffuseB);
+            GL.Uniform3(uDiffuseReflectivityLocation, DiffuseReflectivity);
+
+            int uSpecularReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.SpecularReflectivity");
+            Vector3 SpecularReflectivity = new Vector3(SpecularR, SpecularG, SpecularB);
+            GL.Uniform3(uSpecularReflectivityLocation, SpecularReflectivity);
+
+            int uShininessLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.Shininess");
+            GL.Uniform1(uShininessLocation, Shininess);
+        }
+
+    }
+
+    public class Sphere
+    {
+        private ModelUtility mSphereModelUtility;
+        private ShaderUtility mShader;
+        int[] vertexArrayObject;
+        int[] vertexBufferObject;
+
+        public Matrix4 mPosition = Matrix4.CreateTranslation(0.0f, 0.0f, 0.0f);
+        public Matrix4 mVelocity = Matrix4.CreateTranslation(0.0f, 0.0f, 0.0f);
+        public Matrix4 mScale = Matrix4.CreateScale(1.0f);
+
+        public float mSphereRadius, mSphereVolume, mSphereMass, mSphereDensity;   
+    
+        public void setPosition(Matrix4 pPosition)
+        {
+            mPosition = pPosition;
+        }
+
+        public void setVelocity(Matrix4 pVelocity)
+        {
+            mVelocity = pVelocity;
+        }
+
+        public Sphere(ShaderUtility pShader, int[] pVertexArrayObject, int[] pVertexBufferObject)
+        {
+            mShader = pShader;
+            vertexArrayObject = pVertexArrayObject;
+            vertexBufferObject = pVertexBufferObject;
+
+            // SPHERE PROPERTIES
+            mSphereRadius = 4f; // TODO check if this value
+            mSphereVolume = (4 / 3) * (float)Math.PI * (float)Math.Pow(mSphereRadius, 3);
+            mSphereDensity = 1f;
+            mSphereMass = mSphereDensity * mSphereVolume;
+        }
+        public void load(int pPositionLocation, int pNormal)
+        {
+            int size;
+            mSphereModelUtility = ModelUtility.LoadModel(@"Utility/Models/sphere.bin");
+
+            GL.BindVertexArray(vertexArrayObject[1]);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject[1]);
+            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mSphereModelUtility.Vertices.Length * sizeof(float)), mSphereModelUtility.Vertices, BufferUsageHint.StaticDraw);
+
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, vertexBufferObject[2]);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mSphereModelUtility.Indices.Length * sizeof(float)), mSphereModelUtility.Indices, BufferUsageHint.StaticDraw);
+
+            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
+            if (mSphereModelUtility.Vertices.Length * sizeof(float) != size)
+            {
+                throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+            }
+
+            GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
+            if (mSphereModelUtility.Indices.Length * sizeof(float) != size)
+            {
+                throw new ApplicationException("Index data not loaded onto graphics card correctly");
+            }
+
+            GL.EnableVertexAttribArray(pPositionLocation);
+            GL.VertexAttribPointer(pPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+
+            GL.EnableVertexAttribArray(pNormal);
+            GL.VertexAttribPointer(pNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
+        }
+        public void render()
+        {
+            int uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
+            GL.UniformMatrix4(uModel, true, ref mPosition);
+
+            // cyan
+            //setMaterialProperties(0.0f, 0.05f, 0.05f, 0.4f, 0.5f, 0.5f, 0.04f, 0.7f, 0.7f, 0.078125f);
+
+            GL.BindVertexArray(vertexArrayObject[1]);
+            GL.DrawElements(PrimitiveType.Triangles, mSphereModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
+        }
+
+        public void update(float timestep, Matrix4 gravity)
+        {
+            mVelocity = mVelocity + gravity * timestep;
+            mPosition = mPosition + mVelocity * timestep;
+        }
     }
 }
