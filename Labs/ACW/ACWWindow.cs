@@ -25,15 +25,16 @@ namespace Labs.ACW
 
         private ShaderUtility mShader;
         private Matrix4 mView;
-
-        private int[] mVAO_IDs = new int[3];
-        private int[] mVBO_IDs = new int[5];
-
-        private Timer mTimer;
+        
+        public static int VAOCount = 0;
+        public static int VBOCount = 0;
+        private int[] mVAO_IDs = new int[4];
+        private int[] mVBO_IDs = new int[6];
 
         public Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
         float restitution = 1f;
 
+        private Timer mTimer;
 
         // Objects
         CubeFace floor;
@@ -154,7 +155,7 @@ namespace Labs.ACW
 
             cube1 = new Cube(mShader, mVAO_IDs, mVBO_IDs);
             cube1.load(vPositionLocation, vNormal);
-            cube1.setPosition(new Vector3(0.0f, 0.0f, 0.0f));
+            cube1.setPosition(new Vector3(0.0f, 0.0f, -20.0f));
             cube1.mScale = 10f;
 
             #endregion
@@ -310,268 +311,290 @@ namespace Labs.ACW
             mShader.Delete();
             base.OnUnload(e);
         }
-    }
 
-    public class Timer
-    {
-        DateTime mLastTime;
-
-        public Timer()
-        { }
-
-        public void Start()
+        public class Timer
         {
-            mLastTime = DateTime.Now;
-        }
+            DateTime mLastTime;
 
-        public float GetElapsedSeconds()
+            public Timer()
+            { }
+
+            public void Start()
+            {
+                mLastTime = DateTime.Now;
+            }
+
+            public float GetElapsedSeconds()
+            {
+                DateTime now = DateTime.Now;
+                TimeSpan elasped = now - mLastTime;
+                mLastTime = now;
+                return (float)elasped.Ticks / TimeSpan.TicksPerSecond;
+            }
+        }
+        public class CubeFace
         {
-            DateTime now = DateTime.Now;
-            TimeSpan elasped = now - mLastTime;
-            mLastTime = now;
-            return (float)elasped.Ticks / TimeSpan.TicksPerSecond;
-        }
-    }
+            public Vector3 mPosition = new Vector3(0.0f, 0.0f, 0.0f);
+            public float mScale = 1.0f;
+            public float rotation = 0.0f;
 
-    public class CubeFace
-    {
-        public Vector3 mPosition = new Vector3(0.0f, 0.0f, 0.0f);
-        public float mScale = 1.0f;
-        public float rotation = 0.0f;
-
-        float[] vertices = new float[] {-10, 0,-10,0,1,0,
+            float[] vertices = new float[] {-10, 0,-10,0,1,0,
                                         -10, 0, 10,0,1,0,
                                          10, 0, 10,0,1,0,
                                          10, 0,-10,0,1,0,};
 
-        ShaderUtility mShader;
-        int[] vertexArrayObject;
-        int[] vertexBufferObject;
+            ShaderUtility mShader;
+            int[] vertexArrayObject;
+            int[] vertexBufferObject;
+            int VAOIndex;
+            int VBOIndex;
 
-        public CubeFace(ShaderUtility pShader, int[] pVertexArrayObject, int[] pVertexBufferObject)
-        {
-            mShader = pShader;
-            vertexArrayObject = pVertexArrayObject;
-            vertexBufferObject = pVertexBufferObject;
-        }
-
-        public void setPosition(Vector3 pPosition)
-        {
-            mPosition = pPosition;
-        }
-
-        public Vector3 getPosition()
-        {
-            return mPosition;
-        }
-
-        public void load(int pPositionLocation, int pNormal)
-        {
-            int size;
-
-            GL.BindVertexArray(vertexArrayObject[0]);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject[0]);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertices.Length * sizeof(float)), vertices, BufferUsageHint.StaticDraw);
-
-            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
-            if (vertices.Length * sizeof(float) != size)
-            {
-                throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+            public CubeFace(ShaderUtility pShader, int[] pVertexArrayObject, int[] pVertexBufferObject)
+            {            
+                mShader = pShader;
+                vertexArrayObject = pVertexArrayObject;
+                vertexBufferObject = pVertexBufferObject;
             }
 
-            GL.EnableVertexAttribArray(pPositionLocation);
-            GL.VertexAttribPointer(pPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
-
-            GL.EnableVertexAttribArray(pNormal);
-            GL.VertexAttribPointer(pNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
-        }
-
-        public void Render()
-        {
-            Matrix4 CubeFaceMatrix = Matrix4.CreateScale(mScale) * Matrix4.CreateRotationX(rotation) * Matrix4.CreateTranslation(mPosition);
-            // Link ground matrix to the shader
-            int uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
-            GL.UniformMatrix4(uModel, true, ref CubeFaceMatrix);
-
-            // White rubber
-            setMaterialProperties(0.05f, 0.05f, 0.05f, 0.5f, 0.5f, 0.5f, 0.7f, 0.7f, 0.7f, 0.078125f);
-
-            // Bind the ground array and draw it
-            GL.BindVertexArray(vertexArrayObject[0]);
-            GL.DrawArrays(PrimitiveType.TriangleFan, 0, 4);
-        }
-
-
-        private void setMaterialProperties(float AmbientR, float AmbientG, float AmbientB,
-    float DiffuseR, float DiffuseG, float DiffuseB,
-    float SpecularR, float SpecularG, float SpecularB,
-    float Shininess)
-        {
-            int uAmbientReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.AmbientReflectivity");
-            Vector3 AmbientReflectivity = new Vector3(AmbientR, AmbientG, AmbientB);
-            GL.Uniform3(uAmbientReflectivityLocation, AmbientReflectivity);
-
-            int uDiffuseReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.DiffuseReflectivity");
-            Vector3 DiffuseReflectivity = new Vector3(DiffuseR, DiffuseG, DiffuseB);
-            GL.Uniform3(uDiffuseReflectivityLocation, DiffuseReflectivity);
-
-            int uSpecularReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.SpecularReflectivity");
-            Vector3 SpecularReflectivity = new Vector3(SpecularR, SpecularG, SpecularB);
-            GL.Uniform3(uSpecularReflectivityLocation, SpecularReflectivity);
-
-            int uShininessLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.Shininess");
-            GL.Uniform1(uShininessLocation, Shininess);
-        }
-
-    }
-    public class Sphere
-    {
-        private ModelUtility mSphereModelUtility;
-        private ShaderUtility mShader;
-        int[] vertexArrayObject;
-        int[] vertexBufferObject;
-
-        public Vector3 mPosition = new Vector3(0.0f, 0.0f, 0.0f);   //Matrix4.CreateTranslation(0.0f, 0.0f, 0.0f);
-        public Vector3 mVelocity = new Vector3(0.0f, 0.0f, 0.0f);   // Matrix4.CreateTranslation(0.0f, 0.0f, 0.0f);
-        public float mScale = 1.0f;
-
-        public float mSphereRadius, mSphereVolume, mSphereMass, mSphereDensity;
-
-        public void setPosition(Vector3 pPosition)
-        {
-            mPosition = pPosition;
-        }
-
-        public void setVelocity(Vector3 pVelocity)
-        {
-            mVelocity = pVelocity;
-        }
-
-        public Sphere(ShaderUtility pShader, int[] pVertexArrayObject, int[] pVertexBufferObject)
-        {
-            mShader = pShader;
-            vertexArrayObject = pVertexArrayObject;
-            vertexBufferObject = pVertexBufferObject;
-
-            // SPHERE PROPERTIES
-            mSphereRadius = 4f; // TODO check if this value
-            mSphereVolume = (4 / 3) * (float)Math.PI * (float)Math.Pow(mSphereRadius, 3);
-            mSphereDensity = 1f;
-            mSphereMass = mSphereDensity * mSphereVolume;
-        }
-        public void load(int pPositionLocation, int pNormal)
-        {
-            int size;
-            mSphereModelUtility = ModelUtility.LoadModel(@"Utility/Models/sphere.bin");
-
-            GL.BindVertexArray(vertexArrayObject[1]);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject[1]);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mSphereModelUtility.Vertices.Length * sizeof(float)), mSphereModelUtility.Vertices, BufferUsageHint.StaticDraw);
-
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, vertexBufferObject[2]);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mSphereModelUtility.Indices.Length * sizeof(float)), mSphereModelUtility.Indices, BufferUsageHint.StaticDraw);
-
-            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
-            if (mSphereModelUtility.Vertices.Length * sizeof(float) != size)
+            public void setPosition(Vector3 pPosition)
             {
-                throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+                mPosition = pPosition;
             }
 
-            GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
-            if (mSphereModelUtility.Indices.Length * sizeof(float) != size)
+            public Vector3 getPosition()
             {
-                throw new ApplicationException("Index data not loaded onto graphics card correctly");
+                return mPosition;
             }
 
-            GL.EnableVertexAttribArray(pPositionLocation);
-            GL.VertexAttribPointer(pPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
-
-            GL.EnableVertexAttribArray(pNormal);
-            GL.VertexAttribPointer(pNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
-        }
-        public void render()
-        {
-            Matrix4 sphereMatrix = Matrix4.CreateScale(mScale) * Matrix4.CreateTranslation(mPosition);
-            int uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
-            GL.UniformMatrix4(uModel, true, ref sphereMatrix);
-
-            // cyan
-            //setMaterialProperties(0.0f, 0.05f, 0.05f, 0.4f, 0.5f, 0.5f, 0.04f, 0.7f, 0.7f, 0.078125f);
-
-            GL.BindVertexArray(vertexArrayObject[1]);
-            GL.DrawElements(PrimitiveType.Triangles, mSphereModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
-        }
-
-        public void update(float timestep, Vector3 gravity)
-        {
-            mVelocity = mVelocity + gravity * timestep;
-            mPosition = mPosition + mVelocity * timestep;
-        }
-    }
-    public class Cube
-    {
-        public Vector3 mPosition = new Vector3(0.0f, 0.0f, 0.0f);
-        public float mScale = 1.0f;
-        public float rotation = 0.0f;
-
-        private ModelUtility mCubeModelUtility;
-
-        ShaderUtility mShader;
-        int[] vertexArrayObject;
-        int[] vertexBufferObject;
-
-        public Cube(ShaderUtility pShader, int[] pVertexArrayObject, int[] pVertexBufferObject)
-        {
-            mShader = pShader;
-            vertexArrayObject = pVertexArrayObject;
-            vertexBufferObject = pVertexBufferObject;
-        }
-
-        public void setPosition(Vector3 pPosition)
-        {
-            mPosition = pPosition;
-        }
-        public Vector3 getPosition()
-        {
-            return mPosition;
-        }
-
-        public void load(int pPositionLocation, int pNormal)
-        {
-            mCubeModelUtility = ModelUtility.LoadModel(@"Utility/Models/cube.sjg");
-            int size;
-
-            GL.BindVertexArray(vertexArrayObject[2]);
-
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject[3]);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mCubeModelUtility.Vertices.Length * sizeof(float)), mCubeModelUtility.Vertices, BufferUsageHint.StaticDraw);
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, vertexBufferObject[4]);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mCubeModelUtility.Indices.Length * sizeof(float)), mCubeModelUtility.Indices, BufferUsageHint.StaticDraw);
-
-            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
-            if (mCubeModelUtility.Vertices.Length * sizeof(float) != size)
+            public void load(int pPositionLocation, int pNormal)
             {
-                throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+                int size;
+
+                VAOIndex = VAOCount++;
+                VBOIndex = VBOCount++;
+
+                GL.BindVertexArray(vertexArrayObject[VAOIndex]);
+
+                GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject[VBOIndex]);
+                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertices.Length * sizeof(float)), vertices, BufferUsageHint.StaticDraw);
+
+                GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
+                if (vertices.Length * sizeof(float) != size)
+                {
+                    throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+                }
+
+                GL.EnableVertexAttribArray(pPositionLocation);
+                GL.VertexAttribPointer(pPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+
+                GL.EnableVertexAttribArray(pNormal);
+                GL.VertexAttribPointer(pNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
             }
 
-            GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
-            if (mCubeModelUtility.Indices.Length * sizeof(float) != size)
+            public void Render()
             {
-                throw new ApplicationException("Index data not loaded onto graphics card correctly");
+                Matrix4 CubeFaceMatrix = Matrix4.CreateScale(mScale) * Matrix4.CreateRotationX(rotation) * Matrix4.CreateTranslation(mPosition);
+                // Link ground matrix to the shader
+                int uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
+                GL.UniformMatrix4(uModel, true, ref CubeFaceMatrix);
+
+                // White rubber
+                setMaterialProperties(0.05f, 0.05f, 0.05f, 0.5f, 0.5f, 0.5f, 0.7f, 0.7f, 0.7f, 0.078125f);
+
+                // Bind the ground array and draw it
+                GL.BindVertexArray(vertexArrayObject[VAOIndex]);
+                GL.DrawArrays(PrimitiveType.TriangleFan, 0, 4);
             }
 
-            GL.EnableVertexAttribArray(pPositionLocation);
-            GL.VertexAttribPointer(pPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+
+            private void setMaterialProperties(float AmbientR, float AmbientG, float AmbientB,
+        float DiffuseR, float DiffuseG, float DiffuseB,
+        float SpecularR, float SpecularG, float SpecularB,
+        float Shininess)
+            {
+                int uAmbientReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.AmbientReflectivity");
+                Vector3 AmbientReflectivity = new Vector3(AmbientR, AmbientG, AmbientB);
+                GL.Uniform3(uAmbientReflectivityLocation, AmbientReflectivity);
+
+                int uDiffuseReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.DiffuseReflectivity");
+                Vector3 DiffuseReflectivity = new Vector3(DiffuseR, DiffuseG, DiffuseB);
+                GL.Uniform3(uDiffuseReflectivityLocation, DiffuseReflectivity);
+
+                int uSpecularReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.SpecularReflectivity");
+                Vector3 SpecularReflectivity = new Vector3(SpecularR, SpecularG, SpecularB);
+                GL.Uniform3(uSpecularReflectivityLocation, SpecularReflectivity);
+
+                int uShininessLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.Shininess");
+                GL.Uniform1(uShininessLocation, Shininess);
+            }
+
         }
-
-        public void Render()
+        public class Sphere
         {
-            Matrix4 mCubeMatrix = Matrix4.CreateScale(mScale) * Matrix4.CreateTranslation(mPosition);
-            int uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
-            GL.UniformMatrix4(uModel, true, ref mCubeMatrix);
+            private ModelUtility mSphereModelUtility;
+            private ShaderUtility mShader;
 
-            GL.BindVertexArray(vertexArrayObject[2]);
-            GL.DrawElements(PrimitiveType.Triangles, mCubeModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
+            int[] vertexArrayObject;
+            int[] vertexBufferObject;
+            int VAOIndex;
+            int VBOIndex;
+            int VBOIndex2;
+
+            public Vector3 mPosition = new Vector3(0.0f, 0.0f, 0.0f);   //Matrix4.CreateTranslation(0.0f, 0.0f, 0.0f);
+            public Vector3 mVelocity = new Vector3(0.0f, 0.0f, 0.0f);   // Matrix4.CreateTranslation(0.0f, 0.0f, 0.0f);
+            public float mScale = 1.0f;
+
+            public float mSphereRadius, mSphereVolume, mSphereMass, mSphereDensity;
+
+            public void setPosition(Vector3 pPosition)
+            {
+                mPosition = pPosition;
+            }
+
+            public void setVelocity(Vector3 pVelocity)
+            {
+                mVelocity = pVelocity;
+            }
+
+            public Sphere(ShaderUtility pShader, int[] pVertexArrayObject, int[] pVertexBufferObject)
+            {
+                mShader = pShader;
+                vertexArrayObject = pVertexArrayObject;
+                vertexBufferObject = pVertexBufferObject;
+
+                // SPHERE PROPERTIES
+                mSphereRadius = 4f; // TODO check if this value
+                mSphereVolume = (4 / 3) * (float)Math.PI * (float)Math.Pow(mSphereRadius, 3);
+                mSphereDensity = 1f;
+                mSphereMass = mSphereDensity * mSphereVolume;
+            }
+            public void load(int pPositionLocation, int pNormal)
+            {
+                int size;
+                mSphereModelUtility = ModelUtility.LoadModel(@"Utility/Models/sphere.bin");
+
+                VAOIndex = VAOCount++;
+                VBOIndex = VBOCount ++;
+                VBOIndex2 = VBOCount++;
+
+                GL.BindVertexArray(vertexArrayObject[VAOIndex]);
+
+                GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject[VBOIndex]);
+                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mSphereModelUtility.Vertices.Length * sizeof(float)), mSphereModelUtility.Vertices, BufferUsageHint.StaticDraw);
+
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, vertexBufferObject[VBOIndex2]);
+                GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mSphereModelUtility.Indices.Length * sizeof(float)), mSphereModelUtility.Indices, BufferUsageHint.StaticDraw);
+
+                GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
+                if (mSphereModelUtility.Vertices.Length * sizeof(float) != size)
+                {
+                    throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+                }
+
+                GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
+                if (mSphereModelUtility.Indices.Length * sizeof(float) != size)
+                {
+                    throw new ApplicationException("Index data not loaded onto graphics card correctly");
+                }
+
+                GL.EnableVertexAttribArray(pPositionLocation);
+                GL.VertexAttribPointer(pPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+
+                GL.EnableVertexAttribArray(pNormal);
+                GL.VertexAttribPointer(pNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
+            }
+            public void render()
+            {
+                Matrix4 sphereMatrix = Matrix4.CreateScale(mScale) * Matrix4.CreateTranslation(mPosition);
+                int uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
+                GL.UniformMatrix4(uModel, true, ref sphereMatrix);
+
+                // cyan
+                //setMaterialProperties(0.0f, 0.05f, 0.05f, 0.4f, 0.5f, 0.5f, 0.04f, 0.7f, 0.7f, 0.078125f);
+
+                GL.BindVertexArray(vertexArrayObject[VAOIndex]);
+                GL.DrawElements(PrimitiveType.Triangles, mSphereModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
+            }
+
+            public void update(float timestep, Vector3 gravity)
+            {
+                mVelocity = mVelocity + gravity * timestep;
+                mPosition = mPosition + mVelocity * timestep;
+            }
+        }
+        public class Cube
+        {
+            public Vector3 mPosition = new Vector3(0.0f, 0.0f, 0.0f);
+            public float mScale = 1.0f;
+            public float rotation = 0.0f;
+
+            private ModelUtility mCubeModelUtility;
+
+            ShaderUtility mShader;
+            int[] vertexArrayObject;
+            int[] vertexBufferObject;
+
+            int VAOIndex;
+            int VBOIndex;
+            int VBOIndex2;
+            public Cube(ShaderUtility pShader, int[] pVertexArrayObject, int[] pVertexBufferObject)
+            {
+                mShader = pShader;
+                vertexArrayObject = pVertexArrayObject;
+                vertexBufferObject = pVertexBufferObject;
+            }
+
+            public void setPosition(Vector3 pPosition)
+            {
+                mPosition = pPosition;
+            }
+            public Vector3 getPosition()
+            {
+                return mPosition;
+            }
+
+            public void load(int pPositionLocation, int pNormal)
+            {
+                mCubeModelUtility = ModelUtility.LoadModel(@"Utility/Models/cube.sjg");
+                int size;
+
+                VAOIndex = VAOCount++;
+                VBOIndex = VBOCount++;
+                VBOIndex2 = VBOCount++;
+
+                GL.BindVertexArray(vertexArrayObject[VAOIndex]);
+
+                GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject[VBOIndex]);
+                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mCubeModelUtility.Vertices.Length * sizeof(float)), mCubeModelUtility.Vertices, BufferUsageHint.StaticDraw);
+
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, vertexBufferObject[VBOIndex2]);
+                GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mCubeModelUtility.Indices.Length * sizeof(float)), mCubeModelUtility.Indices, BufferUsageHint.StaticDraw);
+
+                GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
+                if (mCubeModelUtility.Vertices.Length * sizeof(float) != size)
+                {
+                    throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+                }
+
+                GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
+                if (mCubeModelUtility.Indices.Length * sizeof(float) != size)
+                {
+                    throw new ApplicationException("Index data not loaded onto graphics card correctly");
+                }
+                
+                GL.EnableVertexAttribArray(pPositionLocation);
+                GL.VertexAttribPointer(pPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+            }
+
+            public void Render()
+            {
+                Matrix4 mCubeMatrix = Matrix4.CreateScale(mScale) * Matrix4.CreateTranslation(mPosition);
+                int uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
+                GL.UniformMatrix4(uModel, true, ref mCubeMatrix);
+
+                GL.BindVertexArray(vertexArrayObject[VAOIndex]);
+                GL.DrawElements(PrimitiveType.Triangles, mCubeModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
+            }
         }
     }
 }
