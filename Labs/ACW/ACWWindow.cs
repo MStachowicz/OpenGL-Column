@@ -37,8 +37,8 @@ namespace Labs.ACW
         private Timer mTimer;
 
         // Objects
-        CubeFace floor;
-        CubeFace backWall;
+        //CubeFace floor;
+        //CubeFace backWall;
         Sphere sphere1;
         Cube cube1;
 
@@ -140,13 +140,13 @@ namespace Labs.ACW
 
             #region Loading in models + setting their properties
 
-            floor = new CubeFace(mShader, mVAO_IDs, mVBO_IDs);
-            floor.load(vPositionLocation, vNormal);
-            floor.setPosition(new Vector3(0.0f, 0.0f, 0.0f));
+            //floor = new CubeFace(mShader, mVAO_IDs, mVBO_IDs);
+            //floor.load(vPositionLocation, vNormal);
+            //floor.setPosition(new Vector3(0.0f, 0.0f, 0.0f));
 
-            backWall = new CubeFace(mShader, mVAO_IDs, mVBO_IDs);
-            backWall.load(vPositionLocation, vNormal);
-            backWall.setPosition(new Vector3(0.0f, 0.0f, 0.0f));
+            //backWall = new CubeFace(mShader, mVAO_IDs, mVBO_IDs);
+            //backWall.load(vPositionLocation, vNormal);
+            //backWall.setPosition(new Vector3(0.0f, 0.0f, 0.0f));
 
             sphere1 = new Sphere(mShader, mVAO_IDs, mVBO_IDs);
             sphere1.load(vPositionLocation, vNormal);
@@ -155,8 +155,8 @@ namespace Labs.ACW
 
             cube1 = new Cube(mShader, mVAO_IDs, mVBO_IDs);
             cube1.load(vPositionLocation, vNormal);
-            cube1.setPosition(new Vector3(0.0f, 0.0f, -20.0f));
-            cube1.mScale = 10f;
+            cube1.setPosition(new Vector3(0.0f, 0.0f, -25.0f));
+            cube1.mScale = 8f;
 
             #endregion
 
@@ -221,7 +221,6 @@ namespace Labs.ACW
             if (e.KeyChar == '1')
             {
                 sphere1.mPosition.X += 1;
-                backWall.rotation += 1;
             }
             if (e.KeyChar == '2')
             {
@@ -282,19 +281,42 @@ namespace Labs.ACW
             base.OnUpdateFrame(e);
         }
 
+        private void setMaterialProperties(float AmbientR, float AmbientG, float AmbientB,
+    float DiffuseR, float DiffuseG, float DiffuseB,
+    float SpecularR, float SpecularG, float SpecularB,
+    float Shininess)
+        {
+            int uAmbientReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.AmbientReflectivity");
+            Vector3 AmbientReflectivity = new Vector3(AmbientR, AmbientG, AmbientB);
+            GL.Uniform3(uAmbientReflectivityLocation, AmbientReflectivity);
+
+            int uDiffuseReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.DiffuseReflectivity");
+            Vector3 DiffuseReflectivity = new Vector3(DiffuseR, DiffuseG, DiffuseB);
+            GL.Uniform3(uDiffuseReflectivityLocation, DiffuseReflectivity);
+
+            int uSpecularReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.SpecularReflectivity");
+            Vector3 SpecularReflectivity = new Vector3(SpecularR, SpecularG, SpecularB);
+            GL.Uniform3(uSpecularReflectivityLocation, SpecularReflectivity);
+
+            int uShininessLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.Shininess");
+            GL.Uniform1(uShininessLocation, Shininess);
+        }
         protected override void OnRenderFrame(FrameEventArgs e)
         {
             base.OnRenderFrame(e);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
+
             #region Rendering models
 
-            floor.Render();
-            backWall.Render();
+            // White rubber
+            setMaterialProperties(0.05f, 0.05f, 0.05f, 0.5f, 0.5f, 0.5f, 0.7f, 0.7f, 0.7f, 0.078125f);
+
             sphere1.render();
             cube1.Render();
 
             #endregion
+
 
             GL.BindVertexArray(0);
 
@@ -397,37 +419,11 @@ namespace Labs.ACW
                 // Link ground matrix to the shader
                 int uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
                 GL.UniformMatrix4(uModel, true, ref CubeFaceMatrix);
-
-                // White rubber
-                setMaterialProperties(0.05f, 0.05f, 0.05f, 0.5f, 0.5f, 0.5f, 0.7f, 0.7f, 0.7f, 0.078125f);
-
+               
                 // Bind the ground array and draw it
                 GL.BindVertexArray(vertexArrayObject[VAOIndex]);
                 GL.DrawArrays(PrimitiveType.TriangleFan, 0, 4);
             }
-
-
-            private void setMaterialProperties(float AmbientR, float AmbientG, float AmbientB,
-        float DiffuseR, float DiffuseG, float DiffuseB,
-        float SpecularR, float SpecularG, float SpecularB,
-        float Shininess)
-            {
-                int uAmbientReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.AmbientReflectivity");
-                Vector3 AmbientReflectivity = new Vector3(AmbientR, AmbientG, AmbientB);
-                GL.Uniform3(uAmbientReflectivityLocation, AmbientReflectivity);
-
-                int uDiffuseReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.DiffuseReflectivity");
-                Vector3 DiffuseReflectivity = new Vector3(DiffuseR, DiffuseG, DiffuseB);
-                GL.Uniform3(uDiffuseReflectivityLocation, DiffuseReflectivity);
-
-                int uSpecularReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.SpecularReflectivity");
-                Vector3 SpecularReflectivity = new Vector3(SpecularR, SpecularG, SpecularB);
-                GL.Uniform3(uSpecularReflectivityLocation, SpecularReflectivity);
-
-                int uShininessLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.Shininess");
-                GL.Uniform1(uShininessLocation, Shininess);
-            }
-
         }
         public class Sphere
         {
