@@ -48,6 +48,7 @@ namespace Labs.ACW
             GL.ClearColor(Color4.CadetBlue);
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.CullFace);
+            GL.FrontFace(FrontFaceDirection.Cw);
 
             #region Loading in shaders and shader variables
 
@@ -58,7 +59,7 @@ namespace Labs.ACW
             int vNormal = GL.GetAttribLocation(mShader.ShaderProgramID, "vNormal"); //find the index for the location of vNormal in the shader
 
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
-            mView = Matrix4.CreateTranslation(0, -1.5f, 0);
+            mView = Matrix4.CreateTranslation(0, -1.5f,0.0F);
             GL.UniformMatrix4(uView, true, ref mView);
 
             int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
@@ -155,8 +156,9 @@ namespace Labs.ACW
 
             cube1 = new Cube(mShader, mVAO_IDs, mVBO_IDs);
             cube1.load(vPositionLocation, vNormal);
-            cube1.setPosition(new Vector3(0.0f, 0.0f, -25.0f));
-            cube1.mScale = 8f;
+            cube1.setPosition(new Vector3(0.0f, 0.0f, -10.0f));
+            //cube1.mScale = 8f;
+   
 
             #endregion
 
@@ -169,6 +171,18 @@ namespace Labs.ACW
             base.OnLoad(e);
         }
 
+        public void moveCamera(Vector3 Translation)
+        {
+            // Camera movement
+            mView = mView * Matrix4.CreateTranslation(Translation);
+            int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
+            GL.UniformMatrix4(uView, true, ref mView);
+
+            int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
+            Vector4 eyePosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
+            GL.Uniform4(uEyePosition, eyePosition);
+        }
+
         protected override void OnKeyPress(KeyPressEventArgs e)
         {
             base.OnKeyPress(e);
@@ -177,31 +191,19 @@ namespace Labs.ACW
 
             if (e.KeyChar == 'w')
             {
-                // Camera movement
-                mView = mView * Matrix4.CreateTranslation(0.0f, -cameraSpeed, 0.0f);
-                int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
-                GL.UniformMatrix4(uView, true, ref mView);
+                moveCamera(new Vector3(0.0f, -cameraSpeed, 0.0f));
             }
             if (e.KeyChar == 'a')
             {
-                // Camera movement
-                mView = mView * Matrix4.CreateTranslation(cameraSpeed, 0.0f, 0.0f);
-                int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
-                GL.UniformMatrix4(uView, true, ref mView);
+                moveCamera(new Vector3(cameraSpeed, 0.0f, 0.0f));
             }
             if (e.KeyChar == 's')
             {
-                // Camera movement
-                mView = mView * Matrix4.CreateTranslation(0.0f, cameraSpeed, 0.0f);
-                int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
-                GL.UniformMatrix4(uView, true, ref mView);
+                moveCamera(new Vector3(0.0f, cameraSpeed, 0.0f));
             }
             if (e.KeyChar == 'd')
             {
-                // Camera movement
-                mView = mView * Matrix4.CreateTranslation(-cameraSpeed, 0.0f, 0.0f);
-                int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
-                GL.UniformMatrix4(uView, true, ref mView);
+                moveCamera(new Vector3(-cameraSpeed, 0.0f, 0.0f));
             }
             if (e.KeyChar == 'q')
             {
@@ -218,17 +220,18 @@ namespace Labs.ACW
                 GL.UniformMatrix4(uView, true, ref mView);
 
             }
+            float rotationSpeed = 0.03f;
             if (e.KeyChar == '1')
             {
-                sphere1.mPosition.X += 1;
+                cube1.mRotationX += rotationSpeed;
             }
             if (e.KeyChar == '2')
             {
-                sphere1.mPosition.Y += 1;
+                cube1.mRotationY += rotationSpeed;
             }
             if (e.KeyChar == '3')
             {
-                sphere1.mPosition.Z -= 1;
+                cube1.mRotationZ += rotationSpeed;
             }
         }
 
@@ -301,6 +304,7 @@ namespace Labs.ACW
             int uShininessLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.Shininess");
             GL.Uniform1(uShininessLocation, Shininess);
         }
+
         protected override void OnRenderFrame(FrameEventArgs e)
         {
             base.OnRenderFrame(e);
@@ -522,7 +526,10 @@ namespace Labs.ACW
         {
             public Vector3 mPosition = new Vector3(0.0f, 0.0f, 0.0f);
             public float mScale = 1.0f;
-            public float rotation = 0.0f;
+            public float mRotationX = 0.0f;
+            public float mRotationY = 0.0f;
+            public float mRotationZ = 0.0f;
+
 
             private ModelUtility mCubeModelUtility;
 
@@ -584,13 +591,47 @@ namespace Labs.ACW
 
             public void Render()
             {
-                Matrix4 mCubeMatrix = Matrix4.CreateScale(mScale) * Matrix4.CreateTranslation(mPosition);
+                Matrix4 mCubeMatrix = Matrix4.CreateScale(mScale) *
+                     Matrix4.CreateRotationX(mRotationX) *
+                     Matrix4.CreateRotationY(mRotationY) *
+                     Matrix4.CreateRotationZ(mRotationZ) *
+                    Matrix4.CreateTranslation(mPosition);
                 int uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
                 GL.UniformMatrix4(uModel, true, ref mCubeMatrix);
 
                 GL.BindVertexArray(vertexArrayObject[VAOIndex]);
                 GL.DrawElements(PrimitiveType.Triangles, mCubeModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
             }
+        }
+
+        abstract class GameObject
+        {
+            // GRAPHICS
+            private ModelUtility mModelUtility;
+            private ShaderUtility mShader;
+
+            int[] vertexArrayObject;
+            int[] vertexBufferObject;
+
+            private Vector3 position;
+            private Vector3 velocity;
+
+            public Vector3 Position
+            {
+                get { return position; }
+                set { position = value; }
+            }
+
+            public Vector3 Velocity
+            {
+                get { return velocity; }
+                set { velocity = value; }
+            }
+
+
+            abstract public void Render(Matrix4 projectionMatrix);
+            abstract public void Update(float dt);
+
         }
     }
 }
