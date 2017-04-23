@@ -29,8 +29,8 @@ namespace Labs.ACW
 
         protected static int VAOCount = 0;
         protected static int VBOCount = 0;
-        protected static int[] mVAO_IDs = new int[5];
-        protected static int[] mVBO_IDs = new int[10];
+        protected static int[] mVAO_IDs = new int[6];
+        protected static int[] mVBO_IDs = new int[12];
 
         protected static int vPositionLocation;
         protected static int vNormal;
@@ -47,7 +47,7 @@ namespace Labs.ACW
         Cube cube2;
         Cube cube3;
         Cylinder cylinder1;
-
+        Cube cubeTest;
         protected override void OnLoad(EventArgs e)
         {
             // Set some GL state
@@ -65,7 +65,7 @@ namespace Labs.ACW
             vNormal = GL.GetAttribLocation(mShader.ShaderProgramID, "vNormal"); //find the index for the location of vNormal in the shader
 
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
-            mView = Matrix4.CreateTranslation(0, -1.5f, 0.0F);
+            mView = Matrix4.CreateTranslation(0, -1.5f, 3.0f);
             GL.UniformMatrix4(uView, true, ref mView);
 
             int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
@@ -165,13 +165,24 @@ namespace Labs.ACW
 
             // SPHERES
             sphereTest = new AdvancedSphere();
+
             Manager.ManageEntity(sphereTest);
+
             sphereTest.mPosition = new Vector3(2.0f, 1.0f, -5.0f);
 
             // CYLINDERS
             cylinder1 = new Cylinder();
+
             Manager.ManageEntity(cylinder1);
-            cylinder1.mPosition = new Vector3(2.0f, 1.0f, -5.0f);
+
+            cylinder1.mPosition = new Vector3(-2.0f, 1.0f, -5.0f);
+            cylinder1.mScale = 0.5f;
+
+
+            // TEST
+            cubeTest = new Cube();
+            Manager.ManageEntity(cubeTest);
+            cubeTest.mPosition = new Vector3(-2.0f, 3.0f, -5.0f);
 
             #endregion
 
@@ -203,49 +214,38 @@ namespace Labs.ACW
 
             float cameraSpeed = 1.0f;
 
-            if (e.KeyChar == 'w')
+            switch (e.KeyChar)
             {
-                moveCamera(new Vector3(0.0f, -cameraSpeed, 0.0f));
-            }
-            if (e.KeyChar == 'a')
-            {
-                moveCamera(new Vector3(cameraSpeed, 0.0f, 0.0f));
-            }
-            if (e.KeyChar == 's')
-            {
-                moveCamera(new Vector3(0.0f, cameraSpeed, 0.0f));
-            }
-            if (e.KeyChar == 'd')
-            {
-                moveCamera(new Vector3(-cameraSpeed, 0.0f, 0.0f));
-            }
-            if (e.KeyChar == 'q')
-            {
-                // Camera movement
-                mView = mView * Matrix4.CreateRotationX(0.025f);// CreateTranslation(-cameraSpeed, 0.0f, 0.0f);
-                int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
-                GL.UniformMatrix4(uView, true, ref mView);
-            }
-            if (e.KeyChar == 'e')
-            {
-                // Camera movement
-                mView = mView * Matrix4.CreateRotationX(-0.025f);// CreateTranslation(-cameraSpeed, 0.0f, 0.0f);
-                int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
-                GL.UniformMatrix4(uView, true, ref mView);
+                case '1':
+                    cylinder1.mPosition.X += 1;
+                    break;
+                case '2':
+                    cylinder1.mPosition.Y += 1;
+                    break;
+                case '3':
+                    cylinder1.mPosition.Z += 1;
+                    break;
+                case 'w':
+                    moveCamera(new Vector3(0.0f, -cameraSpeed, 0.0f));
+                    break;
+                case 'a':
+                    moveCamera(new Vector3(cameraSpeed, 0.0f, 0.0f));
+                    break;
+                case 's':
+                    moveCamera(new Vector3(0.0f, cameraSpeed, 0.0f));
+                    break;
+                case 'd':
+                    moveCamera(new Vector3(-cameraSpeed, 0.0f, 0.0f));
+                    break;
+                case 'q':
+                    moveCamera(new Vector3(0.0f, 0.0f, -cameraSpeed));
+                    break;
+                case 'e':
+                    moveCamera(new Vector3(0.0f, 0.0f, cameraSpeed));
+                    break;
 
-            }
-            //float rotationSpeed = 0.03f;
-            if (e.KeyChar == '1')
-            {
-                cylinder1.mPosition.X += 1;
-            }
-            if (e.KeyChar == '2')
-            {
-                cylinder1.mPosition.Y += 1;
-            }
-            if (e.KeyChar == '3')
-            {
-                cylinder1.mPosition.Z += 1;
+                default:
+                    break;
             }
         }
 
@@ -391,9 +391,25 @@ namespace Labs.ACW
         /// </summary>
         public void loadObjects()
         {
-            foreach (entity i in mObjects)
+            //foreach (entity i in mObjects)
+            //{
+            //    i.Load();
+            //}
+
+
+
+            for (int i = 0; i < mObjects.Count; i++)
             {
-                i.Load();
+                GL.FrontFace(FrontFaceDirection.Cw);
+
+                if (i == 3) // first 3 objects are cubes to be reversed
+                {
+                    // reset back after the cubes are rendered
+                    GL.FrontFace(FrontFaceDirection.Ccw);
+                }
+
+
+                mObjects[i].Load();
             }
         }
 
@@ -402,10 +418,25 @@ namespace Labs.ACW
         /// </summary>
         public void renderObjects()
         {
-            foreach (entity i in mObjects)
+            //foreach (entity i in mObjects)
+            //{
+            //    i.Render();
+            //}
+
+            for (int i = 0; i < mObjects.Count; i++)
             {
-                i.Render();
+                GL.FrontFace(FrontFaceDirection.Cw);
+
+                if (i == 3) // first 3 objects are cubes to be reversed
+                {
+                    // reset back after the cubes are rendered
+                    GL.FrontFace(FrontFaceDirection.Ccw);
+                }
+
+
+                mObjects[i].Render();
             }
+
         }
 
         /// <summary>
