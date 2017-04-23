@@ -35,19 +35,18 @@ namespace Labs.ACW
         protected static int vPositionLocation;
         protected static int vNormal;
 
-        public Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
+        public Vector3 accelerationDueToGravity = new Vector3(0.0f, -9.81f, 0.0f);
         float restitution = 1f;
 
         private Timer mTimer;
 
         // OBJECTS
         entityManager Manager;
-        AdvancedSphere sphereTest;
+        Sphere sphereTest;
         Cube cube1;
         Cube cube2;
         Cube cube3;
         Cylinder cylinder1;
-        Cube cubeTest;
 
         Vector4 lightPosition;
         protected override void OnLoad(EventArgs e)
@@ -73,6 +72,8 @@ namespace Labs.ACW
             int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
             Vector4 eyePosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
             GL.Uniform4(uEyePosition, eyePosition);
+
+            #endregion
 
             #region Loading in the lights and binding shader light variables
 
@@ -135,15 +136,7 @@ namespace Labs.ACW
             int uSpecularLightLocation2 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[2].SpecularLight");
             Vector3 SpecularColour2 = new Vector3(0.0f, 0.0f, SpecularIntensity);
             GL.Uniform3(uSpecularLightLocation2, SpecularColour2);
-            #endregion
-
-
-            
-            
-            
-
-            #endregion
-
+            #endregion                         
 
             #endregion
 
@@ -170,26 +163,21 @@ namespace Labs.ACW
             cube3.mPosition = new Vector3(0.0f, 0.0f, -5.0f);
 
             // SPHERES
-            sphereTest = new AdvancedSphere();
+            sphereTest = new Sphere();
 
             Manager.ManageEntity(sphereTest);
 
             // sphereTest.mPosition = new Vector3(2.0f, 1.0f, -5.0f);
-            sphereTest.mPosition = new Vector3(0.0f, 1.0f, -5.0f);
-            sphereTest.mScale = 0.1f;
+            sphereTest.mPosition = cube1.mPosition;
+            //sphereTest.mVelocity = new Vector3(0.0f, -9.81f, 0.0f);
+            sphereTest.mScale = 1f;
             // CYLINDERS
             cylinder1 = new Cylinder();
 
             Manager.ManageEntity(cylinder1);
 
             cylinder1.mPosition = new Vector3(-2.0f, 1.0f, -5.0f);
-            cylinder1.mScale = 0.5f;
-
-
-            // TEST
-            cubeTest = new Cube();
-            Manager.ManageEntity(cubeTest);
-            cubeTest.mPosition = new Vector3(-2.0f, 3.0f, -5.0f);
+            cylinder1.mScale = 1f;
 
             #endregion
 
@@ -229,12 +217,9 @@ namespace Labs.ACW
             lightPosition2 = Vector4.Transform(lightPosition2, mView);
             GL.Uniform4(uLightPositionLocation2, lightPosition2);
 
-
-            //lightPosition1 = Vector4.Transform(lightPosition1, mView);
-
-            int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
-            Vector4 eyePosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
-            GL.Uniform4(uEyePosition, eyePosition);
+            //int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
+            //Vector4 eyePosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
+            //GL.Uniform4(uEyePosition, eyePosition);
         }
 
         protected override void OnKeyPress(KeyPressEventArgs e)
@@ -299,30 +284,8 @@ namespace Labs.ACW
         {
             float timestep = mTimer.GetElapsedSeconds();
 
-            #region Sphere collision with ground
-
-            //// RIGHT
-            //if (mSpherePosition.ExtractTranslation().X + (mSphereRadius / mGroundPosition.ExtractScale().X) > 1) // 
-            //{
-            //    // COLLISION RESPONSE
-            //}
-            //// LEFT
-            //if (mSpherePosition.ExtractTranslation().X - (mSphereRadius / mGroundPosition.ExtractScale().X) < -1) // 
-            //{
-            //    // COLLISION RESPONSE
-            //}
-            //// TOP
-            //if (mSpherePosition.ExtractTranslation().Y + (mSphereRadius / mGroundPosition.ExtractScale().X) > 1) // 
-            //{
-            //    // COLLISION RESPONSE
-            //}
-            //// BOTTOM
-            //if (mSpherePosition.ExtractTranslation().Y - (mSphereRadius / mGroundPosition.ExtractScale().X) < -1) // 
-            //{
-            //    // COLLISION RESPONSE
-            //}
-
-            #endregion
+            //sphereTest.Update(timestep, accelerationDueToGravity);
+            sphereTest.hasCollidedWithCube(cube1);
 
             base.OnUpdateFrame(e);
         }
@@ -516,9 +479,9 @@ namespace Labs.ACW
         abstract public void Update(float pTimestep, Vector3 pGravity);
     }
 
-    public class AdvancedSphere : entity
+    public class Sphere : entity
     {
-        public AdvancedSphere()
+        public Sphere()
         {
             VAOIndex = entityManager.VAOCount++;
             VBOIndex = entityManager.VBOCount++;
@@ -586,6 +549,30 @@ namespace Labs.ACW
         {
             mVelocity = mVelocity + gravity * dt;
             mPosition = mPosition + mVelocity * dt;
+        }
+
+        public void hasCollidedWithCube(Cube pCube)
+        {
+            // RIGHT
+            if (mPosition.X + mRadius > 0.5) 
+            {
+                // COLLISION RESPONSE
+            }
+            // LEFT
+            //if (mPosition.X - (mRadius / pCube.mPosition.X) < -0.5) 
+            //{
+            //    // COLLISION RESPONSE
+            //}
+            //// TOP
+            //if (mPosition.Y + (mRadius / pCube.mPosition.X) > 0.5)
+            //{
+            //    // COLLISION RESPONSE
+            //}
+            //// BOTTOM
+            //if (mPosition.Y - (mRadius / pCube.mPosition.X) < -0.5) 
+            //{
+            //    // COLLISION RESPONSE
+            //}
         }
     }
 
