@@ -451,9 +451,7 @@ namespace Labs.Lab3
             GL.UniformMatrix4(uModel, true, ref m3); // uses the cylinder matrix.
 
             // Set to emerald
-            //setMaterialProperties(0.0215f, 0.1745f, 0.0215f, 0.07568f, 0.61424f, 0.07568f, 0.633f, 0.727811f, 0.633f, 0.6f);
-
-            
+            //setMaterialProperties(0.0215f, 0.1745f, 0.0215f, 0.07568f, 0.61424f, 0.07568f, 0.633f, 0.727811f, 0.633f, 0.6f);   
 
             // gold
             setMaterialProperties(0.24725f, 0.1995f, 0.0745f, 0.75164f, 0.60648f, 0.22648f, 0.628281f, 0.555802f, 0.366065f, 0.4f);
