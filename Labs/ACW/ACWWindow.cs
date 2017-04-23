@@ -48,10 +48,12 @@ namespace Labs.ACW
         Cube cube3;
         Cylinder cylinder1;
         Cube cubeTest;
+
+        Vector4 lightPosition;
         protected override void OnLoad(EventArgs e)
         {
             // Set some GL state
-            GL.ClearColor(Color4.CadetBlue);
+            GL.ClearColor(Color4.Black);
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.CullFace);
             GL.FrontFace(FrontFaceDirection.Cw);
@@ -65,24 +67,23 @@ namespace Labs.ACW
             vNormal = GL.GetAttribLocation(mShader.ShaderProgramID, "vNormal"); //find the index for the location of vNormal in the shader
 
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
-            mView = Matrix4.CreateTranslation(0, -1.5f, 3.0f);
+            mView = Matrix4.CreateTranslation(0.0f, 0.0f,0.0f);
             GL.UniformMatrix4(uView, true, ref mView);
 
             int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
             Vector4 eyePosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
             GL.Uniform4(uEyePosition, eyePosition);
 
-
             #region Loading in the lights and binding shader light variables
 
-            float AmbientIntensity = 0.8f;
+            float AmbientIntensity = 0.9f;
             float DiffuseIntensity = 0.7f;
             float SpecularIntensity = 0.001f;
 
             #region Red Light 1
             int uLightPositionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[0].Position");
-            Vector4 lightPosition = new Vector4(1, 4, -8.5f, 1);
-            lightPosition = Vector4.Transform(lightPosition, mView);
+            lightPosition = new Vector4(0.5f, 2.0f, -5.0f, 1.0f);
+            //lightPosition = Vector4.Transform(lightPosition, mView);
             GL.Uniform4(uLightPositionLocation, lightPosition);
 
             int uAmbientLightLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[0].AmbientLight");
@@ -100,8 +101,8 @@ namespace Labs.ACW
 
             #region Green Light 2
             int uLightPositionLocation1 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[1].Position");
-            Vector4 lightPosition1 = new Vector4(5, 4, -8.5f, 1);
-            lightPosition1 = Vector4.Transform(lightPosition1, mView);
+            Vector4 lightPosition1 = new Vector4(0.5f, 1.0f, -5.0f, 1.0f);
+            //lightPosition1 = Vector4.Transform(lightPosition1, mView);
             GL.Uniform4(uLightPositionLocation1, lightPosition1);
 
             int uAmbientLightLocation1 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[1].AmbientLight");
@@ -119,8 +120,8 @@ namespace Labs.ACW
 
             #region blue Light 3
             int uLightPositionLocation2 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[2].Position");
-            Vector4 lightPosition2 = new Vector4(10, 4, -8.5f, 1);
-            lightPosition2 = Vector4.Transform(lightPosition2, mView);
+            Vector4 lightPosition2 = new Vector4(0.5f, 0.0f, -5.0f, 1.0f);
+            //lightPosition2 = Vector4.Transform(lightPosition2, mView);
             GL.Uniform4(uLightPositionLocation2, lightPosition2);
 
             int uAmbientLightLocation2 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[2].AmbientLight");
@@ -135,6 +136,11 @@ namespace Labs.ACW
             Vector3 SpecularColour2 = new Vector3(0.0f, 0.0f, SpecularIntensity);
             GL.Uniform3(uSpecularLightLocation2, SpecularColour2);
             #endregion
+
+
+            
+            
+            
 
             #endregion
 
@@ -168,8 +174,9 @@ namespace Labs.ACW
 
             Manager.ManageEntity(sphereTest);
 
-            sphereTest.mPosition = new Vector3(2.0f, 1.0f, -5.0f);
-
+            // sphereTest.mPosition = new Vector3(2.0f, 1.0f, -5.0f);
+            sphereTest.mPosition = new Vector3(0.0f, 1.0f, -5.0f);
+            sphereTest.mScale = 0.1f;
             // CYLINDERS
             cylinder1 = new Cylinder();
 
@@ -203,6 +210,28 @@ namespace Labs.ACW
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
             GL.UniformMatrix4(uView, true, ref mView);
 
+
+            // LIGHT 1
+            int uLightPositionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[0].Position");
+            lightPosition = new Vector4(0.5f, 2.0f, -5.0f, 1.0f);
+            lightPosition = Vector4.Transform(lightPosition, mView);
+            GL.Uniform4(uLightPositionLocation, lightPosition);
+
+            // LIGHT 2
+            int uLightPositionLocation1 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[1].Position");
+            Vector4 lightPosition1 = new Vector4(0.5f, 1.0f, -5.0f, 1.0f);
+            lightPosition1 = Vector4.Transform(lightPosition1, mView);
+            GL.Uniform4(uLightPositionLocation1, lightPosition1);
+
+            // LIGHT 3
+            int uLightPositionLocation2 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[2].Position");
+            Vector4 lightPosition2 = new Vector4(0.5f, 0.0f, -5.0f, 1.0f);
+            lightPosition2 = Vector4.Transform(lightPosition2, mView);
+            GL.Uniform4(uLightPositionLocation2, lightPosition2);
+
+
+            //lightPosition1 = Vector4.Transform(lightPosition1, mView);
+
             int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
             Vector4 eyePosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
             GL.Uniform4(uEyePosition, eyePosition);
@@ -212,7 +241,7 @@ namespace Labs.ACW
         {
             base.OnKeyPress(e);
 
-            float cameraSpeed = 1.0f;
+            float cameraSpeed = 0.2f;
 
             switch (e.KeyChar)
             {
@@ -242,6 +271,9 @@ namespace Labs.ACW
                     break;
                 case 'e':
                     moveCamera(new Vector3(0.0f, 0.0f, cameraSpeed));
+                    break;
+                case 'g':
+                    lightPosition.Y += 1;
                     break;
 
                 default:
@@ -400,12 +432,12 @@ namespace Labs.ACW
 
             for (int i = 0; i < mObjects.Count; i++)
             {
-                GL.FrontFace(FrontFaceDirection.Cw);
+                //GL.FrontFace(FrontFaceDirection.Cw);
 
                 if (i == 3) // first 3 objects are cubes to be reversed
                 {
                     // reset back after the cubes are rendered
-                    GL.FrontFace(FrontFaceDirection.Ccw);
+                    //GL.FrontFace(FrontFaceDirection.Ccw);
                 }
 
 
@@ -425,12 +457,12 @@ namespace Labs.ACW
 
             for (int i = 0; i < mObjects.Count; i++)
             {
-                GL.FrontFace(FrontFaceDirection.Cw);
+                //GL.FrontFace(FrontFaceDirection.Cw);
 
                 if (i == 3) // first 3 objects are cubes to be reversed
                 {
                     // reset back after the cubes are rendered
-                    GL.FrontFace(FrontFaceDirection.Ccw);
+                   // GL.FrontFace(FrontFaceDirection.Ccw);
                 }
 
 
@@ -537,7 +569,7 @@ namespace Labs.ACW
             GL.VertexAttribPointer(entityManager.vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
 
             GL.EnableVertexAttribArray(entityManager.vNormal);
-            GL.VertexAttribPointer(entityManager.vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
+            GL.VertexAttribPointer(entityManager.vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 2 * sizeof(float));
         }
 
         public override void Render()

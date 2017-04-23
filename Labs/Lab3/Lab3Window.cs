@@ -412,7 +412,7 @@ namespace Labs.Lab3
             GL.UniformMatrix4(uModel, true, ref mGroundModel);
 
             // White rubber
-            setMaterialProperties(0.05f, 0.05f, 0.05f, 0.5f, 0.5f, 0.5f, 0.7f, 0.7f, 0.7f, 0.078125f);
+            setMaterialProperties(0.05f, 0.05f, 0.05f, 0.5f, 0.5f, 0.5f, 0.7f, 0.7f, 0.7f, 0.2f);
 
             GL.BindVertexArray(mVAO_IDs[0]);
             GL.DrawArrays(PrimitiveType.TriangleFan, 0, 4);
@@ -439,7 +439,7 @@ namespace Labs.Lab3
             //setMaterialProperties(0.25f, 0.25f, 0.25f, 0.4f, 0.4f, 0.4f, 0.774597f, 0.774597f, 0.774597f, 0.6f);
             
             // Red plastic
-            setMaterialProperties(0.0f, 0.0f, 0.0f, 0.5f, 0.0f, 0.0f, 0.7f, 0.6f, 0.6f, 0.25f);
+            setMaterialProperties(0.0f, 0.0f, 0.0f, 0.5f, 0.0f, 0.0f, 0.7f, 0.6f, 0.6f, 0.2f);
 
             GL.BindVertexArray(mVAO_IDs[3]);
             GL.DrawElements(PrimitiveType.Triangles, mCylinderUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
