@@ -34,6 +34,10 @@ namespace Labs.ACW
         protected static int vPositionLocation;
         protected static int vNormal;
 
+        public bool pauseTime = false;
+        public Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
+        //public Vector3 accelerationDueToGravity = new Vector3(0.0f, -9.81f, 0.0f);
+        float restitution = 1f;
 
         private Timer mTimer;
 
@@ -43,13 +47,7 @@ namespace Labs.ACW
         Cube cube1;
         Cylinder cylinder1;
 
-        // OBJECT PHYSICS
-        private bool pauseTime = false;
-        public Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
-        //public Vector3 accelerationDueToGravity = new Vector3(0.0f, -9.81f, 0.0f);
-        float restitution = 1f;
 
-        #region Custom Methods
         public void pauseSimulation()
         {
             pauseTime ^= true;
@@ -103,9 +101,6 @@ namespace Labs.ACW
             int uShininessLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.Shininess");
             GL.Uniform1(uShininessLocation, Shininess);
         }
-
-
-        #endregion
 
         protected override void OnLoad(EventArgs e)
         {
@@ -372,6 +367,26 @@ namespace Labs.ACW
         }
     }
 
+    public class lightManager
+    {
+        public List<light> mLights = new List<light>();
+
+        public void LoadLights()
+        {
+            for (int i = 0; i < mLights.Count; i++)
+            {
+                //i.load();
+            }
+        }
+    }
+
+    public class light
+    {
+        public void load()
+        {
+
+        }
+    }
 
     public class entityManager
     {
