@@ -35,7 +35,8 @@ namespace Labs.ACW
         protected static int vPositionLocation;
         protected static int vNormal;
 
-        public Vector3 accelerationDueToGravity = new Vector3(0.0f, -9.81f, 0.0f);
+        public Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
+        //public Vector3 accelerationDueToGravity = new Vector3(0.0f, -9.81f, 0.0f);
         float restitution = 1f;
 
         private Timer mTimer;
@@ -66,7 +67,7 @@ namespace Labs.ACW
             vNormal = GL.GetAttribLocation(mShader.ShaderProgramID, "vNormal"); //find the index for the location of vNormal in the shader
 
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
-            mView = Matrix4.CreateTranslation(0.0f, 0.0f,0.0f);
+            mView = Matrix4.CreateTranslation(0.0f, 0.0f, 0.0f);
             GL.UniformMatrix4(uView, true, ref mView);
 
             int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
@@ -83,8 +84,8 @@ namespace Labs.ACW
 
             #region Red Light 1
             int uLightPositionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[0].Position");
-            lightPosition = new Vector4(0.5f, 2.0f, -5.0f, 1.0f);
-            //lightPosition = Vector4.Transform(lightPosition, mView);
+            lightPosition = new Vector4(0.5f, 0.0f, -5.0f, 1.0f);
+            lightPosition = Vector4.Transform(lightPosition, mView);
             GL.Uniform4(uLightPositionLocation, lightPosition);
 
             int uAmbientLightLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[0].AmbientLight");
@@ -102,8 +103,8 @@ namespace Labs.ACW
 
             #region Green Light 2
             int uLightPositionLocation1 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[1].Position");
-            Vector4 lightPosition1 = new Vector4(0.5f, 1.0f, -5.0f, 1.0f);
-            //lightPosition1 = Vector4.Transform(lightPosition1, mView);
+            Vector4 lightPosition1 = new Vector4(0.5f, -1.0f, -5.0f, 1.0f);
+            lightPosition1 = Vector4.Transform(lightPosition1, mView);
             GL.Uniform4(uLightPositionLocation1, lightPosition1);
 
             int uAmbientLightLocation1 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[1].AmbientLight");
@@ -121,8 +122,8 @@ namespace Labs.ACW
 
             #region blue Light 3
             int uLightPositionLocation2 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[2].Position");
-            Vector4 lightPosition2 = new Vector4(0.5f, 0.0f, -5.0f, 1.0f);
-            //lightPosition2 = Vector4.Transform(lightPosition2, mView);
+            Vector4 lightPosition2 = new Vector4(0.5f, -2.0f, -5.0f, 1.0f);
+            lightPosition2 = Vector4.Transform(lightPosition2, mView);
             GL.Uniform4(uLightPositionLocation2, lightPosition2);
 
             int uAmbientLightLocation2 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[2].AmbientLight");
@@ -136,7 +137,7 @@ namespace Labs.ACW
             int uSpecularLightLocation2 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[2].SpecularLight");
             Vector3 SpecularColour2 = new Vector3(0.0f, 0.0f, SpecularIntensity);
             GL.Uniform3(uSpecularLightLocation2, SpecularColour2);
-            #endregion                         
+            #endregion
 
             #endregion
 
@@ -148,19 +149,14 @@ namespace Labs.ACW
 
             Manager = new entityManager(mShader, mVAO_IDs, mVBO_IDs);
 
+            // 100 cm = 1.0f
+
             // CUBES
             cube1 = new Cube();
-            cube2 = new Cube();
-            cube3 = new Cube();
-
             Manager.ManageEntity(cube1);
-            Manager.ManageEntity(cube2);
-            Manager.ManageEntity(cube3);
 
-            // 100 cm = 1.0f
-            cube1.mPosition = new Vector3(0.0f, 2.0f, -5.0f);
-            cube2.mPosition = new Vector3(0.0f, 1.0f, -5.0f);
-            cube3.mPosition = new Vector3(0.0f, 0.0f, -5.0f);
+            cube1.mPosition = new Vector3(0.0f, 0.0f, -5.0f);
+            cube1.mScaleY = 3.0f;
 
             // SPHERES
             sphereTest = new Sphere();
@@ -169,15 +165,16 @@ namespace Labs.ACW
 
             // sphereTest.mPosition = new Vector3(2.0f, 1.0f, -5.0f);
             sphereTest.mPosition = cube1.mPosition;
-            //sphereTest.mVelocity = new Vector3(0.0f, -9.81f, 0.0f);
-            sphereTest.mScale = 1f;
+            sphereTest.mVelocity = new Vector3(1.0f, 1.0f, 0.0f);
+            sphereTest.SetScale(0.1f);
+
             // CYLINDERS
             cylinder1 = new Cylinder();
 
             Manager.ManageEntity(cylinder1);
 
             cylinder1.mPosition = new Vector3(-2.0f, 1.0f, -5.0f);
-            cylinder1.mScale = 1f;
+            //cylinder1.mScale = 1f;
 
             #endregion
 
@@ -198,22 +195,21 @@ namespace Labs.ACW
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
             GL.UniformMatrix4(uView, true, ref mView);
 
-
             // LIGHT 1
             int uLightPositionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[0].Position");
-            lightPosition = new Vector4(0.5f, 2.0f, -5.0f, 1.0f);
+            lightPosition = new Vector4(0.5f, 0.0f, -5.0f, 1.0f);
             lightPosition = Vector4.Transform(lightPosition, mView);
             GL.Uniform4(uLightPositionLocation, lightPosition);
 
             // LIGHT 2
             int uLightPositionLocation1 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[1].Position");
-            Vector4 lightPosition1 = new Vector4(0.5f, 1.0f, -5.0f, 1.0f);
+            Vector4 lightPosition1 = new Vector4(0.5f, -1.0f, -5.0f, 1.0f);
             lightPosition1 = Vector4.Transform(lightPosition1, mView);
             GL.Uniform4(uLightPositionLocation1, lightPosition1);
 
             // LIGHT 3
             int uLightPositionLocation2 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[2].Position");
-            Vector4 lightPosition2 = new Vector4(0.5f, 0.0f, -5.0f, 1.0f);
+            Vector4 lightPosition2 = new Vector4(0.5f, -2.0f, -5.0f, 1.0f);
             lightPosition2 = Vector4.Transform(lightPosition2, mView);
             GL.Uniform4(uLightPositionLocation2, lightPosition2);
 
@@ -226,7 +222,7 @@ namespace Labs.ACW
         {
             base.OnKeyPress(e);
 
-            float cameraSpeed = 0.2f;
+            float cameraSpeed = 0.1f;
 
             switch (e.KeyChar)
             {
@@ -285,7 +281,7 @@ namespace Labs.ACW
             float timestep = mTimer.GetElapsedSeconds();
 
             //sphereTest.Update(timestep, accelerationDueToGravity);
-            sphereTest.hasCollidedWithCube(cube1);
+            //sphereTest.hasCollidedWithCube(cube1);
 
             base.OnUpdateFrame(e);
         }
@@ -321,6 +317,10 @@ namespace Labs.ACW
 
             // White rubber
             setMaterialProperties(0.05f, 0.05f, 0.05f, 0.5f, 0.5f, 0.5f, 0.7f, 0.7f, 0.7f, 0.078125f);
+
+
+            // chrome
+            // setMaterialProperties(0.25f, 0.25f, 0.25f, 0.4f, 0.4f, 0.4f, 0.774597f, 0.774597f, 0.774597f, 0.6f);
 
             Manager.renderObjects();
 
@@ -425,7 +425,7 @@ namespace Labs.ACW
                 if (i == 3) // first 3 objects are cubes to be reversed
                 {
                     // reset back after the cubes are rendered
-                   // GL.FrontFace(FrontFaceDirection.Ccw);
+                    // GL.FrontFace(FrontFaceDirection.Ccw);
                 }
 
 
@@ -465,7 +465,9 @@ namespace Labs.ACW
         protected ModelUtility mModelUtility;
 
         // OBJECT PROPERTIES      
-        public float mScale;
+        public float mScaleX;
+        public float mScaleY;
+        public float mScaleZ;
         public float mVolume;
         public float mDensity;
         public float mMass;
@@ -477,6 +479,17 @@ namespace Labs.ACW
         abstract public void Load();
         abstract public void Render();
         abstract public void Update(float pTimestep, Vector3 pGravity);
+
+        /// <summary>
+        /// Sets the scale of the entity in the x, y and z plane to the parameter value.
+        /// </summary>
+        /// <param name="pScale">The value the scale will be set to.</param>
+        public void SetScale(float pScale)
+        {
+            mScaleX = pScale;
+            mScaleY = pScale;
+            mScaleZ = pScale;
+        }
     }
 
     public class Sphere : entity
@@ -488,8 +501,10 @@ namespace Labs.ACW
             entityManager.VBOCount++;
 
             // SPHERE PROPERTIES
-            mRadius = 4f;
-            mScale = 1.0f;
+            mRadius = 1f;
+            mScaleX = 1.0f;
+            mScaleY = 1.0f;
+            mScaleZ = 1.0f;
             mVolume = (4 / 3) * (float)Math.PI * (float)Math.Pow(mRadius, 3);
             mDensity = 1f;
             mMass = mDensity * mVolume;
@@ -537,7 +552,7 @@ namespace Labs.ACW
 
         public override void Render()
         {
-            mMatrix = Matrix4.CreateScale(mScale) * Matrix4.CreateTranslation(mPosition);
+            mMatrix = Matrix4.CreateScale(new Vector3(mScaleX, mScaleY, mScaleZ)) * Matrix4.CreateTranslation(mPosition);
             int uModel = GL.GetUniformLocation(entityManager.shader.ShaderProgramID, "uModel");
             GL.UniformMatrix4(uModel, true, ref mMatrix);
 
@@ -553,26 +568,32 @@ namespace Labs.ACW
 
         public void hasCollidedWithCube(Cube pCube)
         {
+            float restitution = 1.0f;
+
             // RIGHT
-            if (mPosition.X + mRadius > 0.5) 
+            if ((mPosition.X + (mRadius * mScaleX)) > (pCube.mPosition.X + (pCube.mDimension * pCube.mScaleX)))
             {
-                // COLLISION RESPONSE
+                Vector3 normal = new Vector3(1, 0, 0);
+                mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
             }
             // LEFT
-            //if (mPosition.X - (mRadius / pCube.mPosition.X) < -0.5) 
-            //{
-            //    // COLLISION RESPONSE
-            //}
-            //// TOP
-            //if (mPosition.Y + (mRadius / pCube.mPosition.X) > 0.5)
-            //{
-            //    // COLLISION RESPONSE
-            //}
-            //// BOTTOM
-            //if (mPosition.Y - (mRadius / pCube.mPosition.X) < -0.5) 
-            //{
-            //    // COLLISION RESPONSE
-            //}
+            if ((mPosition.X - (mRadius * mScaleX)) < (pCube.mPosition.X - (pCube.mDimension * pCube.mScaleX)))
+            {
+                Vector3 normal = new Vector3(-1, 0, 0);
+                mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
+            }
+            // TOP
+            if ((mPosition.Y + (mRadius * mScaleY)) > (pCube.mPosition.Y + (pCube.mDimension * pCube.mScaleY)))
+            {
+                Vector3 normal = new Vector3(0, 1, 0);
+                mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
+            }
+            // BOTTOM
+            if ((mPosition.Y - (mRadius * mScaleY)) < (pCube.mPosition.Y - (pCube.mDimension * pCube.mScaleY)))
+            {
+                Vector3 normal = new Vector3(0, -1, 0);
+                mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
+            }
         }
     }
 
@@ -585,14 +606,20 @@ namespace Labs.ACW
             entityManager.VBOCount++; // cube uses two VBOS
 
             // CUBE PROPERTIES
-            mScale = 1.0f;
+            mScaleX = 1.0f;
+            mScaleY = 1.0f;
+            mScaleZ = 1.0f;
             mVolume = 0.0f; // TODO ADD VOLUME FOR CUBE
             mDensity = 1f;
             mMass = mDensity * mVolume;
+            mDimension = 0.5f;
+
 
             mPosition = new Vector3(0.0f, 0.0f, 0.0f);
             mVelocity = new Vector3(0.0f, 0.0f, 0.0f);
         }
+
+        public float mDimension;
 
         public override void Load()
         {
@@ -622,10 +649,9 @@ namespace Labs.ACW
             GL.EnableVertexAttribArray(entityManager.vPositionLocation);
             GL.VertexAttribPointer(entityManager.vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
         }
-
         public override void Render()
         {
-            mMatrix = Matrix4.CreateScale(mScale) * Matrix4.CreateTranslation(mPosition);
+            mMatrix = Matrix4.CreateScale(new Vector3(mScaleX, mScaleY, mScaleZ)) * Matrix4.CreateTranslation(mPosition);
             int uModel = GL.GetUniformLocation(entityManager.shader.ShaderProgramID, "uModel");
             GL.UniformMatrix4(uModel, true, ref mMatrix);
 
@@ -648,8 +674,10 @@ namespace Labs.ACW
             entityManager.VBOCount++;
 
             // CYLINDER PROPERTIES TODO: correct these values (currently same as sphere)
-            mRadius = 4f;
-            mScale = 1.0f;
+            mRadius = 1f;
+            mScaleX = 1.0f;
+            mScaleY = 1.0f;
+            mScaleZ = 1.0f;
             mVolume = (4 / 3) * (float)Math.PI * (float)Math.Pow(mRadius, 3);
             mDensity = 1f;
             mMass = mDensity * mVolume;
@@ -695,7 +723,7 @@ namespace Labs.ACW
 
         public override void Render()
         {
-            mMatrix = Matrix4.CreateScale(mScale) * Matrix4.CreateTranslation(mPosition);
+            mMatrix = Matrix4.CreateScale(new Vector3(mScaleX, mScaleY, mScaleZ)) * Matrix4.CreateTranslation(mPosition);
             int uModel = GL.GetUniformLocation(entityManager.shader.ShaderProgramID, "uModel");
             GL.UniformMatrix4(uModel, true, ref mMatrix);
 
