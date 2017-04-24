@@ -64,9 +64,5 @@ void main()
 		uLight[2].AmbientLight * uMaterial.AmbientReflectivity +
 	    uLight[2].DiffuseLight * uMaterial.DiffuseReflectivity * diffuseFactor + 
 		uLight[2].SpecularLight * uMaterial.SpecularReflectivity * specularFactor, 1);
-
    // }
-
-
-
 }

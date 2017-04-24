@@ -21,8 +21,7 @@ namespace Labs.ACW
                 3, // minor
                 GraphicsContextFlags.ForwardCompatible
                 )
-        {
-        }
+        { }
 
         protected ShaderUtility mShader;
         private Matrix4 mView;
@@ -35,9 +34,6 @@ namespace Labs.ACW
         protected static int vPositionLocation;
         protected static int vNormal;
 
-        public Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
-        //public Vector3 accelerationDueToGravity = new Vector3(0.0f, -9.81f, 0.0f);
-        float restitution = 1f;
 
         private Timer mTimer;
 
@@ -45,15 +41,76 @@ namespace Labs.ACW
         entityManager Manager;
         Sphere sphereTest;
         Cube cube1;
-        Cube cube2;
-        Cube cube3;
         Cylinder cylinder1;
 
-        Vector4 lightPosition;
+        // OBJECT PHYSICS
+        private bool pauseTime = false;
+        public Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
+        //public Vector3 accelerationDueToGravity = new Vector3(0.0f, -9.81f, 0.0f);
+        float restitution = 1f;
+
+        #region Custom Methods
+        public void pauseSimulation()
+        {
+            pauseTime ^= true;
+        }
+        public void moveCamera(Vector3 Translation)
+        {
+            // Camera movement
+            mView = mView * Matrix4.CreateTranslation(Translation);
+            int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
+            GL.UniformMatrix4(uView, true, ref mView);
+
+            // LIGHT 1
+            int uLightPositionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[0].Position");
+            Vector4 lightPosition = new Vector4(0.5f, 0.0f, -5.0f, 1.0f);
+            lightPosition = Vector4.Transform(lightPosition, mView);
+            GL.Uniform4(uLightPositionLocation, lightPosition);
+
+            // LIGHT 2
+            int uLightPositionLocation1 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[1].Position");
+            Vector4 lightPosition1 = new Vector4(0.5f, -1.0f, -5.0f, 1.0f);
+            lightPosition1 = Vector4.Transform(lightPosition1, mView);
+            GL.Uniform4(uLightPositionLocation1, lightPosition1);
+
+            // LIGHT 3
+            int uLightPositionLocation2 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[2].Position");
+            Vector4 lightPosition2 = new Vector4(0.5f, -2.0f, -5.0f, 1.0f);
+            lightPosition2 = Vector4.Transform(lightPosition2, mView);
+            GL.Uniform4(uLightPositionLocation2, lightPosition2);
+
+            //int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
+            //Vector4 eyePosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
+            //GL.Uniform4(uEyePosition, eyePosition);
+        }
+        private void setMaterialProperties(float AmbientR, float AmbientG, float AmbientB,
+    float DiffuseR, float DiffuseG, float DiffuseB,
+    float SpecularR, float SpecularG, float SpecularB,
+    float Shininess)
+        {
+            int uAmbientReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.AmbientReflectivity");
+            Vector3 AmbientReflectivity = new Vector3(AmbientR, AmbientG, AmbientB);
+            GL.Uniform3(uAmbientReflectivityLocation, AmbientReflectivity);
+
+            int uDiffuseReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.DiffuseReflectivity");
+            Vector3 DiffuseReflectivity = new Vector3(DiffuseR, DiffuseG, DiffuseB);
+            GL.Uniform3(uDiffuseReflectivityLocation, DiffuseReflectivity);
+
+            int uSpecularReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.SpecularReflectivity");
+            Vector3 SpecularReflectivity = new Vector3(SpecularR, SpecularG, SpecularB);
+            GL.Uniform3(uSpecularReflectivityLocation, SpecularReflectivity);
+
+            int uShininessLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.Shininess");
+            GL.Uniform1(uShininessLocation, Shininess);
+        }
+
+
+        #endregion
+
         protected override void OnLoad(EventArgs e)
         {
             // Set some GL state
-            GL.ClearColor(Color4.Black);
+            GL.ClearColor(Color4.Aquamarine);
             GL.Enable(EnableCap.DepthTest);
             GL.Enable(EnableCap.CullFace);
             GL.FrontFace(FrontFaceDirection.Cw);
@@ -74,6 +131,7 @@ namespace Labs.ACW
             Vector4 eyePosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
             GL.Uniform4(uEyePosition, eyePosition);
 
+
             #endregion
 
             #region Loading in the lights and binding shader light variables
@@ -84,7 +142,7 @@ namespace Labs.ACW
 
             #region Red Light 1
             int uLightPositionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[0].Position");
-            lightPosition = new Vector4(0.5f, 0.0f, -5.0f, 1.0f);
+            Vector4 lightPosition = new Vector4(0.5f, 0.0f, -5.0f, 1.0f);
             lightPosition = Vector4.Transform(lightPosition, mView);
             GL.Uniform4(uLightPositionLocation, lightPosition);
 
@@ -148,9 +206,7 @@ namespace Labs.ACW
             #region Loading in models
 
             Manager = new entityManager(mShader, mVAO_IDs, mVBO_IDs);
-
             // 100 cm = 1.0f
-
             // CUBES
             cube1 = new Cube();
             Manager.ManageEntity(cube1);
@@ -165,7 +221,7 @@ namespace Labs.ACW
 
             // sphereTest.mPosition = new Vector3(2.0f, 1.0f, -5.0f);
             sphereTest.mPosition = cube1.mPosition;
-            sphereTest.mVelocity = new Vector3(1.0f, 1.0f, 0.0f);
+            sphereTest.mVelocity = new Vector3(1.0f, 1.0f, 1.0f);
             sphereTest.SetScale(0.1f);
 
             // CYLINDERS
@@ -186,36 +242,6 @@ namespace Labs.ACW
             mTimer.Start();
 
             base.OnLoad(e);
-        }
-
-        public void moveCamera(Vector3 Translation)
-        {
-            // Camera movement
-            mView = mView * Matrix4.CreateTranslation(Translation);
-            int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
-            GL.UniformMatrix4(uView, true, ref mView);
-
-            // LIGHT 1
-            int uLightPositionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[0].Position");
-            lightPosition = new Vector4(0.5f, 0.0f, -5.0f, 1.0f);
-            lightPosition = Vector4.Transform(lightPosition, mView);
-            GL.Uniform4(uLightPositionLocation, lightPosition);
-
-            // LIGHT 2
-            int uLightPositionLocation1 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[1].Position");
-            Vector4 lightPosition1 = new Vector4(0.5f, -1.0f, -5.0f, 1.0f);
-            lightPosition1 = Vector4.Transform(lightPosition1, mView);
-            GL.Uniform4(uLightPositionLocation1, lightPosition1);
-
-            // LIGHT 3
-            int uLightPositionLocation2 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[2].Position");
-            Vector4 lightPosition2 = new Vector4(0.5f, -2.0f, -5.0f, 1.0f);
-            lightPosition2 = Vector4.Transform(lightPosition2, mView);
-            GL.Uniform4(uLightPositionLocation2, lightPosition2);
-
-            //int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
-            //Vector4 eyePosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
-            //GL.Uniform4(uEyePosition, eyePosition);
         }
 
         protected override void OnKeyPress(KeyPressEventArgs e)
@@ -253,8 +279,8 @@ namespace Labs.ACW
                 case 'e':
                     moveCamera(new Vector3(0.0f, 0.0f, cameraSpeed));
                     break;
-                case 'g':
-                    lightPosition.Y += 1;
+                case 'p':
+                    pauseSimulation();                
                     break;
 
                 default:
@@ -280,31 +306,12 @@ namespace Labs.ACW
         {
             float timestep = mTimer.GetElapsedSeconds();
 
-            //sphereTest.Update(timestep, accelerationDueToGravity);
-            //sphereTest.hasCollidedWithCube(cube1);
-
+            if (!pauseTime)
+            {
+                sphereTest.Update(timestep, accelerationDueToGravity);
+                sphereTest.hasCollidedWithCube(cube1);
+            }
             base.OnUpdateFrame(e);
-        }
-
-        private void setMaterialProperties(float AmbientR, float AmbientG, float AmbientB,
-    float DiffuseR, float DiffuseG, float DiffuseB,
-    float SpecularR, float SpecularG, float SpecularB,
-    float Shininess)
-        {
-            int uAmbientReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.AmbientReflectivity");
-            Vector3 AmbientReflectivity = new Vector3(AmbientR, AmbientG, AmbientB);
-            GL.Uniform3(uAmbientReflectivityLocation, AmbientReflectivity);
-
-            int uDiffuseReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.DiffuseReflectivity");
-            Vector3 DiffuseReflectivity = new Vector3(DiffuseR, DiffuseG, DiffuseB);
-            GL.Uniform3(uDiffuseReflectivityLocation, DiffuseReflectivity);
-
-            int uSpecularReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.SpecularReflectivity");
-            Vector3 SpecularReflectivity = new Vector3(SpecularR, SpecularG, SpecularB);
-            GL.Uniform3(uSpecularReflectivityLocation, SpecularReflectivity);
-
-            int uShininessLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.Shininess");
-            GL.Uniform1(uShininessLocation, Shininess);
         }
 
         protected override void OnRenderFrame(FrameEventArgs e)
@@ -547,7 +554,7 @@ namespace Labs.ACW
             GL.VertexAttribPointer(entityManager.vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
 
             GL.EnableVertexAttribArray(entityManager.vNormal);
-            GL.VertexAttribPointer(entityManager.vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 2 * sizeof(float));
+            GL.VertexAttribPointer(entityManager.vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
         }
 
         public override void Render()
@@ -570,28 +577,37 @@ namespace Labs.ACW
         {
             float restitution = 1.0f;
 
-            // RIGHT
+            // X PLANE
             if ((mPosition.X + (mRadius * mScaleX)) > (pCube.mPosition.X + (pCube.mDimension * pCube.mScaleX)))
             {
                 Vector3 normal = new Vector3(1, 0, 0);
                 mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
             }
-            // LEFT
             if ((mPosition.X - (mRadius * mScaleX)) < (pCube.mPosition.X - (pCube.mDimension * pCube.mScaleX)))
             {
                 Vector3 normal = new Vector3(-1, 0, 0);
                 mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
             }
-            // TOP
+            // Y PLANE
             if ((mPosition.Y + (mRadius * mScaleY)) > (pCube.mPosition.Y + (pCube.mDimension * pCube.mScaleY)))
             {
                 Vector3 normal = new Vector3(0, 1, 0);
                 mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
             }
-            // BOTTOM
             if ((mPosition.Y - (mRadius * mScaleY)) < (pCube.mPosition.Y - (pCube.mDimension * pCube.mScaleY)))
             {
                 Vector3 normal = new Vector3(0, -1, 0);
+                mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
+            }
+            // Z PLANE
+            if ((mPosition.Z + (mRadius * mScaleZ)) > (pCube.mPosition.Z + (pCube.mDimension * pCube.mScaleZ)))
+            {
+                Vector3 normal = new Vector3(0, 0, 1);
+                mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
+            }
+            if ((mPosition.Z - (mRadius * mScaleZ)) < (pCube.mPosition.Z - (pCube.mDimension * pCube.mScaleZ)))
+            {
+                Vector3 normal = new Vector3(0, 0, -1);
                 mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
             }
         }
