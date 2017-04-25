@@ -23,16 +23,16 @@ namespace Labs.ACW
                 )
         { }
 
-        protected ShaderUtility mShader;
+        public static ShaderUtility mShader;
         private Matrix4 mView;
 
         protected static int VAOCount = 0;
         protected static int VBOCount = 0;
-        protected static int[] mVAO_IDs = new int[6];
-        protected static int[] mVBO_IDs = new int[12];
+        public static int[] mVAO_IDs = new int[6];
+        public static int[] mVBO_IDs = new int[12];
 
-        protected static int vPositionLocation;
-        protected static int vNormal;
+        public static int vPositionLocation;
+        public static int vNormal;
 
         public bool pauseTime = false;
         public Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
@@ -200,7 +200,7 @@ namespace Labs.ACW
 
             #region Loading in models
 
-            Manager = new entityManager(mShader, mVAO_IDs, mVBO_IDs);
+            Manager = new entityManager();
             // 100 cm = 1.0f
             // CUBES
             cube1 = new Cube();
@@ -390,12 +390,12 @@ namespace Labs.ACW
 
     public class entityManager
     {
-        public entityManager(ShaderUtility pShader, int[] pVertexArrayObject, int[] pVertexBufferObject)
+        public entityManager()
         {
-            vertexArrayObject = pVertexArrayObject;
-            vertexBufferObject = pVertexBufferObject;
+            //vertexArrayObject = pVertexArrayObject;
+            //vertexBufferObject = pVertexBufferObject;
 
-            shader = pShader;
+            //shader = pShader;
         }
 
         public void ManageEntity(entity pEntity)
@@ -462,12 +462,12 @@ namespace Labs.ACW
         public List<entity> mObjects = new List<entity>();
 
         // Setting up VAO and VBO for use with ACW window
-        public static int[] vertexArrayObject;
-        public static int[] vertexBufferObject;
-        public static ShaderUtility shader;
+        //public static int[] vertexArrayObject;
+        //public static int[] vertexBufferObject;
+        //public static ShaderUtility shader;
 
-        public static int vPositionLocation;
-        public static int vNormal;
+        //public static int vPositionLocation;
+        //public static int vNormal;
 
         public static int VAOCount = 0;
         public static int VBOCount = 0;
@@ -544,12 +544,12 @@ namespace Labs.ACW
             int size;
             mModelUtility = ModelUtility.LoadModel(@"Utility/Models/sphere.bin");
 
-            GL.BindVertexArray(entityManager.vertexArrayObject[VAOIndex]);
+            GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
 
-            GL.BindBuffer(BufferTarget.ArrayBuffer, entityManager.vertexBufferObject[VBOIndex]);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex]);
             GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mModelUtility.Vertices.Length * sizeof(float)), mModelUtility.Vertices, BufferUsageHint.StaticDraw);
 
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, entityManager.vertexBufferObject[VBOIndex + 1]);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex + 1]);
 
             GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mModelUtility.Indices.Length * sizeof(float)), mModelUtility.Indices, BufferUsageHint.StaticDraw);
 
@@ -565,20 +565,20 @@ namespace Labs.ACW
                 throw new ApplicationException("Index data not loaded onto graphics card correctly");
             }
 
-            GL.EnableVertexAttribArray(entityManager.vPositionLocation);
-            GL.VertexAttribPointer(entityManager.vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+            GL.EnableVertexAttribArray(ACWWindow.vPositionLocation);
+            GL.VertexAttribPointer(ACWWindow.vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
 
-            GL.EnableVertexAttribArray(entityManager.vNormal);
-            GL.VertexAttribPointer(entityManager.vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
+            GL.EnableVertexAttribArray(ACWWindow.vNormal);
+            GL.VertexAttribPointer(ACWWindow.vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
         }
 
         public override void Render()
         {
             mMatrix = Matrix4.CreateScale(new Vector3(mScaleX, mScaleY, mScaleZ)) * Matrix4.CreateTranslation(mPosition);
-            int uModel = GL.GetUniformLocation(entityManager.shader.ShaderProgramID, "uModel");
+            int uModel = GL.GetUniformLocation(ACWWindow.mShader.ShaderProgramID, "uModel");
             GL.UniformMatrix4(uModel, true, ref mMatrix);
 
-            GL.BindVertexArray(entityManager.vertexArrayObject[VAOIndex]);
+            GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
             GL.DrawElements(PrimitiveType.Triangles, mModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
         }
 
@@ -657,12 +657,12 @@ namespace Labs.ACW
             mModelUtility = ModelUtility.LoadModel(@"Utility/Models/cube.sjg");
             int size;
 
-            GL.BindVertexArray(entityManager.vertexArrayObject[VAOIndex]);
+            GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
 
-            GL.BindBuffer(BufferTarget.ArrayBuffer, entityManager.vertexBufferObject[VBOIndex]);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex]);
             GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mModelUtility.Vertices.Length * sizeof(float)), mModelUtility.Vertices, BufferUsageHint.StaticDraw);
 
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, entityManager.vertexBufferObject[VBOIndex + 1]);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex + 1]);
             GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mModelUtility.Indices.Length * sizeof(float)), mModelUtility.Indices, BufferUsageHint.StaticDraw);
 
             GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
@@ -677,16 +677,16 @@ namespace Labs.ACW
                 throw new ApplicationException("Index data not loaded onto graphics card correctly");
             }
 
-            GL.EnableVertexAttribArray(entityManager.vPositionLocation);
-            GL.VertexAttribPointer(entityManager.vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+            GL.EnableVertexAttribArray(ACWWindow.vPositionLocation);
+            GL.VertexAttribPointer(ACWWindow.vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
         }
         public override void Render()
         {
             mMatrix = Matrix4.CreateScale(new Vector3(mScaleX, mScaleY, mScaleZ)) * Matrix4.CreateTranslation(mPosition);
-            int uModel = GL.GetUniformLocation(entityManager.shader.ShaderProgramID, "uModel");
+            int uModel = GL.GetUniformLocation(ACWWindow.mShader.ShaderProgramID, "uModel");
             GL.UniformMatrix4(uModel, true, ref mMatrix);
 
-            GL.BindVertexArray(entityManager.vertexArrayObject[VAOIndex]);
+            GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
             GL.DrawElements(PrimitiveType.Triangles, mModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
         }
 
@@ -724,12 +724,12 @@ namespace Labs.ACW
             mModelUtility = ModelUtility.LoadModel(@"Utility/Models/cylinder.bin");
             int size;
 
-            GL.BindVertexArray(entityManager.vertexArrayObject[VAOIndex]);
+            GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
 
-            GL.BindBuffer(BufferTarget.ArrayBuffer, entityManager.vertexBufferObject[VBOIndex]);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex]);
             GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mModelUtility.Vertices.Length * sizeof(float)), mModelUtility.Vertices, BufferUsageHint.StaticDraw);
 
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, entityManager.vertexBufferObject[VBOIndex + 1]);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex + 1]);
             GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mModelUtility.Indices.Length * sizeof(float)), mModelUtility.Indices, BufferUsageHint.StaticDraw);
 
             GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
@@ -744,8 +744,8 @@ namespace Labs.ACW
                 throw new ApplicationException("Index data not loaded onto graphics card correctly");
             }
 
-            GL.EnableVertexAttribArray(entityManager.vPositionLocation);
-            GL.VertexAttribPointer(entityManager.vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+            GL.EnableVertexAttribArray(ACWWindow.vPositionLocation);
+            GL.VertexAttribPointer(ACWWindow.vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
 
             // next 2 lines cause cylinder to dissapear
             //GL.EnableVertexAttribArray(entityManager.vNormal);
@@ -755,10 +755,10 @@ namespace Labs.ACW
         public override void Render()
         {
             mMatrix = Matrix4.CreateScale(new Vector3(mScaleX, mScaleY, mScaleZ)) * Matrix4.CreateTranslation(mPosition);
-            int uModel = GL.GetUniformLocation(entityManager.shader.ShaderProgramID, "uModel");
+            int uModel = GL.GetUniformLocation(ACWWindow.mShader.ShaderProgramID, "uModel");
             GL.UniformMatrix4(uModel, true, ref mMatrix);
 
-            GL.BindVertexArray(entityManager.vertexArrayObject[VAOIndex]);
+            GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
             GL.DrawElements(PrimitiveType.Triangles, mModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
         }
 
