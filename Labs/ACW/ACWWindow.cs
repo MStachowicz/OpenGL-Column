@@ -41,8 +41,8 @@ namespace Labs.ACW
         public static int vNormal;
 
         public bool pauseTime = false;
-        public Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
-        //public Vector3 accelerationDueToGravity = new Vector3(0.0f, -9.81f, 0.0f);
+        //public Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
+        public Vector3 accelerationDueToGravity = new Vector3(0.0f, -9.81f, 0.0f);
         float restitution = 1.0f;
         bool releaseSpheres = false;
 
@@ -648,9 +648,10 @@ namespace Labs.ACW
             float y = NextFloat((2.0f - 0.96f), 2.0f - 0.04f);
             float z = NextFloat(pCube.mPosition.Z + (pCube.cubeDimensions.Z), pCube.mPosition.Z - (pCube.cubeDimensions.Z));
 
-            // Set all the spheres to random locations inside cube
+            // Set all the spheres to random locations inside emitter box.
             mPosition = new Vector3(x, y, z);
-            mVelocity = new Vector3(ACWWindow.rand.Next(1, 3), ACWWindow.rand.Next(1, 3), 0);
+            // Give random velocity to cube.
+            mVelocity = new Vector3(0, 0, 0);
 
             if (!changeBallType)
             {
@@ -684,18 +685,32 @@ namespace Labs.ACW
         }
 
         // Sphere unique members
+        /// <summary>
+        /// Radius of the sphere in meters.
+        /// </summary>
         public float mRadius;
+        /// <summary>
+        /// The position of the sphere in the previous frame.
+        /// </summary>
         Vector3 lastPosition;
+        /// <summary>
+        /// Toggled to change the type of ball instantiated by the sphere constructor.
+        /// </summary>
         private static bool changeBallType = true;
 
+        /// <summary>
+        /// Moves the sphere to the top box (emitter box) of the scene.
+        /// </summary>
+        /// <param name="pCube"></param>
         public void MoveToEmitterBox(Cube pCube)
         {
-            float x = NextFloat(pCube.mPosition.X + (pCube.cubeDimensions.X), pCube.mPosition.X - (pCube.cubeDimensions.X));
-            float y = NextFloat((2.0f - 0.96f), 2.0f - 0.04f);
-            float z = NextFloat(pCube.mPosition.Z + (pCube.cubeDimensions.Z), pCube.mPosition.Z - (pCube.cubeDimensions.Z));
+            //float x = NextFloat(pCube.mPosition.X + (pCube.cubeDimensions.X), pCube.mPosition.X - (pCube.cubeDimensions.X));
+            //float y = NextFloat((2.0f - 0.96f), 2.0f - 0.04f);
+            //float z = NextFloat(pCube.mPosition.Z + (pCube.cubeDimensions.Z), pCube.mPosition.Z - (pCube.cubeDimensions.Z));
 
             // Set all the spheres to random locations inside cube
-            mPosition = new Vector3(x, y, z);
+            mPosition = new Vector3(mPosition.X, pCube.cubeDimensions.Y, mPosition.Z);
+            mVelocity = new Vector3(0.0f, 0.0f, 0.0f);
         }
 
         private float NextFloat(float min, float max)
