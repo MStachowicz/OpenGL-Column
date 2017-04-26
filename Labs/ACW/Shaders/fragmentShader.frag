@@ -32,11 +32,18 @@ void main()
 //	{
 //UNROLLED FOR LOOP, does not work in a loop
 
+		// Light properties
+        vec4 lightDir;
+        vec4 reflectedVector;
+        float diffuseFactor;
+        float specularFactor; 
+
+
 		// LIGHT 1
-        vec4 lightDir = normalize(uLight[0].Position - oSurfacePosition);
-        vec4 reflectedVector = reflect(-lightDir, oNormal);
-        float diffuseFactor = max(dot(oNormal, lightDir), 0);
-        float specularFactor = pow(max(dot( reflectedVector, eyeDirection), 0.0), uMaterial.Shininess);
+		lightDir = normalize(uLight[0].Position - oSurfacePosition);
+		reflectedVector = reflect(-lightDir, oNormal);
+		diffuseFactor = max(dot(oNormal, lightDir), 0);
+		specularFactor = pow(max(dot( reflectedVector, eyeDirection), 0.0), uMaterial.Shininess);
 
         FragColour = FragColour + vec4(
 		uLight[0].AmbientLight * uMaterial.AmbientReflectivity +

@@ -175,7 +175,7 @@ namespace Labs.Lab4
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             float timestep = mTimer.GetElapsedSeconds();
-            int framesAheadToCheck = 10;
+            //int framesAheadToCheck = 10;
 
             #region circle 1 collision with square 
 
