@@ -29,6 +29,8 @@ namespace Labs.Lab3
         private ModelUtility mSphereModelUtility, mStatuelUtility, mCylinderUtility;
         private Matrix4 mView, mSphereModel, mGroundModel, mStatueModel, mStatueScale, mCylinderModel;
 
+
+
         protected override void OnLoad(EventArgs e)
         {
             // Set some GL state
@@ -295,7 +297,12 @@ namespace Labs.Lab3
         protected override void OnKeyPress(KeyPressEventArgs e)
         {
             base.OnKeyPress(e);
-            if (e.KeyChar == 'w')
+            if (e.KeyChar == 't')
+            {
+                mStatueScale += mStatueScale;
+            }
+
+                if (e.KeyChar == 'w')
             {
                 // Camera movement
                 mView = mView * Matrix4.CreateTranslation(0.0f, 0.0f, 0.05f);
@@ -364,11 +371,13 @@ namespace Labs.Lab3
             }
             if (e.KeyChar == 'z')
             {
+                // ground
                 Vector3 t = mGroundModel.ExtractTranslation();
                 Matrix4 translation = Matrix4.CreateTranslation(t);
                 Matrix4 inverseTranslation = Matrix4.CreateTranslation(-t);
                 mGroundModel = mGroundModel * inverseTranslation * Matrix4.CreateRotationY(-0.025f) * translation;
 
+                // sphere
                 Vector3 j = mSphereModel.ExtractTranslation();
                 Matrix4 stranslation = Matrix4.CreateTranslation(j);
                 Matrix4 sinverseTranslation = Matrix4.CreateTranslation(-j);
@@ -376,11 +385,13 @@ namespace Labs.Lab3
             }
             if (e.KeyChar == 'x')
             {
+                // ground
                 Vector3 t = mGroundModel.ExtractTranslation();
                 Matrix4 translation = Matrix4.CreateTranslation(t);
                 Matrix4 inverseTranslation = Matrix4.CreateTranslation(-t);
                 mGroundModel = mGroundModel * inverseTranslation * Matrix4.CreateRotationY(0.025f) * translation;
 
+                // sphere 
                 Vector3 j = mSphereModel.ExtractTranslation();
                 Matrix4 stranslation = Matrix4.CreateTranslation(j);
                 Matrix4 sinverseTranslation = Matrix4.CreateTranslation(-j);
@@ -420,8 +431,8 @@ namespace Labs.Lab3
 
             #region Sphere
             Matrix4 m = mSphereModel * mGroundModel;
-            uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
-            GL.UniformMatrix4(uModel, true, ref m);
+            int uModel1 = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
+            GL.UniformMatrix4(uModel1, true, ref m);
 
             //cyan
             setMaterialProperties(0.0f, 0.05f, 0.05f, 0.4f, 0.5f, 0.5f, 0.04f, 0.7f, 0.7f, 0.078125f);
@@ -432,8 +443,8 @@ namespace Labs.Lab3
 
             #region Cylinder
             Matrix4 m2 = mStatueScale * mCylinderModel * mGroundModel;
-            uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
-            GL.UniformMatrix4(uModel, true, ref m2);
+             int uModel2 = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
+            GL.UniformMatrix4(uModel2, true, ref m2);
 
             // chrome
             //setMaterialProperties(0.25f, 0.25f, 0.25f, 0.4f, 0.4f, 0.4f, 0.774597f, 0.774597f, 0.774597f, 0.6f);
@@ -447,8 +458,8 @@ namespace Labs.Lab3
 
             #region statue
             Matrix4 m3 = mStatueModel * m2;
-            uModel = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
-            GL.UniformMatrix4(uModel, true, ref m3); // uses the cylinder matrix.
+            int uModel3 = GL.GetUniformLocation(mShader.ShaderProgramID, "uModel");
+            GL.UniformMatrix4(uModel3, true, ref m3); // uses the cylinder matrix.
 
             // Set to emerald
             //setMaterialProperties(0.0215f, 0.1745f, 0.0215f, 0.07568f, 0.61424f, 0.07568f, 0.633f, 0.727811f, 0.633f, 0.6f);   

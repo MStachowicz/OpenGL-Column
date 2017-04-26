@@ -26,7 +26,7 @@ namespace Labs.ACW
         public static ShaderUtility mShader;
         public Matrix4 mView;
 
-        const int NumberOfSpheres = 5;
+        const int NumberOfSpheres = 0;
         const int NumberOfCylinders = 1;
         const int NumberOfCubes = 1;
         const int totalObjects = NumberOfSpheres + NumberOfCylinders + NumberOfCubes;
@@ -40,9 +40,11 @@ namespace Labs.ACW
         public static int vPositionLocation;
         public static int vNormal;
 
+        public static Matrix4 cubeSpace = Matrix4.Identity;
+
         public bool pauseTime = false;
-        //public Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
-        public Vector3 accelerationDueToGravity = new Vector3(0.0f, -9.81f, 0.0f);
+        public Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
+        //public Vector3 accelerationDueToGravity = new Vector3(0.0f, -9.81f, 0.0f);
         float restitution = 1.0f;
         bool releaseSpheres = false;
 
@@ -160,14 +162,20 @@ namespace Labs.ACW
 
             // 100 cm = 1.0f
 
-
-
+            
             // CUBES
             cube1 = new Cube();
             Manager.ManageEntity(cube1);
-
+          
             cube1.mPosition = new Vector3(0.0f, 0.0f, -5.0f);
+            
+            // CYLINDERS
+            cylinder1 = new Cylinder(cube1, new Vector3(0.0f, 1.0f, -5.0f), 0.15f);
+            //cylinder1.mPosition = new Vector3(0.0f, 1.0f, -5.0f);
+            //cylinder1.SetScale(0.1f);
+            //cylinder1.mRadius = 0.015f;
 
+            Manager.ManageEntity(cylinder1);
 
             // SPHERES
             sphereArray = new Sphere[NumberOfSpheres]; // create spheres array
@@ -175,8 +183,6 @@ namespace Labs.ACW
             {
                 sphereArray[i] = new Sphere(cube1);
             }
-
-
             // Manager will manage all these spheres
             foreach (var i in sphereArray)
                 Manager.ManageEntity(i);
@@ -185,8 +191,9 @@ namespace Labs.ACW
             sphere1 = new Sphere(cube1);
             Manager.ManageEntity(sphere1);
 
-            //sphere1.mPosition = new Vector3(cube1.mPosition.X + 0.4f, cube1.mPosition.Y, cube1.mPosition.Z);
-            sphere1.mVelocity = new Vector3(-1.0f, 1.0f, 0.0f);
+            //sphere1.mPosition = new Vector3(cylinder1.mPosition.X - 0.4f, cylinder1.mPosition.Y, cylinder1.mPosition.Z);
+            sphere1.mVelocity = new Vector3(0.4f, 0.3f, 0.0f);
+
 
             //sphere2 = new Sphere(cube1);
             //Manager.ManageEntity(sphere2);
@@ -194,17 +201,6 @@ namespace Labs.ACW
             //sphere2.mPosition = new Vector3(cube1.mPosition.X - 0.4f, cube1.mPosition.Y, cube1.mPosition.Z);
             //sphere2.mVelocity = new Vector3(2.0f, 0.0f, 0.0f);
 
-            // CYLINDERS
-            cylinder1 = new Cylinder();
-
-            Manager.ManageEntity(cylinder1);
-
-            cylinder1.mPosition = new Vector3(0.0f, 1.0f, -5.0f);
-            cylinder1.mScaleX = 0.1f;
-            cylinder1.mScaleY = 0.5f;
-            cylinder1.mScaleZ = 0.1f;
-            cylinder1.mRotationX = 2.0f;
-            //cylinder1.SetScale(0.1f);
 
             #endregion
 
@@ -348,7 +344,19 @@ namespace Labs.ACW
                     ballBeingFollowedIndex = rand.Next(0, sphereArray.Length);
                     Console.WriteLine("following ball index " + ballBeingFollowedIndex);
                     break;
+                case 't':
 
+                    //Matrix4 inverseTranslation = Matrix4.CreateTranslation(-translationBefore);
+                    //cube1.mMatrix = cube1.mMatrix * inverseTranslation * Matrix4.CreateRotationY(-2.025f) * translation;
+
+                    //cubeSpace = Matrix4.CreateRotationX(0.03f);
+
+
+                    Vector3 t = cube1.mMatrix.ExtractTranslation();
+                    Matrix4 translation = Matrix4.CreateTranslation(t);
+                    Matrix4 inverseTranslation = Matrix4.CreateTranslation(-t);
+                    cube1.mMatrix = cube1.mMatrix * inverseTranslation * Matrix4.CreateRotationX(-0.025f) * translation;
+                    break;
                 default:
                     break;
             }
@@ -374,34 +382,35 @@ namespace Labs.ACW
 
             if (ballCam)
             {
-                mView = Matrix4.CreateTranslation(-sphereArray[ballBeingFollowedIndex].mPosition.X, -sphereArray[0].mPosition.Y, 0.0f);
+                mView = Matrix4.CreateTranslation(sphere1.mPosition.X, sphere1.mPosition.Y, 0.0f);
                 int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
                 GL.UniformMatrix4(uView, true, ref mView);
             }
 
             if (!pauseTime)
             {
-                for (int i = 0; i < sphereArray.Length; i++)
-                {
-                    // Update sphere by its velocity and accelaration
-                    sphereArray[i].Update(timestep, accelerationDueToGravity);
+                //for (int i = 0; i < sphereArray.Length; i++)
+                //{
+                //    // Update sphere by its velocity and accelaration
+                //    sphereArray[i].Update(timestep, accelerationDueToGravity);
 
-                    if (!releaseSpheres) // allows switching off collisions with bounding cube             
-                        sphereArray[i].hasCollidedWithCube(cube1);
+                //    if (!releaseSpheres) // allows switching off collisions with bounding cube             
+                //        sphereArray[i].hasCollidedWithCube(cube1);
 
-                    foreach (var j in sphereArray)
-                    {
-                        if (!sphereArray[i].Equals(j)) // If this is not the same cube
-                            sphereArray[i].hasCollidedWithSphere(j); // check for collisions with all other spheres
-                    }
+                //    foreach (var j in sphereArray)
+                //    {
+                //        if (!sphereArray[i].Equals(j)) // If this is not the same cube
+                //            sphereArray[i].hasCollidedWithSphere(j); // check for collisions with all other spheres
+                //    }
 
-                    sphereArray[i].hasCollidedWithSphere(sphere1);
+                //    sphereArray[i].hasCollidedWithSphere(sphere1);
                     //sphereArray[i].hasCollidedWithSphere(sphere2);
 
-                }
+                //}
 
                 sphere1.Update(timestep, accelerationDueToGravity);
                 sphere1.hasCollidedWithCube(cube1);
+                sphere1.hasCollisedWithCylinder(cylinder1);
                 //sphere1.hasCollidedWithSphere(sphere2);
 
                 //sphere2.Update(timestep, accelerationDueToGravity);
@@ -537,11 +546,6 @@ namespace Labs.ACW
         /// </summary>
         public void renderObjects()
         {
-            //foreach (entity i in mObjects)
-            //{
-            //    i.Render();
-            //}
-
             for (int i = 0; i < mObjects.Count; i++)
             {
                 //GL.FrontFace(FrontFaceDirection.Cw);
@@ -558,10 +562,12 @@ namespace Labs.ACW
                     GL.Enable(EnableCap.CullFace);
                 }
 
+                if (i > 0) // all objects except cube1
+                    mObjects[i].mMatrix = mObjects[i].mMatrix * mObjects[0].mMatrix;
+
 
                 mObjects[i].Render();
             }
-
         }
 
         /// <summary>
@@ -603,12 +609,13 @@ namespace Labs.ACW
         public float mRotationY;
         public float mRotationZ;
 
+        public Vector3 mPosition;
+
         public float mVolume;
         public float mDensity;
         public float mMass;
 
         public Matrix4 mMatrix;
-        public Vector3 mPosition;
         public Vector3 mVelocity;
 
         abstract public void Load();
@@ -641,8 +648,9 @@ namespace Labs.ACW
 
             // SPHERE PROPERTIES
 
-            //float y = NextFloat(rand, cube1.mPosition.Y + (cube1.cubeDimensions.Y),
-            //cube1.mPosition.Y - (cube1.cubeDimensions.Y));
+            mVelocity = new Vector3(0, 0, 0);
+
+            #region Translation
 
             float x = NextFloat(pCube.mPosition.X + (pCube.cubeDimensions.X), pCube.mPosition.X - (pCube.cubeDimensions.X));
             float y = NextFloat((2.0f - 0.96f), 2.0f - 0.04f);
@@ -650,47 +658,45 @@ namespace Labs.ACW
 
             // Set all the spheres to random locations inside emitter box.
             mPosition = new Vector3(x, y, z);
-            // Give random velocity to cube.
-            mVelocity = new Vector3(0, 0, 0);
+
+
+            #endregion
+
+            #region Scale + mass for 2 different balls
 
             if (!changeBallType)
-            {
+            { // 4cm radius ball
             mScaleX = 0.04f;
             mScaleY = 0.04f;
             mScaleZ = 0.04f;
 
-            mRadius = 1.0f * mScaleX; 
-            mVolume = (4 / 3) * (float)Math.PI * (float)Math.Pow(mRadius, 3);
-            mDensity = 0.0014f;
+            mRadius = 1.0f * mScaleX; // radius = 4 cm = 0.04m
+            mVolume = (float)((4 / 3) * Math.PI * Math.Pow(mRadius, 3));
+            mDensity = 1400f; // density =   0.001 kg/cm^3 = 1400 kg/m^3
             mMass = mDensity * mVolume;
-
-            // mass should be:   for this sphere
             }
             else
-            {
+            {// 8cm radius ball
                 mScaleX = 0.08f;
                 mScaleY = 0.08f;
                 mScaleZ = 0.08f;
 
                 mRadius = 1.0f * mScaleX; // radius = 8 cm = 0.08m
-                double mvol2 = ((4 / 3) * Math.PI * Math.Pow(mRadius, 3));
-                mVolume = (float)((4 / 3) * Math.PI * Math.Pow(mRadius, 3)); // correct volume: 2.14×10-3 = 0.0021446605848506324 m^3
-                mDensity = 0.001f; // density = 0.001 kg/m^3 
-                mMass = mDensity * mVolume; // correct mass: 2.1446605848506E-6
-
-                // mass should be:   for this sphere
-                // http://www.calculator.net/mass-calculator.html?cdensity=0.001&cdensityunit=1&cvolume=0.0021446605848506324&cvolumeunit=1&x=105&y=20
+                mVolume = (float)((4 / 3) * Math.PI * Math.Pow(mRadius, 3));
+                mDensity = 0.001f; 
+                mMass = mDensity * mVolume; 
             }
 
+            #endregion
 
             mRotationX = 1.0f;
             mRotationY = 1.0f;
             mRotationZ = 1.0f;
 
+            // Next sphere instantiated will be of the other sphere type.
             changeBallType ^= true;
         }
 
-        // Sphere unique members
         /// <summary>
         /// Radius of the sphere in meters.
         /// </summary>
@@ -707,7 +713,7 @@ namespace Labs.ACW
         /// <summary>
         /// Moves the sphere to the top box (emitter box) of the scene.
         /// </summary>
-        /// <param name="pCube"></param>
+        /// <param name="pCube">The cube whos top box is the emitter box.</param>
         public void MoveToEmitterBox(Cube pCube)
         {
             //float x = NextFloat(pCube.mPosition.X + (pCube.cubeDimensions.X), pCube.mPosition.X - (pCube.cubeDimensions.X));
@@ -716,9 +722,16 @@ namespace Labs.ACW
 
             // Set all the spheres to random locations inside cube
             mPosition = new Vector3(mPosition.X, pCube.cubeDimensions.Y, mPosition.Z);
-            mVelocity = new Vector3(0.0f, 0.0f, 0.0f);
+            mVelocity = new Vector3(NextFloat(-2, 2), NextFloat(-2, 2), NextFloat(-2, 2));
+            //mVelocity = new Vector3(0.0f, 0.0f, 0.0f);
         }
 
+        /// <summary>
+        /// Generate a floating point number between the minimum and maximum.
+        /// </summary>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
         private float NextFloat(float min, float max)
         {
             return (float)(min + (ACWWindow.rand.NextDouble() * (max - min)));
@@ -757,18 +770,17 @@ namespace Labs.ACW
         }
         public override void Render()
         {
-            mMatrix = Matrix4.CreateScale(new Vector3(mScaleX, mScaleY, mScaleZ)) *
-           //Matrix4.CreateRotationX(mRotationX) *
-           //Matrix4.CreateRotationX(mRotationY) *
-           //Matrix4.CreateRotationX(mRotationZ) *
-           Matrix4.CreateTranslation(mPosition);
+            mMatrix = Matrix4.CreateScale(mScaleX, mScaleY, mScaleZ) * Matrix4.CreateTranslation(mPosition);
 
             int uModel = GL.GetUniformLocation(ACWWindow.mShader.ShaderProgramID, "uModel");
-            GL.UniformMatrix4(uModel, true, ref mMatrix);
+
+            Matrix4 moveToWorldSpace = mMatrix * ACWWindow.cubeSpace;
+            GL.UniformMatrix4(uModel, true, ref moveToWorldSpace);
 
             GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
             GL.DrawElements(PrimitiveType.Triangles, mModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
         }
+
         public override void Update(float dt, Vector3 gravity)
         {
             lastPosition = mPosition;
@@ -779,6 +791,7 @@ namespace Labs.ACW
         #region collision detection and response
         public void hasCollidedWithCube(Cube pCube)
         {
+            //this.mVelocity
             float restitution = 1.0f;
 
             // X PLANE
@@ -847,7 +860,7 @@ namespace Labs.ACW
             double distance = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2) + Math.Pow(z, 2));
 
 
-            if (distance < (mRadius * mScaleX) + (pSphere.mRadius * pSphere.mScaleX)) // multiplying by mScale X as scale matrix is uniform in spheres currently
+            if (distance < mRadius + pSphere.mRadius) 
             {
                 //Vector3 circle1Momentumbefore = mCircleMass * mCircleVelocity;
                 //Vector3 circle2Momentumbefore = mCircleMass2 * mCircleVelocity2;
@@ -861,13 +874,6 @@ namespace Labs.ACW
                 Vector3 OriginalVelocity = mVelocity;
                 Vector3 OriginalVelocity2 = pSphere.mVelocity;
 
-                Vector3 normal = (pSphere.mPosition - mPosition).Normalized();
-                Vector3 normal2 = (mPosition - pSphere.mPosition).Normalized();
-
-                Vector3 velocityNorm = mVelocity.Normalized();
-                Vector3 velocityNorm2 = pSphere.mVelocity.Normalized();
-
-
                 ACWWindow.CollisionCount++;
                 mVelocity = ((mMass * mVelocity) + (pSphere.mMass * pSphere.mVelocity) + (restitution * pSphere.mMass * (pSphere.mVelocity - mVelocity))) / (mMass + pSphere.mMass);
                 pSphere.mVelocity = ((pSphere.mMass * pSphere.mVelocity) + (mMass * OriginalVelocity) + (restitution * mMass * (OriginalVelocity - pSphere.mVelocity))) / (pSphere.mMass + mMass);
@@ -875,16 +881,6 @@ namespace Labs.ACW
                 mPosition = lastPosition;
                 pSphere.mPosition = pSphere.lastPosition;
 
-                ////Vector3 test = Vector3.Cross(new Vector3(2, 1, 3), new Vector3(4, 2, 6));
-
-                //if (Vector3.Cross(velocityNorm, velocityNorm2) != new Vector3(0, 0, 0)) // if the velocities
-                //{
-                //    mVelocity = OriginalVelocity;
-                //}
-                //if (Vector3.Cross(velocityNorm2, velocityNorm) != new Vector3(0, 0, 0))
-                //{
-                //    mVelocity = OriginalVelocity;
-                //}
 
                 //Vector3 circle1Momentumafter = mCircleMass * mCircleVelocity;
                 //Vector3 circle2Momentumafter = mCircleMass2 * mCircleVelocity2;
@@ -893,6 +889,26 @@ namespace Labs.ACW
                 return true;
             }
             return false;
+        }
+        public void hasCollisedWithCylinder(Cylinder pCylinder)
+        {
+            float restitution = 1f;
+
+            double x = mPosition.X - pCylinder.mPosition.X;
+            double y = mPosition.Y - pCylinder.mPosition.Y;
+            double z = mPosition.Z - pCylinder.mPosition.Z;
+            double distance = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2) + Math.Pow(z, 2));
+
+
+            if (distance < mRadius + pCylinder.mRadius)
+            {
+                Console.WriteLine("collision detected between spehere and cylinder");
+ 
+                Vector3 normal = Vector3.Normalize(pCylinder.mPosition - mPosition);
+
+                mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
+                mPosition = lastPosition;
+            }
         }
         #endregion
     }
@@ -969,7 +985,8 @@ namespace Labs.ACW
             Matrix4.CreateTranslation(mPosition);
 
             int uModel = GL.GetUniformLocation(ACWWindow.mShader.ShaderProgramID, "uModel");
-            GL.UniformMatrix4(uModel, true, ref mMatrix);
+            Matrix4 moveToWorldSpace = mMatrix * ACWWindow.cubeSpace;
+            GL.UniformMatrix4(uModel, true, ref moveToWorldSpace);
 
             GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
             GL.DrawElements(PrimitiveType.Triangles, mModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
@@ -983,32 +1000,32 @@ namespace Labs.ACW
 
     public class Cylinder : entity
     {
-        public Cylinder()
+        /// <summary>
+        /// Places a cylinder in cube space 
+        /// </summary>
+        /// <param name="pCube">The cube whos matrix forms the sceneGraph node </param>
+        /// <param name="pScale">The scale to apply to the cylinder matrix.</param>
+        /// <param name="pRotation">The rotation to apply to the cylinder matrix.</param>
+        /// <param name="pTranslate">The translation to apply to the cylinder matrix.</param>
+        /// <param name="pRadius">The radius of the cylinder. 1 = 1 meter.</param>
+        public Cylinder(Cube pCube, Vector3 pPosition, float pRadius)
         {
             VAOIndex = entityManager.VAOCount++;
             VBOIndex = entityManager.VBOCount++;
             entityManager.VBOCount++;
 
-            // CYLINDER PROPERTIES TODO: correct these values (currently same as sphere)
-            mRadius = 1f;
+            mRadius = pRadius;
 
-            mScaleX = 1.0f;
-            mScaleY = 1.0f;
-            mScaleZ = 1.0f;
+            mScaleX = pRadius;
+            mScaleY = pRadius;
+            mScaleZ = pRadius;
 
-            mRotationX = 1.0f;
-            mRotationY = 1.0f;
-            mRotationZ = 1.0f;
-
-            mVolume = (4 / 3) * (float)Math.PI * (float)Math.Pow(mRadius, 3);
-            mDensity = 1f;
-            mMass = mDensity * mVolume;
-
-            mPosition = new Vector3(0.0f, 0.0f, 0.0f);
+            mPosition = pCube.mPosition; 
             mVelocity = new Vector3(0.0f, 0.0f, 0.0f);
+
         }
 
-        float mRadius;
+        public float mRadius;
 
         public override void Load()
         {
@@ -1046,13 +1063,11 @@ namespace Labs.ACW
         public override void Render()
         {
             mMatrix = Matrix4.CreateScale(new Vector3(mScaleX, mScaleY, mScaleZ)) *
-            //Matrix4.CreateRotationX(mRotationX) *
-            //Matrix4.CreateRotationX(mRotationY) *
-            //Matrix4.CreateRotationX(mRotationZ) *
             Matrix4.CreateTranslation(mPosition);
 
             int uModel = GL.GetUniformLocation(ACWWindow.mShader.ShaderProgramID, "uModel");
-            GL.UniformMatrix4(uModel, true, ref mMatrix);
+            Matrix4 moveToWorldSpace = mMatrix * ACWWindow.cubeSpace;
+            GL.UniformMatrix4(uModel, true, ref moveToWorldSpace);
 
             GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
             GL.DrawElements(PrimitiveType.Triangles, mModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
