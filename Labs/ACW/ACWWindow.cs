@@ -659,10 +659,12 @@ namespace Labs.ACW
             mScaleY = 0.04f;
             mScaleZ = 0.04f;
 
-            mRadius = 1.0f * mScaleX;
+            mRadius = 1.0f * mScaleX; 
             mVolume = (4 / 3) * (float)Math.PI * (float)Math.Pow(mRadius, 3);
             mDensity = 0.0014f;
             mMass = mDensity * mVolume;
+
+            // mass should be:   for this sphere
             }
             else
             {
@@ -670,10 +672,14 @@ namespace Labs.ACW
                 mScaleY = 0.08f;
                 mScaleZ = 0.08f;
 
-                mRadius = 1.0f * mScaleX;
-                mVolume = (4 / 3) * (float)Math.PI * (float)Math.Pow(mRadius, 3);
-                mDensity = 0.001f;
-                mMass = mDensity * mVolume;
+                mRadius = 1.0f * mScaleX; // radius = 8 cm = 0.08m
+                double mvol2 = ((4 / 3) * Math.PI * Math.Pow(mRadius, 3));
+                mVolume = (float)((4 / 3) * Math.PI * Math.Pow(mRadius, 3)); // correct volume: 2.14×10-3 = 0.0021446605848506324 m^3
+                mDensity = 0.001f; // density = 0.001 kg/m^3 
+                mMass = mDensity * mVolume; // correct mass: 2.1446605848506E-6
+
+                // mass should be:   for this sphere
+                // http://www.calculator.net/mass-calculator.html?cdensity=0.001&cdensityunit=1&cvolume=0.0021446605848506324&cvolumeunit=1&x=105&y=20
             }
 
 
