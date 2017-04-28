@@ -14,10 +14,6 @@ namespace Labs.ACW
     {
         public Cube()
         {
-            VAOIndex = entityManager.VAOCount++;
-            VBOIndex = entityManager.VBOCount++;
-            entityManager.VBOCount++; // cube uses two VBOS
-
             // CUBE PROPERTIES
             mDimension = 0.5f;
 
@@ -42,36 +38,62 @@ namespace Labs.ACW
         public Vector3 cubeDimensions;
         private float mDimension;
 
+        /// <summary>
+        /// Has a cube object been loaded previously, if so following instances will use the same VAO and VBO index for their render.
+        /// </summary>
+        private static bool isLoaded = false;
+        /// <summary>
+        /// The index in the VAO that all cubes are loaded from. Set in the load method.
+        /// </summary>
+        public static int VAOIndex;
+        /// <summary>
+        /// The index in the VBO that all cubes are rendered from. Set in the load method.
+        /// </summary>
+        public static int VBOIndex;
+        /// <summary>
+        /// The model utility all the cubes will use.
+        /// </summary>
+        private static ModelUtility mModelUtility;
+
         public override void Load()
         {
-            mModelUtility = ModelUtility.LoadModel(@"Utility/Models/cube.sjg");
-            int size;
-
-            GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
-
-            GL.BindBuffer(BufferTarget.ArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex]);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mModelUtility.Vertices.Length * sizeof(float)), mModelUtility.Vertices, BufferUsageHint.StaticDraw);
-
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex + 1]);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mModelUtility.Indices.Length * sizeof(float)), mModelUtility.Indices, BufferUsageHint.StaticDraw);
-
-            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
-            if (mModelUtility.Vertices.Length * sizeof(float) != size)
+            if (!isLoaded)
             {
-                throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+                VAOIndex = entityManager.VAOCount++; // set the VAO index all cubes will use.
+                VBOIndex = entityManager.VBOCount++; // set the VBO index all cubes will use.
+                entityManager.VBOCount++;
+                isLoaded = true;
+
+
+                mModelUtility = ModelUtility.LoadModel(@"Utility/Models/cube.sjg");
+                int size;
+
+                GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
+
+                GL.BindBuffer(BufferTarget.ArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex]);
+                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mModelUtility.Vertices.Length * sizeof(float)), mModelUtility.Vertices, BufferUsageHint.StaticDraw);
+
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex + 1]);
+                GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mModelUtility.Indices.Length * sizeof(float)), mModelUtility.Indices, BufferUsageHint.StaticDraw);
+
+                GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
+                if (mModelUtility.Vertices.Length * sizeof(float) != size)
+                {
+                    throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+                }
+
+                GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
+                if (mModelUtility.Indices.Length * sizeof(float) != size)
+                {
+                    throw new ApplicationException("Index data not loaded onto graphics card correctly");
+                }
+
+                GL.EnableVertexAttribArray(ACWWindow.vPositionLocation);
+                GL.VertexAttribPointer(ACWWindow.vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+
+                GL.EnableVertexAttribArray(ACWWindow.vNormal);
+                GL.VertexAttribPointer(ACWWindow.vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
             }
-
-            GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
-            if (mModelUtility.Indices.Length * sizeof(float) != size)
-            {
-                throw new ApplicationException("Index data not loaded onto graphics card correctly");
-            }
-
-            GL.EnableVertexAttribArray(ACWWindow.vPositionLocation);
-            GL.VertexAttribPointer(ACWWindow.vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
-
-            GL.EnableVertexAttribArray(ACWWindow.vNormal);
-            GL.VertexAttribPointer(ACWWindow.vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
         }
         public override void Render()
         {
@@ -82,8 +104,7 @@ namespace Labs.ACW
             Matrix4.CreateTranslation(mPosition);
 
             int uModel = GL.GetUniformLocation(ACWWindow.mShader.ShaderProgramID, "uModel");
-            Matrix4 moveToWorldSpace = mMatrix * ACWWindow.cubeSpace;
-            GL.UniformMatrix4(uModel, true, ref moveToWorldSpace);
+            GL.UniformMatrix4(uModel, true, ref mMatrix);
 
             GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
             GL.DrawElements(PrimitiveType.Triangles, mModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);

@@ -11,8 +11,8 @@ namespace Labs.ACW
     {
         public ACWWindow()
             : base(
-                800, // Width
-                600, // Height
+                1920, // Width
+                1080, // Height
                 GraphicsMode.Default,
                 "Assessed Coursework",
                 GameWindowFlags.Default,
@@ -26,49 +26,58 @@ namespace Labs.ACW
         public static ShaderUtility mShader;
         public Matrix4 mView;
 
-        const int NumberOfSpheres = 50;
-        const int NumberOfCylinders = 9;
-        const int NumberOfCubes = 1;
-        const int totalObjects = NumberOfSpheres + NumberOfCylinders + NumberOfCubes;
+        // OBJECTS
+        entityManager Manager;
+        Cube cube1;
+        Cylinder[] cylinderArray;
+        Sphere[] sphereArray;
 
-        public static int CollisionCount = 0;
-        public static int SpheresWaitingCount = 0;
+        /// <summary>
+        /// The number of spheres the sphere array will be instantiated to. 
+        /// </summary>
+        const int SPHERECOUNT = 5;
+        /// <summary>
+        /// The number of cylinders the cylinder array will contain.
+        /// </summary>
+        const int CYLINDER_COUNT = 6;
+        /// <summary>
+        /// The number of unique object types the scene will contain, also used to reduce VAO + VBO usage.
+        /// </summary>
+        const int NUMBER_UNIQUE_OBJECTS = 3;
 
-        public static int[] mVAO_IDs = new int[totalObjects + 2];
-        public static int[] mVBO_IDs = new int[totalObjects * 2 + 4]; // each object has 2 vbo index'
+
+        public static int[] mVAO_IDs = new int[NUMBER_UNIQUE_OBJECTS];
+        public static int[] mVBO_IDs = new int[NUMBER_UNIQUE_OBJECTS * 2]; // each object has 2 vbo index'
 
         public static int vPositionLocation;
         public static int vNormal;
 
-        public static Matrix4 cubeSpace = Matrix4.Identity;
-
-        public bool pauseTime = false;
         //public Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
         public Vector3 accelerationDueToGravity = new Vector3(0.0f, -9.81f, 0.0f);
-        float restitution = 1.0f;
-        bool releaseSpheres = false;
+        public static float restitution = 0.8f;
 
-        private bool ballCam = false;
-        private int ballBeingFollowedIndex = 0;
+
+        // Special features
+        /// <summary>
+        /// When set to true spheres are no longer bounded by the cube.
+        /// </summary>
+        bool releaseSpheres = false;
+        /// <summary>
+        /// When set to true spheres will spin in their y axis.
+        /// </summary>
+        bool spinningCylinders = false;
+        /// <summary>
+        /// When set to true, stops updating the scene from updating until toggled back on.
+        /// </summary>
+        public bool pauseTime = false;
+        /// <summary>
+        /// Count of the number of collisions occuring in the scene.
+        /// </summary>
+        public static int CollisionCount = 0;
+
 
         private Timer mTimer;
         public static Random rand;
-
-        // OBJECTS
-        entityManager Manager;
-
-        Sphere[] sphereArray;
-        //Sphere sphere1;
-        //Sphere sphere2;
-
-
-        Cube cube1;
-        Cylinder cylinder1;
-        Cylinder cylinder2;
-        Cylinder cylinder3;
-        Cylinder cylinder4;
-        Cylinder cylinder5;
-        Cylinder cylinder6;
 
         public void pauseSimulation()
         {
@@ -168,53 +177,47 @@ namespace Labs.ACW
 
             // CUBE
             cube1 = new Cube();
-            cube1.mPosition = new Vector3(0.0f, 0.0f, -5.0f);        
+            cube1.mPosition = new Vector3(0.0f, 0.0f, -5.0f);
 
             Vector3 centerlevel1 = new Vector3(cube1.mPosition.X, cube1.mPosition.Y + 0.5f, cube1.mPosition.Z);
             Vector3 centerlevel2 = new Vector3(cube1.mPosition.X, cube1.mPosition.Y - 0.5f, cube1.mPosition.Z);
             Vector3 centerlevel3 = new Vector3(cube1.mPosition.X, cube1.mPosition.Y - 1.5f, cube1.mPosition.Z);
 
             // CYLINDERS
+            cylinderArray = new Cylinder[CYLINDER_COUNT];
+
             // LEVEL 1
-            cylinder1 = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y + 0.25f, centerlevel1.Z), 0.075f);
-            cylinder1.RotateX((float)Math.PI / 2);
-            cylinder2 = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y + 0.25f, centerlevel1.Z), 0.075f);
-            cylinder2.RotateZ((float)Math.PI / 2);
+            cylinderArray[0] = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y + 0.25f, centerlevel1.Z), 0.075f);
+            cylinderArray[0].RotateX((float)Math.PI / 2);
+            cylinderArray[1] = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y + 0.25f, centerlevel1.Z), 0.075f);
+            cylinderArray[1].RotateZ((float)Math.PI / 2);
 
-
-            cylinder3 = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y - 0.25f, centerlevel1.Z), 0.15f);
-            cylinder3.RotateX((float)Math.PI / 2);
-            cylinder4 = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y - 0.25f, centerlevel1.Z), 0.15f);
-            cylinder4.RotateZ((float)Math.PI / 2);
+            cylinderArray[2] = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y - 0.25f, centerlevel1.Z), 0.15f);
+            cylinderArray[2].RotateX((float)Math.PI / 2);
+            cylinderArray[3] = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y - 0.25f, centerlevel1.Z), 0.15f);
+            cylinderArray[3].RotateZ((float)Math.PI / 2);
 
             // LEVEL 2
-            cylinder5 = new Cylinder(new Vector3(centerlevel2.X, centerlevel2.Y, centerlevel2.Z),
-                0.10f);
-            cylinder5.scale(new Vector3(1.0f, 1.3f, 1.0f));
-            cylinder5.RotateX(DegreeToRadian(90));
-            cylinder5.RotateY(DegreeToRadian(135));
+            cylinderArray[4] = new Cylinder(new Vector3(centerlevel2.X, centerlevel2.Y, centerlevel2.Z), 0.10f);
+            cylinderArray[4].scale(new Vector3(1.0f, 1.3f, 1.0f));
+            cylinderArray[4].RotateX(DegreeToRadian(90));
+            cylinderArray[4].RotateY(DegreeToRadian(135));
 
-            cylinder6 = new Cylinder(new Vector3(centerlevel2.X, centerlevel2.Y, centerlevel2.Z),
-                0.15f);
-            cylinder6.scale(new Vector3(1.0f, 1.6f, 1.0f));
+            cylinderArray[5] = new Cylinder(new Vector3(centerlevel2.X, centerlevel2.Y, centerlevel2.Z), 0.15f);
+            cylinderArray[5].scale(new Vector3(1.0f, 1.6f, 1.0f));
+            cylinderArray[5].RotateX(-(float)Math.PI / 3);
+            cylinderArray[5].RotateY((float)Math.PI / 4);
 
-            cylinder6.RotateX(-(float)Math.PI / 3);
-            cylinder6.RotateY((float)Math.PI / 4);
-
-            // Adding cylinders to manager
-            Manager.ManageEntity(cylinder1);
-            Manager.ManageEntity(cylinder2);
-            Manager.ManageEntity(cylinder3);
-            Manager.ManageEntity(cylinder4);
-            Manager.ManageEntity(cylinder5);
-            Manager.ManageEntity(cylinder6);
+            foreach (Cylinder i in cylinderArray)
+                Manager.ManageEntity(i);
 
             // SPHERES
-            sphereArray = new Sphere[NumberOfSpheres]; // create spheres array
+            sphereArray = new Sphere[SPHERECOUNT]; // create spheres array
+
             for (int i = 0; i < sphereArray.Length; i++)
             {
                 sphereArray[i] = new Sphere(cube1);
-                Manager.ManageEntity(sphereArray[i]);                 
+                Manager.ManageEntity(sphereArray[i]);
             }
 
 
@@ -321,19 +324,6 @@ namespace Labs.ACW
             return (float)(Math.PI * angle / 180.0);
         }
 
-        /// <summary>
-        /// Generates a random floating point number between the minimum and maximum.
-        /// </summary>
-        /// <param name="rng"></param>
-        /// <param name="min"></param>
-        /// <param name="max"></param>
-        /// <returns></returns>
-        private float NextFloat(Random rng, float min, float max)
-        {
-            return (float)(min + (rng.NextDouble() * (max - min)));
-        }
-
-
         protected override void OnKeyPress(KeyPressEventArgs e)
         {
             base.OnKeyPress(e);
@@ -343,13 +333,10 @@ namespace Labs.ACW
             switch (e.KeyChar)
             {
                 case '1':
-                    cylinder5.RotateX(DegreeToRadian(1));
                     break;
                 case '2':
-                    cylinder5.RotateY(DegreeToRadian(1));
                     break;
                 case '3':
-                    cylinder5.RotateZ(DegreeToRadian(1));
                     break;
                 case 'w':
                     moveCamera(new Vector3(0.0f, -cameraSpeed, 0.0f));
@@ -376,13 +363,8 @@ namespace Labs.ACW
                     releaseSpheres = true;
                     break;
                 case 'b':
-                    // begins camera follow of a random ball
-                    ballCam = true;
-                    ballBeingFollowedIndex = rand.Next(0, sphereArray.Length);
-                    Console.WriteLine("following ball index " + ballBeingFollowedIndex);
                     break;
                 case 't':
-                    //sphere1.MoveToEmitterBox(cube1);
                     break;
                 default:
                     break;
@@ -407,8 +389,12 @@ namespace Labs.ACW
         {
             float timestep = mTimer.GetElapsedSeconds();
 
+
+            if (spinningCylinders)
+                foreach (Cylinder i in cylinderArray)
+                    i.RotateY(DegreeToRadian(0.2));
+
             if (!pauseTime)
-            {
                 for (int i = 0; i < sphereArray.Length; i++)
                 {
                     // UPDATE SPHERE POSITION
@@ -420,45 +406,12 @@ namespace Labs.ACW
 
                     // SPHERE ON SPHERE COLLISION CHECK
                     foreach (var j in sphereArray)
-                    {
                         if (!sphereArray[i].Equals(j)) // If this is not the same sphere
                             sphereArray[i].hasCollidedWithSphere(j); // check for collisions with all other spheres
-                    }
 
                     // SPHERE ON CYLINDER CHECK
-                    sphereArray[i].hasCollisedWithCylinder(cylinder1);
-                    sphereArray[i].hasCollisedWithCylinder(cylinder2);
-                    sphereArray[i].hasCollisedWithCylinder(cylinder3);
-                    sphereArray[i].hasCollisedWithCylinder(cylinder4);
-                    sphereArray[i].hasCollisedWithCylinder(cylinder5);
-                    sphereArray[i].hasCollisedWithCylinder(cylinder6);
-                }
-
-
-
-                //sphere1.Update(timestep, accelerationDueToGravity);
-                //sphere1.hasCollidedWithCube(cube1);           
-                //sphere1.hasCollisedWithCylinder(cylinder1);
-                //sphere1.hasCollisedWithCylinder(cylinder2);
-                //sphere1.hasCollisedWithCylinder(cylinder3);
-                //sphere1.hasCollisedWithCylinder(cylinder4);
-                //sphere1.hasCollisedWithCylinder(cylinder5);
-                //sphere1.hasCollisedWithCylinder(cylinder6);
-
-
-                //sphere2.Update(timestep, accelerationDueToGravity);
-                //sphere2.hasCollidedWithCube(cube1);
-                //sphere2.hasCollidedWithSphere(sphere1);
-                //sphere2.hasCollisedWithCylinder(cylinder2);
-                //sphere2.hasCollisedWithCylinder(cylinder3);
-                //sphere2.hasCollisedWithCylinder(cylinder4);
-                //sphere2.hasCollisedWithCylinder(cylinder5);
-                //sphere2.hasCollisedWithCylinder(cylinder6);
-
-
-
-                //sphere1.hasCollidedWithSphere(sphere2);
-                //sphere2.hasCollidedWithSphere(sphere1);
+                    foreach (Cylinder j in cylinderArray)
+                        sphereArray[i].hasCollisedWithCylinder(j);
             }
             base.OnUpdateFrame(e);
         }

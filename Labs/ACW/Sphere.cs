@@ -9,10 +9,6 @@ namespace Labs.ACW
     {
         public Sphere(Vector3 pPosition)
         {
-            VAOIndex = entityManager.VAOCount++;
-            VBOIndex = entityManager.VBOCount++;
-            entityManager.VBOCount++;
-
             mScaleX = 0.1f;
             mScaleY = 0.1f;
             mScaleZ = 0.1f;
@@ -27,10 +23,6 @@ namespace Labs.ACW
         /// <param name="pCube">The cube all the spheres will be bounded by</param>
         public Sphere(Cube pCube)
         {
-            VAOIndex = entityManager.VAOCount++;
-            VBOIndex = entityManager.VBOCount++;
-            entityManager.VBOCount++;
-
             // SPHERE PROPERTIES
 
             mVelocity = new Vector3(0, 0, 0);
@@ -94,6 +86,23 @@ namespace Labs.ACW
         /// Toggled to change the type of ball instantiated by the sphere constructor.
         /// </summary>
         private static bool changeBallType = true;
+        /// <summary>
+        /// Has a sphere object been loaded previously, if so following instances will use the same VAO and VBO index for their render.
+        /// </summary>
+        private static bool isLoaded = false;
+        /// <summary>
+        /// The index in the VAO that all spheres are loaded from. Set in the load method.
+        /// </summary>
+        public static int VAOIndex;
+        /// <summary>
+        /// The index in the VBO that all spheres are rendered from. Set in the load method.
+        /// </summary>
+        public static int VBOIndex;
+        /// <summary>
+        /// The model utility all the spheres will use.
+        /// </summary>
+        private static ModelUtility mModelUtility;
+
 
         /// <summary>
         /// Moves the sphere to the top box (emitter box) of the scene.
@@ -124,34 +133,42 @@ namespace Labs.ACW
 
         public override void Load()
         {
-            int size;
-            mModelUtility = ModelUtility.LoadModel(@"Utility/Models/sphere.bin");
-
-            GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
-
-            GL.BindBuffer(BufferTarget.ArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex]);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mModelUtility.Vertices.Length * sizeof(float)), mModelUtility.Vertices, BufferUsageHint.StaticDraw);
-
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex + 1]);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mModelUtility.Indices.Length * sizeof(float)), mModelUtility.Indices, BufferUsageHint.StaticDraw);
-
-            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
-            if (mModelUtility.Vertices.Length * sizeof(float) != size)
+            if (!isLoaded)
             {
-                throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+                VAOIndex = entityManager.VAOCount++; // set the VAO index all spheres will use.
+                VBOIndex = entityManager.VBOCount++; // set the VBO index all spheres will use.
+                entityManager.VBOCount++;
+                isLoaded = true;
+
+                int size;
+                mModelUtility = ModelUtility.LoadModel(@"Utility/Models/sphere.bin");
+
+                GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
+
+                GL.BindBuffer(BufferTarget.ArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex]);
+                GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mModelUtility.Vertices.Length * sizeof(float)), mModelUtility.Vertices, BufferUsageHint.StaticDraw);
+
+                GL.BindBuffer(BufferTarget.ElementArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex + 1]);
+                GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mModelUtility.Indices.Length * sizeof(float)), mModelUtility.Indices, BufferUsageHint.StaticDraw);
+
+                GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
+                if (mModelUtility.Vertices.Length * sizeof(float) != size)
+                {
+                    throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+                }
+
+                GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
+                if (mModelUtility.Indices.Length * sizeof(float) != size)
+                {
+                    throw new ApplicationException("Index data not loaded onto graphics card correctly");
+                }
+
+                GL.EnableVertexAttribArray(ACWWindow.vPositionLocation);
+                GL.VertexAttribPointer(ACWWindow.vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+
+                GL.EnableVertexAttribArray(ACWWindow.vNormal);
+                GL.VertexAttribPointer(ACWWindow.vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
             }
-
-            GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
-            if (mModelUtility.Indices.Length * sizeof(float) != size)
-            {
-                throw new ApplicationException("Index data not loaded onto graphics card correctly");
-            }
-
-            GL.EnableVertexAttribArray(ACWWindow.vPositionLocation);
-            GL.VertexAttribPointer(ACWWindow.vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
-
-            GL.EnableVertexAttribArray(ACWWindow.vNormal);
-            GL.VertexAttribPointer(ACWWindow.vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
         }
         public override void Render()
         {
@@ -159,8 +176,7 @@ namespace Labs.ACW
 
             int uModel = GL.GetUniformLocation(ACWWindow.mShader.ShaderProgramID, "uModel");
 
-            Matrix4 moveToWorldSpace = mMatrix * ACWWindow.cubeSpace;
-            GL.UniformMatrix4(uModel, true, ref moveToWorldSpace);
+            GL.UniformMatrix4(uModel, true, ref mMatrix);
 
             GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
             GL.DrawElements(PrimitiveType.Triangles, mModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
@@ -176,16 +192,13 @@ namespace Labs.ACW
         #region collision detection and response
         public void hasCollidedWithCube(Cube pCube)
         {
-            //this.mVelocity
-            float restitution = 1.0f;
-
             // X PLANE
             if ((mPosition.X + mRadius > (pCube.mPosition.X + (pCube.cubeDimensions.X))))
             {
                 if (mVelocity.X > 0) // only perform collision response if the direction of velocity is same sign as normal of cube
                 {
                     Vector3 normal = new Vector3(1, 0, 0);
-                    mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
+                    mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
                 }
             }
             if ((mPosition.X - mRadius < (pCube.mPosition.X - (pCube.cubeDimensions.X)))) // Left inside of pCube
@@ -193,7 +206,7 @@ namespace Labs.ACW
                 if (mVelocity.X < 0)
                 {
                     Vector3 normal = new Vector3(-1, 0, 0);
-                    mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
+                    mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
                 }
             }
             // Y PLANE
@@ -202,9 +215,8 @@ namespace Labs.ACW
                 if (mVelocity.Y > 0)
                 {
                     Vector3 normal = new Vector3(0, 1, 0);
-                    mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
+                    mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
                 }
-
             }
             if ((mPosition.Y - mRadius) < (pCube.mPosition.Y - (pCube.cubeDimensions.Y)))
             {
@@ -214,7 +226,7 @@ namespace Labs.ACW
                     MoveToEmitterBox(pCube);
 
                     Vector3 normal = new Vector3(0, -1, 0);
-                    mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
+                    mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
                 }
             }
             // Z PLANE
@@ -223,7 +235,7 @@ namespace Labs.ACW
                 if (mVelocity.Z > 0)
                 {
                     Vector3 normal = new Vector3(0, 0, 1);
-                    mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
+                    mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
                 }
             }
             if ((mPosition.Z - mRadius) < (pCube.mPosition.Z - (pCube.cubeDimensions.Z)))
@@ -231,14 +243,12 @@ namespace Labs.ACW
                 if (mVelocity.Z < 0)
                 {
                     Vector3 normal = new Vector3(0, 0, -1);
-                    mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
+                    mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
                 }
             }
         }
         public bool hasCollidedWithSphere(Sphere pSphere)
         {
-            float restitution = 0.8f;
-
             double x = mPosition.X - pSphere.mPosition.X;
             double y = mPosition.Y - pSphere.mPosition.Y;
             double z = mPosition.Z - pSphere.mPosition.Z;
@@ -259,8 +269,8 @@ namespace Labs.ACW
                 Vector3 OriginalVelocity2 = pSphere.mVelocity;
 
                 ACWWindow.CollisionCount++;
-                mVelocity = ((mMass * mVelocity) + (pSphere.mMass * pSphere.mVelocity) + (restitution * pSphere.mMass * (pSphere.mVelocity - mVelocity))) / (mMass + pSphere.mMass);
-                pSphere.mVelocity = ((pSphere.mMass * pSphere.mVelocity) + (mMass * OriginalVelocity) + (restitution * mMass * (OriginalVelocity - pSphere.mVelocity))) / (pSphere.mMass + mMass);
+                mVelocity = ((mMass * mVelocity) + (pSphere.mMass * pSphere.mVelocity) + (ACWWindow.restitution * pSphere.mMass * (pSphere.mVelocity - mVelocity))) / (mMass + pSphere.mMass);
+                pSphere.mVelocity = ((pSphere.mMass * pSphere.mVelocity) + (mMass * OriginalVelocity) + (ACWWindow.restitution * mMass * (OriginalVelocity - pSphere.mVelocity))) / (pSphere.mMass + mMass);
 
                 mPosition = lastPosition;
                 pSphere.mPosition = pSphere.lastPosition;
@@ -275,14 +285,12 @@ namespace Labs.ACW
         }
         public void hasCollisedWithCylinder(Cylinder pCylinder)
         {
-            float restitution = 0.8f;
-
             // Line segment method
             Vector3 endPoint1 = new Vector3(pCylinder.mPosition.X, pCylinder.mPosition.Y + 0.5f, pCylinder.mPosition.Z);
             Vector3 endPoint2 = new Vector3(pCylinder.mPosition.X, pCylinder.mPosition.Y - 0.5f, pCylinder.mPosition.Z);
 
-            Vector3 test = pCylinder.CylinderTop;
-            Vector3 test2 = pCylinder.CylinderBottom;
+            Vector3 test = pCylinder.mCylinderTop;
+            Vector3 test2 = pCylinder.mCylinderBottom;
 
             endPoint1 = test;
             endPoint2 = test2;
@@ -305,7 +313,7 @@ namespace Labs.ACW
 
                 if (Vector3.Dot(normal, mVelocity) < 0)
                 {
-                    mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
+                    mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
                     Console.WriteLine("colllision" + ACWWindow.CollisionCount++);
                     mPosition = lastPosition;
                 }
