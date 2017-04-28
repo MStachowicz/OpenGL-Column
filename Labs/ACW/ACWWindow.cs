@@ -68,20 +68,21 @@ namespace Labs.ACW
         /// <summary>
         /// When set to true, stops updating the scene from updating until toggled back on.
         /// </summary>
-        public bool pauseTime = false;
+        private bool pauseTime = false;
         /// <summary>
         /// Count of the number of collisions occuring in the scene.
         /// </summary>
+        public void pauseSimulation()
+        {
+            pauseTime ^= true;
+        }
+
         public static int CollisionCount = 0;
 
 
         private Timer mTimer;
         public static Random rand;
 
-        public void pauseSimulation()
-        {
-            pauseTime ^= true;
-        }
         public void moveCamera(Vector3 Translation)
         {
             // Camera movement
@@ -113,26 +114,6 @@ namespace Labs.ACW
             int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
             Vector4 eyePosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
             GL.Uniform4(uEyePosition, eyePosition);
-        }
-        private void setMaterialProperties(float AmbientR, float AmbientG, float AmbientB,
-    float DiffuseR, float DiffuseG, float DiffuseB,
-    float SpecularR, float SpecularG, float SpecularB,
-    float Shininess)
-        {
-            int uAmbientReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.AmbientReflectivity");
-            Vector3 AmbientReflectivity = new Vector3(AmbientR, AmbientG, AmbientB);
-            GL.Uniform3(uAmbientReflectivityLocation, AmbientReflectivity);
-
-            int uDiffuseReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.DiffuseReflectivity");
-            Vector3 DiffuseReflectivity = new Vector3(DiffuseR, DiffuseG, DiffuseB);
-            GL.Uniform3(uDiffuseReflectivityLocation, DiffuseReflectivity);
-
-            int uSpecularReflectivityLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.SpecularReflectivity");
-            Vector3 SpecularReflectivity = new Vector3(SpecularR, SpecularG, SpecularB);
-            GL.Uniform3(uSpecularReflectivityLocation, SpecularReflectivity);
-
-            int uShininessLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uMaterial.Shininess");
-            GL.Uniform1(uShininessLocation, Shininess * 128);
         }
 
         protected override void OnLoad(EventArgs e)
@@ -423,12 +404,7 @@ namespace Labs.ACW
 
             #region Rendering models
 
-            // White rubber
-            //setMaterialProperties(0.05f, 0.05f, 0.05f, 0.5f, 0.5f, 0.5f, 0.7f, 0.7f, 0.7f, 0.078125f);
-
-
-            // chrome
-            setMaterialProperties(0.25f, 0.25f, 0.25f, 0.4f, 0.4f, 0.4f, 0.774597f, 0.774597f, 0.774597f, 0.6f);
+            Material.chrome.SetMaterial();
 
             Manager.renderObjects();
 

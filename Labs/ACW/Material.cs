@@ -12,7 +12,6 @@ namespace Labs.ACW
 {
     public class Material
     {
-
         public Material(Vector3 pAmbientReflectivity, Vector3 pDiffuseReflectivity, Vector3 pSpecularReflectivity, float pShininess)
         {
             AmbientReflectivity = pAmbientReflectivity;
@@ -43,5 +42,12 @@ namespace Labs.ACW
             int uShininessLocation = GL.GetUniformLocation(ACWWindow.mShader.ShaderProgramID, "uMaterial.Shininess");
             GL.Uniform1(uShininessLocation, Shininess * 128);
         }
+
+
+        public static Material gold = new Material(new Vector3(0.24725f, 0.1995f, 0.0745f), new Vector3(0.75164f, 0.60648f, 0.22648f), new Vector3(0.628281f, 0.555802f, 0.366065f), 0.4f);
+        public static Material emerald = new Material(new Vector3(0.0215f, 0.1745f, 0.0215f), new Vector3(0.07568f, 0.61424f, 0.07568f), new Vector3(0.633f, 0.727811f, 0.633f), 0.6f);
+        public static Material chrome = new Material(new Vector3(0.25f, 0.25f, 0.25f), new Vector3(0.4f, 0.4f, 0.4f), new Vector3(0.774597f, 0.774597f, 0.774597f), 0.6f);
+        public static Material silver = new Material(new Vector3(0.19225f, 0.19225f, 0.19225f), new Vector3(0.50754f, 0.50754f, 0.50754f), new Vector3(0.508273f, 0.508273f, 0.508273f), 0.4f);
+        public static Material pearl = new Material(new Vector3(0.25f, 0.20725f, 0.20725f), new Vector3(1f, 0.829f, 0.829f), new Vector3(0.296648f, 0.296648f, 0.296648f), 0.088f);
     }
 }
