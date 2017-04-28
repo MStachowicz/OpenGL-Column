@@ -107,7 +107,7 @@ namespace Labs.ACW
 
             // Set all the spheres to random locations inside cube
             mPosition = new Vector3(mPosition.X, pCube.cubeDimensions.Y, mPosition.Z);
-            mVelocity = new Vector3(NextFloat(-2, 2), NextFloat(-2, 2), NextFloat(-2, 2));
+            mVelocity = new Vector3(NextFloat(-2, 2), NextFloat(0.5f, 1), NextFloat(-2, 2));
             //mVelocity = new Vector3(0.0f, 0.0f, 0.0f);
         }
 
@@ -237,13 +237,12 @@ namespace Labs.ACW
         }
         public bool hasCollidedWithSphere(Sphere pSphere)
         {
-            float restitution = 1f;
+            float restitution = 0.8f;
 
             double x = mPosition.X - pSphere.mPosition.X;
             double y = mPosition.Y - pSphere.mPosition.Y;
             double z = mPosition.Z - pSphere.mPosition.Z;
             double distance = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2) + Math.Pow(z, 2));
-
 
             if (distance < mRadius + pSphere.mRadius)
             {
@@ -266,7 +265,6 @@ namespace Labs.ACW
                 mPosition = lastPosition;
                 pSphere.mPosition = pSphere.lastPosition;
 
-
                 //Vector3 circle1Momentumafter = mCircleMass * mCircleVelocity;
                 //Vector3 circle2Momentumafter = mCircleMass2 * mCircleVelocity2;
                 //Vector3 totalmomentumafter = circle1Momentumafter + circle2Momentumafter;
@@ -277,7 +275,7 @@ namespace Labs.ACW
         }
         public void hasCollisedWithCylinder(Cylinder pCylinder)
         {
-            float restitution = 1f;
+            float restitution = 0.8f;
 
             // Line segment method
             Vector3 endPoint1 = new Vector3(pCylinder.mPosition.X, pCylinder.mPosition.Y + 0.5f, pCylinder.mPosition.Z);
@@ -304,8 +302,6 @@ namespace Labs.ACW
 
                 Vector3 normal = -Opp.Normalized();
                 Vector3 velocityBefore = mVelocity;
-
-
 
                 if (Vector3.Dot(normal, mVelocity) < 0)
                 {

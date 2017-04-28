@@ -26,7 +26,7 @@ namespace Labs.ACW
         public static ShaderUtility mShader;
         public Matrix4 mView;
 
-        const int NumberOfSpheres = 0;
+        const int NumberOfSpheres = 50;
         const int NumberOfCylinders = 9;
         const int NumberOfCubes = 1;
         const int totalObjects = NumberOfSpheres + NumberOfCylinders + NumberOfCubes;
@@ -58,8 +58,8 @@ namespace Labs.ACW
         entityManager Manager;
 
         Sphere[] sphereArray;
-        Sphere sphere1;
-        Sphere sphere2;
+        //Sphere sphere1;
+        //Sphere sphere2;
 
 
         Cube cube1;
@@ -168,9 +168,7 @@ namespace Labs.ACW
 
             // CUBE
             cube1 = new Cube();
-            cube1.mPosition = new Vector3(0.0f, 0.0f, -5.0f);
-
-            Manager.ManageEntity(cube1);
+            cube1.mPosition = new Vector3(0.0f, 0.0f, -5.0f);        
 
             Vector3 centerlevel1 = new Vector3(cube1.mPosition.X, cube1.mPosition.Y + 0.5f, cube1.mPosition.Z);
             Vector3 centerlevel2 = new Vector3(cube1.mPosition.X, cube1.mPosition.Y - 0.5f, cube1.mPosition.Z);
@@ -178,7 +176,7 @@ namespace Labs.ACW
 
             // CYLINDERS
             // LEVEL 1
-            cylinder1 = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y + 0.25f, centerlevel1.Z), 0.075f);          
+            cylinder1 = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y + 0.25f, centerlevel1.Z), 0.075f);
             cylinder1.RotateX((float)Math.PI / 2);
             cylinder2 = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y + 0.25f, centerlevel1.Z), 0.075f);
             cylinder2.RotateZ((float)Math.PI / 2);
@@ -189,69 +187,56 @@ namespace Labs.ACW
             cylinder4 = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y - 0.25f, centerlevel1.Z), 0.15f);
             cylinder4.RotateZ((float)Math.PI / 2);
 
-
             // LEVEL 2
-            cylinder5 = new Cylinder(new Vector3(centerlevel2.X, centerlevel2.Y, centerlevel2.Z), 
+            cylinder5 = new Cylinder(new Vector3(centerlevel2.X, centerlevel2.Y, centerlevel2.Z),
                 0.10f);
-            cylinder5.RotateX((float)Math.PI / 2);
-            //cylinder5.RotateY((float)Math.PI / 2);
-            //cylinder5.RotateX((float)Math.PI / 2);
-            //cylinder5.RotateZ((float)Math.PI / 2);
+            cylinder5.scale(new Vector3(1.0f, 1.3f, 1.0f));
+            cylinder5.RotateX(DegreeToRadian(90));
+            cylinder5.RotateY(DegreeToRadian(135));
 
-
-            cylinder6 = new Cylinder(new Vector3(centerlevel2.X, centerlevel2.Y, centerlevel2.Z), 
+            cylinder6 = new Cylinder(new Vector3(centerlevel2.X, centerlevel2.Y, centerlevel2.Z),
                 0.15f);
-            cylinder6.RotateZ((float)Math.PI / 2);
-            //cylinder6.RotateX((float)Math.PI / 2);
-            //cylinder6.RotateY((float)((7/4) * Math.PI));
-            //cylinder6.RotateZ((float)Math.PI / 2);
+            cylinder6.scale(new Vector3(1.0f, 1.6f, 1.0f));
 
+            cylinder6.RotateX(-(float)Math.PI / 3);
+            cylinder6.RotateY((float)Math.PI / 4);
 
             // Adding cylinders to manager
             Manager.ManageEntity(cylinder1);
             Manager.ManageEntity(cylinder2);
             Manager.ManageEntity(cylinder3);
             Manager.ManageEntity(cylinder4);
-
             Manager.ManageEntity(cylinder5);
             Manager.ManageEntity(cylinder6);
-
-
-
-
-
-
-
-
 
             // SPHERES
             sphereArray = new Sphere[NumberOfSpheres]; // create spheres array
             for (int i = 0; i < sphereArray.Length; i++)
             {
                 sphereArray[i] = new Sphere(cube1);
+                Manager.ManageEntity(sphereArray[i]);                 
             }
-            // Manager will manage all these spheres
-            foreach (var i in sphereArray)
-                Manager.ManageEntity(i);
 
 
-            sphere1 = new Sphere(cube1);
-            Manager.ManageEntity(sphere1);
+            //sphere1 = new Sphere(cube1);
+            //sphere1.mPosition = new Vector3(cylinder1.mPosition.X - 0.4f, cylinder1.mPosition.Y + 1.4f, cylinder1.mPosition.Z);
+            //sphere1.mVelocity = new Vector3(0.4f, 0.4f, 0.001f);
 
-            sphere1.mPosition = new Vector3(cylinder1.mPosition.X - 0.4f, cylinder1.mPosition.Y + 1.4f, cylinder1.mPosition.Z);
-            sphere1.mVelocity = new Vector3(0.4f, 0.4f, 0.001f);
+            //Manager.ManageEntity(sphere1);
 
 
             //sphere2 = new Sphere(cube1);
-            //Manager.ManageEntity(sphere2);
-
             //sphere2.mPosition = new Vector3(cube1.mPosition.X - 0.4f, cube1.mPosition.Y, cube1.mPosition.Z);
             //sphere2.mVelocity = new Vector3(2.0f, 0.0f, 0.0f);
 
+            //Manager.ManageEntity(sphere2);
+
+
+            Manager.ManageEntity(cube1); // cube added last for cull fix in the entity manager render method.
+            Manager.loadObjects();
 
             #endregion
 
-            Manager.loadObjects();
 
             #region Loading in the lights and binding shader light variables
 
@@ -331,6 +316,11 @@ namespace Labs.ACW
             base.OnLoad(e);
         }
 
+        private float DegreeToRadian(double angle)
+        {
+            return (float)(Math.PI * angle / 180.0);
+        }
+
         /// <summary>
         /// Generates a random floating point number between the minimum and maximum.
         /// </summary>
@@ -353,13 +343,13 @@ namespace Labs.ACW
             switch (e.KeyChar)
             {
                 case '1':
-                    cylinder1.RotateX(0.1f);
+                    cylinder5.RotateX(DegreeToRadian(1));
                     break;
                 case '2':
-                    cylinder1.RotateY(0.1f);
+                    cylinder5.RotateY(DegreeToRadian(1));
                     break;
                 case '3':
-                    cylinder1.RotateZ(0.1f);
+                    cylinder5.RotateZ(DegreeToRadian(1));
                     break;
                 case 'w':
                     moveCamera(new Vector3(0.0f, -cameraSpeed, 0.0f));
@@ -392,7 +382,7 @@ namespace Labs.ACW
                     Console.WriteLine("following ball index " + ballBeingFollowedIndex);
                     break;
                 case 't':
-                    sphere1.MoveToEmitterBox(cube1);
+                    //sphere1.MoveToEmitterBox(cube1);
                     break;
                 default:
                     break;
@@ -417,49 +407,58 @@ namespace Labs.ACW
         {
             float timestep = mTimer.GetElapsedSeconds();
 
-            if (ballCam)
-            {
-                mView = Matrix4.CreateTranslation(sphere1.mPosition.X, sphere1.mPosition.Y, 0.0f);
-                int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
-                GL.UniformMatrix4(uView, true, ref mView);
-            }
-
             if (!pauseTime)
             {
-                //for (int i = 0; i < sphereArray.Length; i++)
-                //{
-                //    // Update sphere by its velocity and accelaration
-                //    sphereArray[i].Update(timestep, accelerationDueToGravity);
+                for (int i = 0; i < sphereArray.Length; i++)
+                {
+                    // UPDATE SPHERE POSITION
+                    sphereArray[i].Update(timestep, accelerationDueToGravity);
 
-                //    if (!releaseSpheres) // allows switching off collisions with bounding cube             
-                //        sphereArray[i].hasCollidedWithCube(cube1);
+                    // CUBE COLLISION CHECK
+                    if (!releaseSpheres) // allows switching off collisions with bounding cube             
+                        sphereArray[i].hasCollidedWithCube(cube1);
 
-                //    foreach (var j in sphereArray)
-                //    {
-                //        if (!sphereArray[i].Equals(j)) // If this is not the same cube
-                //            sphereArray[i].hasCollidedWithSphere(j); // check for collisions with all other spheres
-                //    }
+                    // SPHERE ON SPHERE COLLISION CHECK
+                    foreach (var j in sphereArray)
+                    {
+                        if (!sphereArray[i].Equals(j)) // If this is not the same sphere
+                            sphereArray[i].hasCollidedWithSphere(j); // check for collisions with all other spheres
+                    }
 
-                //    sphereArray[i].hasCollidedWithSphere(sphere1);
-                //sphereArray[i].hasCollidedWithSphere(sphere2);
+                    // SPHERE ON CYLINDER CHECK
+                    sphereArray[i].hasCollisedWithCylinder(cylinder1);
+                    sphereArray[i].hasCollisedWithCylinder(cylinder2);
+                    sphereArray[i].hasCollisedWithCylinder(cylinder3);
+                    sphereArray[i].hasCollisedWithCylinder(cylinder4);
+                    sphereArray[i].hasCollisedWithCylinder(cylinder5);
+                    sphereArray[i].hasCollisedWithCylinder(cylinder6);
+                }
 
-                //}
 
-                sphere1.Update(timestep, accelerationDueToGravity);
-                sphere1.hasCollidedWithCube(cube1);
-                sphere1.hasCollisedWithCylinder(cylinder1);
-                //sphere1.hasCollidedWithSphere(sphere2);
+
+                //sphere1.Update(timestep, accelerationDueToGravity);
+                //sphere1.hasCollidedWithCube(cube1);           
+                //sphere1.hasCollisedWithCylinder(cylinder1);
+                //sphere1.hasCollisedWithCylinder(cylinder2);
+                //sphere1.hasCollisedWithCylinder(cylinder3);
+                //sphere1.hasCollisedWithCylinder(cylinder4);
+                //sphere1.hasCollisedWithCylinder(cylinder5);
+                //sphere1.hasCollisedWithCylinder(cylinder6);
+
 
                 //sphere2.Update(timestep, accelerationDueToGravity);
                 //sphere2.hasCollidedWithCube(cube1);
                 //sphere2.hasCollidedWithSphere(sphere1);
+                //sphere2.hasCollisedWithCylinder(cylinder2);
+                //sphere2.hasCollisedWithCylinder(cylinder3);
+                //sphere2.hasCollisedWithCylinder(cylinder4);
+                //sphere2.hasCollisedWithCylinder(cylinder5);
+                //sphere2.hasCollisedWithCylinder(cylinder6);
 
 
-                for (int j = 0; j < sphereArray.Length; j++)
-                {
-                    sphere1.hasCollidedWithSphere(sphereArray[j]);
-                    //sphere2.hasCollidedWithSphere(sphereArray[j]);
-                }
+
+                //sphere1.hasCollidedWithSphere(sphere2);
+                //sphere2.hasCollidedWithSphere(sphere1);
             }
             base.OnUpdateFrame(e);
         }
@@ -541,5 +540,5 @@ namespace Labs.ACW
         {
 
         }
-    }    
+    }
 }

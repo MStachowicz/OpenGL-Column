@@ -89,7 +89,6 @@ namespace Labs.ACW
             Vector4 test5 = test4 * inverseTranslation * Matrix4.CreateRotationY(pRotation) * translation;
             CylinderTop = new Vector3(test5.X, test5.Y, test5.Z);
         }
-
         public void RotateZ(float pRotation)
         {
             string test = this.ToString();
@@ -106,6 +105,23 @@ namespace Labs.ACW
 
             Vector4 test4 = new Vector4(CylinderTop, 1);
             Vector4 test5 = test4 * inverseTranslation * Matrix4.CreateRotationZ(pRotation) * translation;
+            CylinderTop = new Vector3(test5.X, test5.Y, test5.Z);
+        }
+
+        public void scale(Vector3 pScale)
+        {
+            Vector3 t = mMatrix.ExtractTranslation();
+            Matrix4 translation = Matrix4.CreateTranslation(t);
+            Matrix4 inverseTranslation = Matrix4.CreateTranslation(-t);
+
+            mMatrix = mMatrix * inverseTranslation * Matrix4.CreateScale(pScale) * translation;
+
+            Vector4 test2 = new Vector4(CylinderBottom, 1);
+            Vector4 test3 = test2 * inverseTranslation * Matrix4.CreateScale(pScale) * translation;
+            CylinderBottom = new Vector3(test3.X, test3.Y, test3.Z);
+
+            Vector4 test4 = new Vector4(CylinderTop, 1);
+            Vector4 test5 = test4 * inverseTranslation * Matrix4.CreateScale(pScale) * translation;
             CylinderTop = new Vector3(test5.X, test5.Y, test5.Z);
         }
 

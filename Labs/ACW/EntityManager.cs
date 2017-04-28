@@ -33,15 +33,6 @@ namespace Labs.ACW
         {
             for (int i = 0; i < mObjects.Count; i++)
             {
-                //GL.FrontFace(FrontFaceDirection.Cw);
-
-                if (i == 3) // first 3 objects are cubes to be reversed
-                {
-                    // reset back after the cubes are rendered
-                    //GL.FrontFace(FrontFaceDirection.Ccw);
-                }
-
-
                 mObjects[i].Load();
             }
         }
@@ -51,23 +42,20 @@ namespace Labs.ACW
         /// </summary>
         public void renderObjects()
         {
+
             for (int i = 0; i < mObjects.Count; i++)
             {
-                //GL.FrontFace(FrontFaceDirection.Cw);
-
-                if (i == 1) // first 3 objects are cubes to be reversed
+                if (i == mObjects.Count - 1) // cube render 
                 {
-                    // reset back after the cubes are rendered
-                    //GL.FrontFace(FrontFaceDirection.Ccw);
-                    //GL.Enable(EnableCap.CullFace);
-                    GL.Disable(EnableCap.CullFace);
+            GL.FrontFace(FrontFaceDirection.Cw);  // reset back
+
+                    mObjects[i].Render();
+                    GL.FrontFace(FrontFaceDirection.Ccw); // reverse order
                 }
                 else
                 {
-                    GL.Enable(EnableCap.CullFace);
+                    mObjects[i].Render();
                 }
-
-                mObjects[i].Render();
             }
         }
 
