@@ -27,7 +27,7 @@ namespace Labs.ACW
         public Matrix4 mView;
 
         const int NumberOfSpheres = 0;
-        const int NumberOfCylinders = 1;
+        const int NumberOfCylinders = 9;
         const int NumberOfCubes = 1;
         const int totalObjects = NumberOfSpheres + NumberOfCylinders + NumberOfCubes;
 
@@ -64,6 +64,11 @@ namespace Labs.ACW
 
         Cube cube1;
         Cylinder cylinder1;
+        Cylinder cylinder2;
+        Cylinder cylinder3;
+        Cylinder cylinder4;
+        Cylinder cylinder5;
+        Cylinder cylinder6;
 
         public void pauseSimulation()
         {
@@ -122,12 +127,6 @@ namespace Labs.ACW
             GL.Uniform1(uShininessLocation, Shininess * 128);
         }
 
-        public void movespheretoposition(Vector3 pPos)
-        {
-            sphere1.mPosition = pPos;
-            sphere1.mVelocity = new Vector3(0.0f, 0.0f, 0.0f);
-        }
-
         protected override void OnLoad(EventArgs e)
         {
             // Set some GL state
@@ -162,26 +161,68 @@ namespace Labs.ACW
             GL.GenBuffers(mVBO_IDs.Length, mVBO_IDs);
 
             #region Loading in models
+            // 100 cm = 1.0f
 
             Manager = new entityManager();
             rand = new Random();
 
-            // 100 cm = 1.0f
-
-
-            // CUBES
+            // CUBE
             cube1 = new Cube();
-            Manager.ManageEntity(cube1);
-
             cube1.mPosition = new Vector3(0.0f, 0.0f, -5.0f);
 
-            // CYLINDERS
-            cylinder1 = new Cylinder(cube1, 0.15f);
-            //cylinder1.mPosition = new Vector3(0.0f, 1.0f, -5.0f);
-            //cylinder1.SetScale(0.1f);
-            //cylinder1.mRadius = 0.015f;
+            Manager.ManageEntity(cube1);
 
+            Vector3 centerlevel1 = new Vector3(cube1.mPosition.X, cube1.mPosition.Y + 0.5f, cube1.mPosition.Z);
+            Vector3 centerlevel2 = new Vector3(cube1.mPosition.X, cube1.mPosition.Y - 0.5f, cube1.mPosition.Z);
+            Vector3 centerlevel3 = new Vector3(cube1.mPosition.X, cube1.mPosition.Y - 1.5f, cube1.mPosition.Z);
+
+            // CYLINDERS
+            // LEVEL 1
+            cylinder1 = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y + 0.25f, centerlevel1.Z), 0.075f);          
+            cylinder1.RotateX((float)Math.PI / 2);
+            cylinder2 = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y + 0.25f, centerlevel1.Z), 0.075f);
+            cylinder2.RotateZ((float)Math.PI / 2);
+
+
+            cylinder3 = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y - 0.25f, centerlevel1.Z), 0.15f);
+            cylinder3.RotateX((float)Math.PI / 2);
+            cylinder4 = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y - 0.25f, centerlevel1.Z), 0.15f);
+            cylinder4.RotateZ((float)Math.PI / 2);
+
+
+            // LEVEL 2
+            cylinder5 = new Cylinder(new Vector3(centerlevel2.X, centerlevel2.Y, centerlevel2.Z), 
+                0.10f);
+            cylinder5.RotateX((float)Math.PI / 2);
+            //cylinder5.RotateY((float)Math.PI / 2);
+            //cylinder5.RotateX((float)Math.PI / 2);
+            //cylinder5.RotateZ((float)Math.PI / 2);
+
+
+            cylinder6 = new Cylinder(new Vector3(centerlevel2.X, centerlevel2.Y, centerlevel2.Z), 
+                0.15f);
+            cylinder6.RotateZ((float)Math.PI / 2);
+            //cylinder6.RotateX((float)Math.PI / 2);
+            //cylinder6.RotateY((float)((7/4) * Math.PI));
+            //cylinder6.RotateZ((float)Math.PI / 2);
+
+
+            // Adding cylinders to manager
             Manager.ManageEntity(cylinder1);
+            Manager.ManageEntity(cylinder2);
+            Manager.ManageEntity(cylinder3);
+            Manager.ManageEntity(cylinder4);
+
+            Manager.ManageEntity(cylinder5);
+            Manager.ManageEntity(cylinder6);
+
+
+
+
+
+
+
+
 
             // SPHERES
             sphereArray = new Sphere[NumberOfSpheres]; // create spheres array
@@ -312,13 +353,13 @@ namespace Labs.ACW
             switch (e.KeyChar)
             {
                 case '1':
-                    cylinder1.RotateX(0.01f, sphere1);
+                    cylinder1.RotateX(0.1f);
                     break;
                 case '2':
-                    cylinder1.RotateY(0.01f);
+                    cylinder1.RotateY(0.1f);
                     break;
                 case '3':
-                    cylinder1.RotateZ(0.01f);
+                    cylinder1.RotateZ(0.1f);
                     break;
                 case 'w':
                     moveCamera(new Vector3(0.0f, -cameraSpeed, 0.0f));
@@ -500,678 +541,5 @@ namespace Labs.ACW
         {
 
         }
-    }
-
-    public class entityManager
-    {
-        public entityManager()
-        {
-            //vertexArrayObject = pVertexArrayObject;
-            //vertexBufferObject = pVertexBufferObject;
-
-            //shader = pShader;
-        }
-
-        public void ManageEntity(entity pEntity)
-        {
-            mObjects.Add(pEntity);
-        }
-
-        /// <summary>
-        /// Calls the load method of all the objects contained by this entity manager.
-        /// </summary>
-        public void loadObjects()
-        {
-            for (int i = 0; i < mObjects.Count; i++)
-            {
-                //GL.FrontFace(FrontFaceDirection.Cw);
-
-                if (i == 3) // first 3 objects are cubes to be reversed
-                {
-                    // reset back after the cubes are rendered
-                    //GL.FrontFace(FrontFaceDirection.Ccw);
-                }
-
-
-                mObjects[i].Load();
-            }
-        }
-
-        /// <summary>
-        /// Calls the render method of all the objects contained by this entity manager.
-        /// </summary>
-        public void renderObjects()
-        {
-            for (int i = 0; i < mObjects.Count; i++)
-            {
-                //GL.FrontFace(FrontFaceDirection.Cw);
-
-                if (i == 1) // first 3 objects are cubes to be reversed
-                {
-                    // reset back after the cubes are rendered
-                    //GL.FrontFace(FrontFaceDirection.Ccw);
-                    //GL.Enable(EnableCap.CullFace);
-                    GL.Disable(EnableCap.CullFace);
-                }
-                else
-                {
-                    GL.Enable(EnableCap.CullFace);
-                }
-
-                mObjects[i].Render();
-            }
-        }
-
-        /// <summary>
-        /// All the objects this entity manager is responsible for.
-        /// </summary>
-        public List<entity> mObjects = new List<entity>();
-
-        // Setting up VAO and VBO for use with ACW window
-        //public static int[] vertexArrayObject;
-        //public static int[] vertexBufferObject;
-        //public static ShaderUtility shader;
-
-        //public static int vPositionLocation;
-        //public static int vNormal;
-
-        public static int VAOCount = 0;
-        public static int VBOCount = 0;
-    }
-
-    public abstract class entity
-    {
-        /// <summary>
-        /// The index in the VAO that this entity belongs to.
-        /// </summary>
-        protected int VAOIndex;
-        /// <summary>
-        /// The index in the VBO that this entity belongs to.
-        /// </summary>
-        protected int VBOIndex;
-
-        protected ModelUtility mModelUtility;
-
-        // OBJECT PROPERTIES      
-        public float mScaleX;
-        public float mScaleY;
-        public float mScaleZ;
-
-        public float mRotationX;
-        public float mRotationY;
-        public float mRotationZ;
-
-        public Vector3 mPosition;
-
-        public float mVolume;
-        public float mDensity;
-        public float mMass;
-
-        public Matrix4 mMatrix;
-        public Vector3 mVelocity;
-
-        abstract public void Load();
-        abstract public void Render();
-        abstract public void Update(float pTimestep, Vector3 pGravity);
-
-        /// <summary>
-        /// Sets the scale of the entity in the x, y and z plane to the parameter value.
-        /// </summary>
-        /// <param name="pScale">The value the scale will be set to.</param>
-        public void SetScale(float pScale)
-        {
-            mScaleX = pScale;
-            mScaleY = pScale;
-            mScaleZ = pScale;
-        }
-    }
-
-    public class Sphere : entity
-    {
-        public Sphere(Vector3 pPosition)
-        {
-            VAOIndex = entityManager.VAOCount++;
-            VBOIndex = entityManager.VBOCount++;
-            entityManager.VBOCount++;
-
-            mScaleX = 0.1f;
-            mScaleY = 0.1f;
-            mScaleZ = 0.1f;
-
-            mPosition = pPosition;
-            mVelocity = new Vector3(0, 0, 0);
-        }
-
-        /// <summary>
-        /// Creates a ball in the top cube of the scene in a random position with a random velocity.
-        /// </summary>
-        /// <param name="pCube">The cube all the spheres will be bounded by</param>
-        public Sphere(Cube pCube)
-        {
-            VAOIndex = entityManager.VAOCount++;
-            VBOIndex = entityManager.VBOCount++;
-            entityManager.VBOCount++;
-
-            // SPHERE PROPERTIES
-
-            mVelocity = new Vector3(0, 0, 0);
-
-            #region Translation
-
-            float x = NextFloat(pCube.mPosition.X + (pCube.cubeDimensions.X), pCube.mPosition.X - (pCube.cubeDimensions.X));
-            float y = NextFloat((2.0f - 0.96f), 2.0f - 0.04f);
-            float z = NextFloat(pCube.mPosition.Z + (pCube.cubeDimensions.Z), pCube.mPosition.Z - (pCube.cubeDimensions.Z));
-
-            // Set all the spheres to random locations inside emitter box.
-            mPosition = new Vector3(x, y, z);
-
-
-            #endregion
-
-            #region Scale + mass for 2 different balls
-
-            if (!changeBallType)
-            { // 4cm radius ball
-                mScaleX = 0.04f;
-                mScaleY = 0.04f;
-                mScaleZ = 0.04f;
-
-                mRadius = 1.0f * mScaleX; // radius = 4 cm = 0.04m
-                mVolume = (float)((4 / 3) * Math.PI * Math.Pow(mRadius, 3));
-                mDensity = 1400f; // density =   0.001 kg/cm^3 = 1400 kg/m^3
-                mMass = mDensity * mVolume;
-            }
-            else
-            {// 8cm radius ball
-                mScaleX = 0.08f;
-                mScaleY = 0.08f;
-                mScaleZ = 0.08f;
-
-                mRadius = 1.0f * mScaleX; // radius = 8 cm = 0.08m
-                mVolume = (float)((4 / 3) * Math.PI * Math.Pow(mRadius, 3));
-                mDensity = 0.001f;
-                mMass = mDensity * mVolume;
-            }
-
-            #endregion
-
-            mRotationX = 1.0f;
-            mRotationY = 1.0f;
-            mRotationZ = 1.0f;
-
-            // Next sphere instantiated will be of the other sphere type.
-            changeBallType ^= true;
-        }
-
-        /// <summary>
-        /// Radius of the sphere in meters.
-        /// </summary>
-        public float mRadius;
-        /// <summary>
-        /// The position of the sphere in the previous frame.
-        /// </summary>
-        Vector3 lastPosition;
-        /// <summary>
-        /// Toggled to change the type of ball instantiated by the sphere constructor.
-        /// </summary>
-        private static bool changeBallType = true;
-
-        /// <summary>
-        /// Moves the sphere to the top box (emitter box) of the scene.
-        /// </summary>
-        /// <param name="pCube">The cube whos top box is the emitter box.</param>
-        public void MoveToEmitterBox(Cube pCube)
-        {
-            //float x = NextFloat(pCube.mPosition.X + (pCube.cubeDimensions.X), pCube.mPosition.X - (pCube.cubeDimensions.X));
-            //float y = NextFloat((2.0f - 0.96f), 2.0f - 0.04f);
-            //float z = NextFloat(pCube.mPosition.Z + (pCube.cubeDimensions.Z), pCube.mPosition.Z - (pCube.cubeDimensions.Z));
-
-            // Set all the spheres to random locations inside cube
-            mPosition = new Vector3(mPosition.X, pCube.cubeDimensions.Y, mPosition.Z);
-            mVelocity = new Vector3(NextFloat(-2, 2), NextFloat(-2, 2), NextFloat(-2, 2));
-            //mVelocity = new Vector3(0.0f, 0.0f, 0.0f);
-        }
-
-        /// <summary>
-        /// Generate a floating point number between the minimum and maximum.
-        /// </summary>
-        /// <param name="min"></param>
-        /// <param name="max"></param>
-        /// <returns></returns>
-        private float NextFloat(float min, float max)
-        {
-            return (float)(min + (ACWWindow.rand.NextDouble() * (max - min)));
-        }
-
-        public override void Load()
-        {
-            int size;
-            mModelUtility = ModelUtility.LoadModel(@"Utility/Models/sphere.bin");
-
-            GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
-
-            GL.BindBuffer(BufferTarget.ArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex]);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mModelUtility.Vertices.Length * sizeof(float)), mModelUtility.Vertices, BufferUsageHint.StaticDraw);
-
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex + 1]);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mModelUtility.Indices.Length * sizeof(float)), mModelUtility.Indices, BufferUsageHint.StaticDraw);
-
-            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
-            if (mModelUtility.Vertices.Length * sizeof(float) != size)
-            {
-                throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
-            }
-
-            GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
-            if (mModelUtility.Indices.Length * sizeof(float) != size)
-            {
-                throw new ApplicationException("Index data not loaded onto graphics card correctly");
-            }
-
-            GL.EnableVertexAttribArray(ACWWindow.vPositionLocation);
-            GL.VertexAttribPointer(ACWWindow.vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
-
-            GL.EnableVertexAttribArray(ACWWindow.vNormal);
-            GL.VertexAttribPointer(ACWWindow.vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
-        }
-        public override void Render()
-        {
-            mMatrix = Matrix4.CreateScale(mScaleX, mScaleY, mScaleZ) * Matrix4.CreateTranslation(mPosition);
-
-            int uModel = GL.GetUniformLocation(ACWWindow.mShader.ShaderProgramID, "uModel");
-
-            Matrix4 moveToWorldSpace = mMatrix * ACWWindow.cubeSpace;
-            GL.UniformMatrix4(uModel, true, ref moveToWorldSpace);
-
-            GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
-            GL.DrawElements(PrimitiveType.Triangles, mModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
-        }
-
-        public override void Update(float dt, Vector3 gravity)
-        {
-            lastPosition = mPosition;
-            mVelocity = mVelocity + gravity * dt;
-            mPosition = mPosition + mVelocity * dt;
-        }
-
-        #region collision detection and response
-        public void hasCollidedWithCube(Cube pCube)
-        {
-            //this.mVelocity
-            float restitution = 1.0f;
-
-            // X PLANE
-            if ((mPosition.X + mRadius > (pCube.mPosition.X + (pCube.cubeDimensions.X))))
-            {
-                if (mVelocity.X > 0) // only perform collision response if the direction of velocity is same sign as normal of cube
-                {
-                    Vector3 normal = new Vector3(1, 0, 0);
-                    mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
-                }
-            }
-            if ((mPosition.X - mRadius < (pCube.mPosition.X - (pCube.cubeDimensions.X)))) // Left inside of pCube
-            {
-                if (mVelocity.X < 0)
-                {
-                    Vector3 normal = new Vector3(-1, 0, 0);
-                    mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
-                }
-            }
-            // Y PLANE
-            if ((mPosition.Y + mRadius > (pCube.mPosition.Y + (pCube.cubeDimensions.Y))))
-            {
-                if (mVelocity.Y > 0)
-                {
-                    Vector3 normal = new Vector3(0, 1, 0);
-                    mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
-                }
-
-            }
-            if ((mPosition.Y - mRadius) < (pCube.mPosition.Y - (pCube.cubeDimensions.Y)))
-            {
-                if (mVelocity.Y < 0)
-                { // bottom collision
-
-                    MoveToEmitterBox(pCube);
-
-                    Vector3 normal = new Vector3(0, -1, 0);
-                    mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
-                }
-            }
-            // Z PLANE
-            if ((mPosition.Z + mRadius > (pCube.mPosition.Z + (pCube.cubeDimensions.Z))))
-            {
-                if (mVelocity.Z > 0)
-                {
-                    Vector3 normal = new Vector3(0, 0, 1);
-                    mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
-                }
-            }
-            if ((mPosition.Z - mRadius) < (pCube.mPosition.Z - (pCube.cubeDimensions.Z)))
-            {
-                if (mVelocity.Z < 0)
-                {
-                    Vector3 normal = new Vector3(0, 0, -1);
-                    mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
-                }
-            }
-        }
-        public bool hasCollidedWithSphere(Sphere pSphere)
-        {
-            float restitution = 1f;
-
-            double x = mPosition.X - pSphere.mPosition.X;
-            double y = mPosition.Y - pSphere.mPosition.Y;
-            double z = mPosition.Z - pSphere.mPosition.Z;
-            double distance = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2) + Math.Pow(z, 2));
-
-
-            if (distance < mRadius + pSphere.mRadius)
-            {
-                //Vector3 circle1Momentumbefore = mCircleMass * mCircleVelocity;
-                //Vector3 circle2Momentumbefore = mCircleMass2 * mCircleVelocity2;
-                //Vector3 totalmomentumbefore = circle1Momentumbefore + circle2Momentumbefore;
-
-                Vector3 pointOfCollision = new Vector3((float)x / 2, (float)y / 2, (float)z / 2);
-
-                Vector3 sphereToCollision = mPosition - pointOfCollision;
-                Vector3 sphereToCollision2 = pSphere.mPosition - pointOfCollision;
-
-                Vector3 OriginalVelocity = mVelocity;
-                Vector3 OriginalVelocity2 = pSphere.mVelocity;
-
-                ACWWindow.CollisionCount++;
-                mVelocity = ((mMass * mVelocity) + (pSphere.mMass * pSphere.mVelocity) + (restitution * pSphere.mMass * (pSphere.mVelocity - mVelocity))) / (mMass + pSphere.mMass);
-                pSphere.mVelocity = ((pSphere.mMass * pSphere.mVelocity) + (mMass * OriginalVelocity) + (restitution * mMass * (OriginalVelocity - pSphere.mVelocity))) / (pSphere.mMass + mMass);
-
-                mPosition = lastPosition;
-                pSphere.mPosition = pSphere.lastPosition;
-
-
-                //Vector3 circle1Momentumafter = mCircleMass * mCircleVelocity;
-                //Vector3 circle2Momentumafter = mCircleMass2 * mCircleVelocity2;
-                //Vector3 totalmomentumafter = circle1Momentumafter + circle2Momentumafter;
-
-                return true;
-            }
-            return false;
-        }
-        public void hasCollisedWithCylinder(Cylinder pCylinder)
-        {
-            float restitution = 1f;
-
-            // Line segment method
-            Vector3 endPoint1 = new Vector3(pCylinder.mPosition.X, pCylinder.mPosition.Y + 0.5f, pCylinder.mPosition.Z);
-            Vector3 endPoint2 = new Vector3(pCylinder.mPosition.X, pCylinder.mPosition.Y - 0.5f, pCylinder.mPosition.Z);
-
-            Vector3 test = pCylinder.CylinderTop;
-            Vector3 test2 = pCylinder.CylinderBottom;
-
-            endPoint1 = test;
-            endPoint2 = test2;
-
-            Vector3 Hyp = (mPosition - endPoint1); // green line
-            Vector3 AdjNormalized = Vector3.Normalize(endPoint2 - endPoint1); // blue line normalized
-
-            float adotb = Vector3.Dot(AdjNormalized, Hyp);
-            double theta = Math.Acos(adotb / Hyp.Length);
-            double oppositeDistance = Math.Sin(theta) * Hyp.Length;
-
-
-            if (oppositeDistance < mRadius + pCylinder.mRadius)
-            {
-                Vector3 Adj = AdjNormalized * (Hyp * (float)(Math.Cos(theta)));
-                Vector3 Opp = Adj - Hyp;
-
-                Vector3 normal = -Opp.Normalized();
-                Vector3 velocityBefore = mVelocity;
-
-                if (Vector3.Dot(normal, mVelocity) < 0)
-                {
-                    Console.WriteLine("colllision" + ACWWindow.CollisionCount++);
-                    mVelocity = mVelocity - (1 + restitution) * Vector3.Dot(normal, mVelocity) * normal;
-                    mPosition = lastPosition;
-                }
-
-            }
-        }
-        #endregion
-    }
-
-    public class Cube : entity
-    {
-        public Cube()
-        {
-            VAOIndex = entityManager.VAOCount++;
-            VBOIndex = entityManager.VBOCount++;
-            entityManager.VBOCount++; // cube uses two VBOS
-
-            // CUBE PROPERTIES
-            mDimension = 0.5f;
-
-            mScaleX = 1.0f;
-            mScaleY = 4.0f;
-            mScaleZ = 1.0f;
-
-
-            mRotationX = 1.0f;
-            mRotationY = 1.0f;
-            mRotationZ = 1.0f;
-
-            mVolume = 0.0f; // TODO ADD VOLUME FOR CUBE
-            mDensity = 1f;
-            mMass = mDensity * mVolume;
-
-            cubeDimensions = new Vector3(mDimension * mScaleX, mDimension * mScaleY, mDimension * mScaleZ);
-            mPosition = new Vector3(0.0f, 0.0f, 0.0f);
-            mVelocity = new Vector3(0.0f, 0.0f, 0.0f);
-        }
-
-        public Vector3 cubeDimensions;
-        private float mDimension;
-
-        public override void Load()
-        {
-            mModelUtility = ModelUtility.LoadModel(@"Utility/Models/cube.sjg");
-            int size;
-
-            GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
-
-            GL.BindBuffer(BufferTarget.ArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex]);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mModelUtility.Vertices.Length * sizeof(float)), mModelUtility.Vertices, BufferUsageHint.StaticDraw);
-
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex + 1]);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mModelUtility.Indices.Length * sizeof(float)), mModelUtility.Indices, BufferUsageHint.StaticDraw);
-
-            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
-            if (mModelUtility.Vertices.Length * sizeof(float) != size)
-            {
-                throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
-            }
-
-            GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
-            if (mModelUtility.Indices.Length * sizeof(float) != size)
-            {
-                throw new ApplicationException("Index data not loaded onto graphics card correctly");
-            }
-
-            GL.EnableVertexAttribArray(ACWWindow.vPositionLocation);
-            GL.VertexAttribPointer(ACWWindow.vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
-
-            GL.EnableVertexAttribArray(ACWWindow.vNormal);
-            GL.VertexAttribPointer(ACWWindow.vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
-        }
-        public override void Render()
-        {
-            mMatrix = Matrix4.CreateScale(new Vector3(mScaleX, mScaleY, mScaleZ)) *
-            //Matrix4.CreateRotationX(mRotationX) *
-            //Matrix4.CreateRotationX(mRotationY) *
-            //Matrix4.CreateRotationX(mRotationZ) *
-            Matrix4.CreateTranslation(mPosition);
-
-            int uModel = GL.GetUniformLocation(ACWWindow.mShader.ShaderProgramID, "uModel");
-            Matrix4 moveToWorldSpace = mMatrix * ACWWindow.cubeSpace;
-            GL.UniformMatrix4(uModel, true, ref moveToWorldSpace);
-
-            GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
-            GL.DrawElements(PrimitiveType.Triangles, mModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
-        }
-
-        public override void Update(float pTimestep, Vector3 pGravity)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
-    public class Cylinder : entity
-    {
-        /// <summary>
-        /// Places a cylinder in cube.
-        /// </summary>
-        /// <param name="pCube">The cube whos matrix forms the sceneGraph node </param>
-        /// <param name="pPosition">The translation to apply to the cylinder matrix.</param>
-        /// <param name="pRadius">The radius of the cylinder. 1 = 1 meter.</param>
-        public Cylinder(Cube pCube, float pRadius)
-        {
-            VAOIndex = entityManager.VAOCount++;
-            VBOIndex = entityManager.VBOCount++;
-            entityManager.VBOCount++;
-
-            mRadius = pRadius;
-
-            mScaleX = pRadius;
-            mScaleY = pCube.cubeDimensions.X * 2; // stretches the cylinder to the length of the cube
-            mScaleZ = pRadius;
-
-            mPosition = pCube.mPosition;
-
-
-            mMatrix = Matrix4.CreateScale(new Vector3(mScaleX, mScaleY, mScaleZ)) *
-                Matrix4.CreateTranslation(mPosition);
-
-
-            mVelocity = new Vector3(0.0f, 0.0f, 0.0f);
-
-            CylinderBottom = new Vector3(mPosition.X, mPosition.Y - (0.5f * mScaleY), mPosition.Z);
-            CylinderTop = new Vector3(mPosition.X, mPosition.Y + (0.5f * mScaleY), mPosition.Z);
-        }
-
-        public float mRadius;
-        public Vector3 CylinderBottom;
-        public Vector3 CylinderTop;
-
-
-
-        public void RotateX(float pRotation, Sphere sphere1)
-        {
-            // https://open.gl/transformations
-            // https://www.amazon.co.uk/Mathematics-Game-Programming-Computer-Graphics/dp/1435458869/ref=dp_ob_title_bk
-
-            Vector3 t = mMatrix.ExtractTranslation();
-
-            Matrix4 translation = Matrix4.CreateTranslation(t);
-            Matrix4 inverseTranslation = Matrix4.CreateTranslation(-t);
-
-            mMatrix = mMatrix * inverseTranslation * Matrix4.CreateRotationX(pRotation) * translation;
-
-
-
-            Vector4 test2 = new Vector4(CylinderBottom, 1);
-            Vector4 test3 = test2 * inverseTranslation * Matrix4.CreateRotationX(pRotation) * translation;
-            CylinderBottom = new Vector3(test3.X, test3.Y, test3.Z);
-
-            Vector4 test4 = new Vector4(CylinderTop, 1);
-            Vector4 test5 = test4 * inverseTranslation * Matrix4.CreateRotationX(pRotation) * translation;
-            CylinderTop = new Vector3(test5.X, test5.Y, test5.Z);
-        }
-
-        public void RotateY(float pRotation)
-        {
-            string test = this.ToString();
-            Vector3 t = mMatrix.ExtractTranslation();
-
-            Matrix4 translation = Matrix4.CreateTranslation(t);
-            Matrix4 inverseTranslation = Matrix4.CreateTranslation(-t);
-
-            mMatrix = mMatrix * inverseTranslation * Matrix4.CreateRotationY(pRotation) * translation;
-
-
-
-            Vector4 test2 = new Vector4(CylinderBottom, 1);
-            Vector4 test3 = test2 * inverseTranslation * Matrix4.CreateRotationY(pRotation) * translation;
-            CylinderBottom = new Vector3(test3.X, test3.Y, test3.Z);
-
-            Vector4 test4 = new Vector4(CylinderTop, 1);
-            Vector4 test5 = test4 * inverseTranslation * Matrix4.CreateRotationY(pRotation) * translation;
-            CylinderTop = new Vector3(test5.X, test5.Y, test5.Z);
-        }
-
-        public void RotateZ(float pRotation)
-        {
-            string test = this.ToString();
-            Vector3 t = mMatrix.ExtractTranslation();
-
-            Matrix4 translation = Matrix4.CreateTranslation(t);
-            Matrix4 inverseTranslation = Matrix4.CreateTranslation(-t);
-
-            mMatrix = mMatrix * inverseTranslation * Matrix4.CreateRotationZ(pRotation) * translation;
-
-
-
-            Vector4 test2 = new Vector4(CylinderBottom, 1);
-            Vector4 test3 = test2 * inverseTranslation * Matrix4.CreateRotationZ(pRotation) * translation;
-            CylinderBottom = new Vector3(test3.X, test3.Y, test3.Z);
-
-            Vector4 test4 = new Vector4(CylinderTop, 1);
-            Vector4 test5 = test4 * inverseTranslation * Matrix4.CreateRotationZ(pRotation) * translation;
-            CylinderTop = new Vector3(test5.X, test5.Y, test5.Z);
-        }
-
-        public override void Load()
-        {
-            mModelUtility = ModelUtility.LoadModel(@"Utility/Models/cylinder.bin");
-            int size;
-
-            GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
-
-            GL.BindBuffer(BufferTarget.ArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex]);
-            GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(mModelUtility.Vertices.Length * sizeof(float)), mModelUtility.Vertices, BufferUsageHint.StaticDraw);
-
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex + 1]);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(mModelUtility.Indices.Length * sizeof(float)), mModelUtility.Indices, BufferUsageHint.StaticDraw);
-
-            GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
-            if (mModelUtility.Vertices.Length * sizeof(float) != size)
-            {
-                throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
-            }
-
-            GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
-            if (mModelUtility.Indices.Length * sizeof(float) != size)
-            {
-                throw new ApplicationException("Index data not loaded onto graphics card correctly");
-            }
-
-            GL.EnableVertexAttribArray(ACWWindow.vPositionLocation);
-            GL.VertexAttribPointer(ACWWindow.vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
-
-            // next 2 lines cause cylinder to dissapear
-            GL.EnableVertexAttribArray(ACWWindow.vNormal);
-            GL.VertexAttribPointer(ACWWindow.vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
-        }
-
-        public override void Render()
-        {
-            int uModel = GL.GetUniformLocation(ACWWindow.mShader.ShaderProgramID, "uModel");
-            GL.UniformMatrix4(uModel, true, ref mMatrix);
-
-            GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
-            GL.DrawElements(PrimitiveType.Triangles, mModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
-        }
-
-        public override void Update(float pTimestep, Vector3 pGravity)
-        {
-            throw new NotImplementedException();
-        }
-    }
+    }    
 }
