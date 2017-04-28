@@ -68,6 +68,7 @@
     <Compile Include="ACW\Cylinder.cs" />
     <Compile Include="ACW\Entity.cs" />
     <Compile Include="ACW\EntityManager.cs" />
+    <Compile Include="ACW\Material.cs" />
     <Compile Include="ACW\Sphere.cs" />
     <Compile Include="Challenge\ChallengeWindow.cs" />
     <Compile Include="Lab1\Lab1Window.cs" />

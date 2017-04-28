@@ -45,7 +45,6 @@ namespace Labs.ACW
         /// </summary>
         const int NUMBER_UNIQUE_OBJECTS = 3;
 
-
         public static int[] mVAO_IDs = new int[NUMBER_UNIQUE_OBJECTS];
         public static int[] mVBO_IDs = new int[NUMBER_UNIQUE_OBJECTS * 2]; // each object has 2 vbo index'
 
