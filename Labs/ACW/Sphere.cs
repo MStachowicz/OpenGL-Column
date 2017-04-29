@@ -175,7 +175,17 @@ namespace Labs.ACW
         /// </summary>
         public override void Update()
         {
+            Vector3 LastPositionBackup = lastPosition;
+
             lastPosition = mPosition;
+
+            if (!staticObject)
+                if (LastPositionBackup == lastPosition)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Position not changing in update for non static object.");
+                }
+
             mVelocity = mVelocity + ACWWindow.accelerationDueToGravity * ACWWindow.timestep;
             mPosition = mPosition + mVelocity * ACWWindow.timestep;
         }
@@ -333,9 +343,10 @@ namespace Labs.ACW
 
 
 
+
                 Console.WriteLine("Sphere on cylinder collision detected " + ACWWindow.CollisionCount++);
             }
-           else
+            else
             {
                 Console.WriteLine("collision response in direction of collision avoided.");
                 //ACWWindow.pauseSimulation();              
@@ -392,7 +403,7 @@ namespace Labs.ACW
                 z = NextFloat(pCube.mPosition.Z + (pCube.cubeDimensions.Z), // min
                     pCube.mPosition.Z - (pCube.cubeDimensions.Z)); // max
 
-                Console.WriteLine("x: {0}, y: {1}, z: {2}", x,y,z);
+                Console.WriteLine("x: {0}, y: {1}, z: {2}", x, y, z);
 
                 // If the position doesnt cause a collision on spawn with any other sphere in the sphere list.
                 if (!checkPositionForCollision(new Vector3(x, y, z)))
