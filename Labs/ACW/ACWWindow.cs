@@ -207,6 +207,7 @@ namespace Labs.ACW
             for (int i = 0; i < sphereArray.Length; i++)
             {
                 sphereArray[i] = new Sphere(cube1);
+                // https://www.opengl.org/discussion_boards/showthread.php/132502-Color-tables
                 sphereArray[i].mMaterial = new Material(new Vector3(0.0f, 1.0f, 0.0f), 0.3f, 0.088f);
                 //GL.Color4(new Vector4(0.0f,0.0f,0.0f,1.0f));
                 Manager.ManageEntity(sphereArray[i]);
