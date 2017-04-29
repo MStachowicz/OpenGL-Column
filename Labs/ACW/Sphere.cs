@@ -169,11 +169,15 @@ namespace Labs.ACW
             GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
             GL.DrawElements(PrimitiveType.Triangles, mModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
         }
-        public override void Update(float dt, Vector3 gravity)
+
+        /// <summary>
+        /// Set the current position of the sphere as the last position and move the sphere by the velocity calculated.
+        /// </summary>
+        public override void Update()
         {
             lastPosition = mPosition;
-            mVelocity = mVelocity + gravity * dt;
-            mPosition = mPosition + mVelocity * dt;
+            mVelocity = mVelocity + ACWWindow.accelerationDueToGravity * ACWWindow.timestep;
+            mPosition = mPosition + mVelocity * ACWWindow.timestep;
         }
 
 
@@ -341,6 +345,12 @@ namespace Labs.ACW
             mVelocity = ((mMass * mVelocity) + (pSphere.mMass * pSphere.mVelocity) + (ACWWindow.restitution * pSphere.mMass * (pSphere.mVelocity - mVelocity))) / (mMass + pSphere.mMass);
             pSphere.mVelocity = ((pSphere.mMass * pSphere.mVelocity) + (mMass * OriginalVelocity) + (ACWWindow.restitution * mMass * (OriginalVelocity - pSphere.mVelocity))) / (pSphere.mMass + mMass);
 
+            // reuse the last timestep to move the sphere by the new velocity and check for a collision with any objects there.
+            //this.Update();
+            // what to do if find a collision with another object in the new position
+
+            // todo add check for the new position for collision detection with all other objects
+
             mPosition = lastPosition;
             pSphere.mPosition = pSphere.lastPosition;
 
@@ -414,7 +424,7 @@ namespace Labs.ACW
             {
                 if (testSphere.hasCollidedWithSphere(s))
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
+                    //Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("collision at new position detected and avoided.");
                     return true;
                 }
@@ -423,5 +433,4 @@ namespace Labs.ACW
         }
         #endregion
     }
-
 }

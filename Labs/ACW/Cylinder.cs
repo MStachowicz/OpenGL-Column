@@ -189,7 +189,7 @@ namespace Labs.ACW
             GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
             GL.DrawElements(PrimitiveType.Triangles, mModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
         }
-        public override void Update(float pTimestep, Vector3 pGravity)
+        public override void Update()
         {
             throw new NotImplementedException();
         }

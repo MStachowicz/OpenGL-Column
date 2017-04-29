@@ -52,10 +52,14 @@ namespace Labs.ACW
         public static int vPositionLocation;
         public static int vNormal;
 
-        // Physics
-        public Vector3 accelerationDueToGravity = new Vector3(0.0f, -9.81f, 0.0f);
+        // Physics todo: move to physics manager class
+        public static Vector3 accelerationDueToGravity = new Vector3(0.0f, -9.81f, 0.0f);
         //public Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
-        public static float restitution = 0.8f;
+        public static float restitution = 0.95f;
+        /// <summary>
+        /// The most recent timestep returned by the timer class used in the acw update method.
+        /// </summary>
+        public static float timestep = 0.0f;
 
         /// <summary>
         /// The current material set in the shader. Used to prevent setting the 
@@ -383,8 +387,7 @@ namespace Labs.ACW
 
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
-            float timestep = mTimer.GetElapsedSeconds();
-
+            timestep = mTimer.GetElapsedSeconds();
             Manager.updateObjects(timestep, accelerationDueToGravity);
 
             // Collision detection and response.

@@ -39,6 +39,6 @@ namespace Labs.ACW
 
         abstract public void Load();
         abstract public void Render();
-        abstract public void Update(float pTimestep, Vector3 pGravity);
+        abstract public void Update();
     }
 }

@@ -60,7 +60,7 @@ namespace Labs.ACW
             {
                 if (!i.staticObject) // if the object
                 {
-                    i.Update(pTimestep, pGravity);
+                    i.Update();
                 }
 
             }
