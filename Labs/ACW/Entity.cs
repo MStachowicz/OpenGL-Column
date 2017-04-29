@@ -31,6 +31,7 @@ namespace Labs.ACW
         public Matrix4 mMatrix;
         public Vector3 mVelocity;
 
+        public Material mMaterial;
 
         abstract public void Load();
         abstract public void Render();

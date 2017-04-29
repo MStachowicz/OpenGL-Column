@@ -35,7 +35,7 @@ namespace Labs.ACW
         /// <summary>
         /// The number of spheres the sphere array will be instantiated to. 
         /// </summary>
-        const int SPHERECOUNT = 5;
+        const int SPHERE_COUNT = 5;
         /// <summary>
         /// The number of cylinders the cylinder array will contain.
         /// </summary>
@@ -43,10 +43,10 @@ namespace Labs.ACW
         /// <summary>
         /// The number of unique object types the scene will contain, also used to reduce VAO + VBO usage.
         /// </summary>
-        const int NUMBER_UNIQUE_OBJECTS = 3;
+        const int UNIQUE_OBJECTS = 3;
 
-        public static int[] mVAO_IDs = new int[NUMBER_UNIQUE_OBJECTS];
-        public static int[] mVBO_IDs = new int[NUMBER_UNIQUE_OBJECTS * 2]; // each object has 2 vbo index'
+        public static int[] mVAO_IDs = new int[UNIQUE_OBJECTS];
+        public static int[] mVBO_IDs = new int[UNIQUE_OBJECTS * 2]; // each object has 2 vbo index'
 
         public static int vPositionLocation;
         public static int vNormal;
@@ -55,16 +55,24 @@ namespace Labs.ACW
         public Vector3 accelerationDueToGravity = new Vector3(0.0f, -9.81f, 0.0f);
         public static float restitution = 0.8f;
 
+        public static Material materialSet;
 
         // Special features
         /// <summary>
         /// When set to true spheres are no longer bounded by the cube.
         /// </summary>
-        bool releaseSpheres = false;
+        private bool releaseSpheres = false;
         /// <summary>
         /// When set to true spheres will spin in their y axis.
         /// </summary>
-        bool spinningCylinders = false;
+        private bool spinningCylinders = false;
+        /// <summary>
+        /// Count of the number of collisions occuring in the scene.
+        /// </summary>
+        public void toggleSpinningCylinders()
+        {
+            spinningCylinders ^= true;
+        }
         /// <summary>
         /// When set to true, stops updating the scene from updating until toggled back on.
         /// </summary>
@@ -78,7 +86,6 @@ namespace Labs.ACW
         }
 
         public static int CollisionCount = 0;
-
 
         private Timer mTimer;
         public static Random rand;
@@ -143,8 +150,6 @@ namespace Labs.ACW
 
             #endregion
 
-
-
             // Generating Vertex Array Objects and Vertex Buffer Objects
             GL.GenVertexArrays(mVAO_IDs.Length, mVAO_IDs);
             GL.GenBuffers(mVBO_IDs.Length, mVBO_IDs);
@@ -158,6 +163,7 @@ namespace Labs.ACW
             // CUBE
             cube1 = new Cube();
             cube1.mPosition = new Vector3(0.0f, 0.0f, -5.0f);
+            cube1.mMaterial = Material.pearl;
 
             Vector3 centerlevel1 = new Vector3(cube1.mPosition.X, cube1.mPosition.Y + 0.5f, cube1.mPosition.Z);
             Vector3 centerlevel2 = new Vector3(cube1.mPosition.X, cube1.mPosition.Y - 0.5f, cube1.mPosition.Z);
@@ -189,30 +195,22 @@ namespace Labs.ACW
             cylinderArray[5].RotateY((float)Math.PI / 4);
 
             foreach (Cylinder i in cylinderArray)
+            {
+                //i.mMaterial = new Material(new Vector3(1.0f,0.0f,0.0f), 0.5f);
+                i.mMaterial = Material.silver;
                 Manager.ManageEntity(i);
+            }
 
             // SPHERES
-            sphereArray = new Sphere[SPHERECOUNT]; // create spheres array
+            sphereArray = new Sphere[SPHERE_COUNT]; // create spheres array
 
             for (int i = 0; i < sphereArray.Length; i++)
             {
                 sphereArray[i] = new Sphere(cube1);
+                sphereArray[i].mMaterial = new Material(new Vector3(0.0f, 1.0f, 0.0f), 0.3f, 0.088f);
+                //GL.Color4(new Vector4(0.0f,0.0f,0.0f,1.0f));
                 Manager.ManageEntity(sphereArray[i]);
             }
-
-
-            //sphere1 = new Sphere(cube1);
-            //sphere1.mPosition = new Vector3(cylinder1.mPosition.X - 0.4f, cylinder1.mPosition.Y + 1.4f, cylinder1.mPosition.Z);
-            //sphere1.mVelocity = new Vector3(0.4f, 0.4f, 0.001f);
-
-            //Manager.ManageEntity(sphere1);
-
-
-            //sphere2 = new Sphere(cube1);
-            //sphere2.mPosition = new Vector3(cube1.mPosition.X - 0.4f, cube1.mPosition.Y, cube1.mPosition.Z);
-            //sphere2.mVelocity = new Vector3(2.0f, 0.0f, 0.0f);
-
-            //Manager.ManageEntity(sphere2);
 
 
             Manager.ManageEntity(cube1); // cube added last for cull fix in the entity manager render method.
@@ -313,6 +311,7 @@ namespace Labs.ACW
             switch (e.KeyChar)
             {
                 case '1':
+                    toggleSpinningCylinders();
                     break;
                 case '2':
                     break;
@@ -401,15 +400,7 @@ namespace Labs.ACW
             base.OnRenderFrame(e);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-
-            #region Rendering models
-
-            Material.chrome.SetMaterial();
-
             Manager.renderObjects();
-
-            #endregion
-
 
             GL.BindVertexArray(0);
 

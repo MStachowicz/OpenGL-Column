@@ -20,6 +20,20 @@ namespace Labs.ACW
             Shininess = pShininess;
         }
 
+        /// <summary>
+        /// Set an RGB value for the material.
+        /// </summary>
+        /// <param name="RGB">The components of red green and blue.</param>
+        /// <param name="pIntensity">The intensity all the components will be multiplied by.</param>
+        /// <param name="pShininess">The shininess of the material.</param>
+        public Material(Vector3 RGB, float pIntensity ,float pShininess)
+        {
+            AmbientReflectivity = new Vector3(RGB.X * pIntensity, RGB.Y * pIntensity, RGB.Z * pIntensity);
+            DiffuseReflectivity = new Vector3(RGB.X * pIntensity, RGB.Y * pIntensity, RGB.Z * pIntensity);
+            SpecularReflectivity = new Vector3(RGB.X * pIntensity, RGB.Y * pIntensity, RGB.Z * pIntensity);
+            Shininess = pShininess;
+        }
+
         private Vector3 AmbientReflectivity;
         private Vector3 DiffuseReflectivity;
         private Vector3 SpecularReflectivity;
@@ -41,6 +55,8 @@ namespace Labs.ACW
 
             int uShininessLocation = GL.GetUniformLocation(ACWWindow.mShader.ShaderProgramID, "uMaterial.Shininess");
             GL.Uniform1(uShininessLocation, Shininess * 128);
+
+            ACWWindow.materialSet = this;
         }
 
 
