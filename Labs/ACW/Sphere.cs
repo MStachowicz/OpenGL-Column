@@ -367,20 +367,6 @@ namespace Labs.ACW
             //Vector3 circle2Momentumafter = mCircleMass2 * mCircleVelocity2;
             //Vector3 totalmomentumafter = circle1Momentumafter + circle2Momentumafter;
         }
-        // improv. could caluclate the normal of the cube if check which plane is closest in vector (mposition - pCube.mposition) - closest value out of X Y Z plane
-        // note. better to leave seperated otherwise create 6 different face collision response methods. consider a physics class to handle collisions.
-        /// <summary>
-        /// The response of a sphere to a collision with a static cube.
-        /// </summary>
-        public void SphereOnCubeResponse()
-        {
-            // example collision response for the top inside of the cube.
-
-            // could check here if the object is static or moving to base response off of.
-            Vector3 normal = new Vector3(1, 0, 0);
-            mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
-        }
-
         /// <summary>
         /// Moves the sphere to the top box (emitter box) of the parameter cube. 
         /// Adjusts the random location by the size of the cube and radius of sphere.
@@ -419,6 +405,26 @@ namespace Labs.ACW
                 mVelocity = new Vector3(0.0f, 0.0f, 0.0f); // reset velocity
         }
 
+        public void SphereOnDoomSphereResponse()
+        {
+            // add the collision detection from sphere on sphere to find the distance between the two centers and the 
+            //proportion of overlap dictates how much to scale the sphere down by.
+        }
+
+
+        // improv. could caluclate the normal of the cube if check which plane is closest in vector (mposition - pCube.mposition) - closest value out of X Y Z plane
+        // note. better to leave seperated otherwise create 6 different face collision response methods. consider a physics class to handle collisions.
+        /// <summary>
+        /// The response of a sphere to a collision with a static cube.
+        /// </summary>
+        public void SphereOnCubeResponse()
+        {
+            // example collision response for the top inside of the cube.
+
+            // could check here if the object is static or moving to base response off of.
+            Vector3 normal = new Vector3(1, 0, 0);
+            mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
+        }
         /// <summary>
         /// Check if a sphere in the parameter position collided with any spheres other than itself.
         /// </summary>
