@@ -32,6 +32,7 @@ namespace Labs.ACW
         Cylinder[] cylinderArray;
         Sphere[] sphereArray;
         Sphere doomSphere;
+        Sphere testsphere;
 
         /// <summary>
         /// The number of spheres the sphere array will be instantiated to. 
@@ -208,6 +209,8 @@ namespace Labs.ACW
             cylinderArray[5].scale(new Vector3(1.0f, 1.6f, 1.0f));
             cylinderArray[5].RotateX(-(float)Math.PI / 3);
             cylinderArray[5].RotateY((float)Math.PI / 4);
+
+            testsphere = new Sphere(cylinderArray[5].mCylinderTop, 0.1f, true, false);
 
             foreach (Cylinder i in cylinderArray)
             {
@@ -433,6 +436,7 @@ namespace Labs.ACW
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             Manager.renderObjects();
+            testsphere.Render();
 
             GL.BindVertexArray(0);
 
