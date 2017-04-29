@@ -8,7 +8,6 @@ namespace Labs.ACW
 {
     public class Sphere : entity
     {
-
         /// <summary>
         /// Constructor used to create sphere of doom and test sphere in collision response/detection.
         /// </summary>
@@ -29,8 +28,8 @@ namespace Labs.ACW
             if (!pStaticSphere)
                 mVelocity = new Vector3(1, 1, 1); // only give velocity if the sphere is not static
             if (pAddToList)
-            sphereList.Add(this);
-            
+                sphereList.Add(this);
+
         }
         /// <summary>
         /// Creates a ball in the top cube of the scene in a random position with a random velocity.
@@ -325,7 +324,6 @@ namespace Labs.ACW
                 Console.WriteLine("Sphere on cylinder collision detected " + ACWWindow.CollisionCount++);
             }
         }
-
         /// <summary>
         /// The collision response for two moving spheres.
         /// </summary>
@@ -350,7 +348,6 @@ namespace Labs.ACW
             //Vector3 circle2Momentumafter = mCircleMass2 * mCircleVelocity2;
             //Vector3 totalmomentumafter = circle1Momentumafter + circle2Momentumafter;
         }
-
         // improv. could caluclate the normal of the cube if check which plane is closest in vector (mposition - pCube.mposition) - closest value out of X Y Z plane
         // note. better to leave seperated otherwise create 6 different face collision response methods. consider a physics class to handle collisions.
         /// <summary>
@@ -365,8 +362,6 @@ namespace Labs.ACW
             mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
         }
 
-
-        // todo: Should check if there is a sphere already in position
         /// <summary>
         /// Moves the sphere to the top box (emitter box) of the parameter cube. 
         /// Adjusts the random location by the size of the cube and radius of sphere.
@@ -375,10 +370,29 @@ namespace Labs.ACW
         /// <param name="keepVelocity">Whether the sphere will keep its velocity after being translated .</param>
         public void MoveToEmitterBox(Cube pCube, bool keepVelocity)
         {
-            // Random x y and z positions created adjusted for cube and sphere size
-            float x = NextFloat(pCube.mPosition.X + (pCube.cubeDimensions.X), pCube.mPosition.X - (pCube.cubeDimensions.X));
-            float y = NextFloat((2.0f - 0.96f), 2.0f - 0.04f);
-            float z = NextFloat(pCube.mPosition.Z + (pCube.cubeDimensions.Z), pCube.mPosition.Z - (pCube.cubeDimensions.Z));
+            // The positions in coordinate space the sphere will be translated to.
+            float x;
+            float y;
+            float z;
+
+            while (true)
+            {
+                // Random x y and z positions created adjusted for cube and sphere size
+                x = NextFloat(pCube.mPosition.X + (pCube.cubeDimensions.X), // min
+                    pCube.mPosition.X - (pCube.cubeDimensions.X)); // max
+
+                y = NextFloat((2.0f - 0.96f), // min
+                    2.0f - 0.04f); // max
+
+                z = NextFloat(pCube.mPosition.Z + (pCube.cubeDimensions.Z), // min
+                    pCube.mPosition.Z - (pCube.cubeDimensions.Z)); // max
+
+                Console.WriteLine("x: {0}, y: {1}, z: {2}", x,y,z);
+
+                // If the position doesnt cause a collision on spawn with any other sphere in the sphere list.
+                if (!checkPositionForCollision(new Vector3(x, y, z)))
+                    break;
+            }
 
             mPosition = new Vector3(x, y, z);
 
@@ -399,9 +413,12 @@ namespace Labs.ACW
             foreach (Sphere s in sphereList)
             {
                 if (testSphere.hasCollidedWithSphere(s))
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("collision at new position detected and avoided.");
                     return true;
+                }
             }
-
             return false;
         }
         #endregion
