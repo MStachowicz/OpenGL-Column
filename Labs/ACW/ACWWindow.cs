@@ -53,8 +53,8 @@ namespace Labs.ACW
         public static int vNormal;
 
         // Physics
-        //public Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
         public Vector3 accelerationDueToGravity = new Vector3(0.0f, -9.81f, 0.0f);
+        //public Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
         public static float restitution = 0.8f;
 
         /// <summary>
@@ -219,11 +219,16 @@ namespace Labs.ACW
             {
                 sphereArray[i] = new Sphere(cube1);
                 // https://www.opengl.org/discussion_boards/showthread.php/132502-Color-tables
-                sphereArray[i].mMaterial = new Material(new Vector3(0.0f, 1.0f, 0.0f), 0.3f, 0.088f);
+               // sphereArray[i].mMaterial = new Material(new Vector3(0.0f, 1.0f, 0.0f), 0.3f, 0.088f);
+                sphereArray[i].mMaterial = new Material(new Vector3(1.0f, 0.0f, 0.0f), 0.3f, 0.088f);
+
                 //GL.Color4(new Vector4(0.0f,0.0f,0.0f,1.0f));
                 Manager.ManageEntity(sphereArray[i]);
             }
 
+            doomSphere = new Sphere(centerlevel3, 0.25f, true, true);
+            doomSphere.mMaterial = Material.emerald;
+            Manager.ManageEntity(doomSphere);
 
             Manager.ManageEntity(cube1); // cube added last for cull fix in the entity manager render method.
             Manager.loadObjects();
@@ -382,31 +387,39 @@ namespace Labs.ACW
 
             Manager.updateObjects(timestep, accelerationDueToGravity);
 
-
-            if (spinningCylinders)
-                foreach (Cylinder i in cylinderArray)
-                    i.RotateY(DegreeToRadian(0.2));
-
+            // Collision detection and response.
             if (!pauseTime)
                 for (int i = 0; i < sphereArray.Length; i++)
                 {
-                    // UPDATE SPHERE POSITION
-                    //sphereArray[i].Update(timestep, accelerationDueToGravity);
-
                     // CUBE COLLISION CHECK
                     if (!releaseSpheres) // allows switching off collisions with bounding cube             
                         sphereArray[i].hasCollidedWithCube(cube1);
 
                     // SPHERE ON SPHERE COLLISION CHECK
-                    foreach (var j in sphereArray)
+                    foreach (Sphere j in sphereArray)
+                    {
+                        // check for collisions with all other spheres
                         if (!sphereArray[i].Equals(j)) // If this is not the same sphere
-                            sphereArray[i].hasCollidedWithSphere(j); // check for collisions with all other spheres
+                            if (sphereArray[i].hasCollidedWithSphere(j)) // check collision
+                                sphereArray[i].sphereOnSphereResponse(j); // perform response
+
+
+                        j.hasCollidedWithSphere(doomSphere);
+
+                    }
+
 
                     // SPHERE ON CYLINDER CHECK
                     foreach (Cylinder j in cylinderArray)
-                        sphereArray[i].hasCollisedWithCylinder(j);
-            }
+                        sphereArray[i].hasCollidedWithCylinder(j);
+                }
 
+
+
+
+            if (spinningCylinders)
+                foreach (Cylinder c in cylinderArray)
+                    c.RotateY(DegreeToRadian(0.2));
 
             base.OnUpdateFrame(e);
         }
