@@ -22,16 +22,20 @@ namespace Labs.ACW
         public float mRotationY;
         public float mRotationZ;
 
-        public Vector3 mPosition;
-
         public float mVolume;
         public float mDensity;
         public float mMass;
 
         public Matrix4 mMatrix;
+        public Vector3 mPosition;
         public Vector3 mVelocity;
 
         public Material mMaterial;
+
+        /// <summary>
+        /// If the object is static then it is not updated.
+        /// </summary>
+        public bool staticObject;
 
         abstract public void Load();
         abstract public void Render();

@@ -35,6 +35,8 @@ namespace Labs.ACW
 
             mCylinderBottom = new Vector3(mPosition.X, mPosition.Y - (0.5f * mScaleY), mPosition.Z);
             mCylinderTop = new Vector3(mPosition.X, mPosition.Y + (0.5f * mScaleY), mPosition.Z);
+
+            staticObject = true;
         }
 
         public float mRadius;

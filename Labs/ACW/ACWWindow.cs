@@ -31,6 +31,7 @@ namespace Labs.ACW
         Cube cube1;
         Cylinder[] cylinderArray;
         Sphere[] sphereArray;
+        Sphere doomSphere;
 
         /// <summary>
         /// The number of spheres the sphere array will be instantiated to. 
@@ -51,10 +52,15 @@ namespace Labs.ACW
         public static int vPositionLocation;
         public static int vNormal;
 
+        // Physics
         //public Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
         public Vector3 accelerationDueToGravity = new Vector3(0.0f, -9.81f, 0.0f);
         public static float restitution = 0.8f;
 
+        /// <summary>
+        /// The current material set in the shader. Used to prevent setting the 
+        /// material again in entity manager render.
+        /// </summary>
         public static Material materialSet;
 
         // Special features
@@ -67,25 +73,30 @@ namespace Labs.ACW
         /// </summary>
         private bool spinningCylinders = false;
         /// <summary>
-        /// Count of the number of collisions occuring in the scene.
-        /// </summary>
-        public void toggleSpinningCylinders()
-        {
-            spinningCylinders ^= true;
-        }
-        /// <summary>
         /// When set to true, stops updating the scene from updating until toggled back on.
         /// </summary>
         private bool pauseTime = false;
         /// <summary>
         /// Count of the number of collisions occuring in the scene.
         /// </summary>
+        public static int CollisionCount = 0;
+
+
+        /// <summary>
+        /// Toggles all the cylinders spinning in their y axis.
+        /// </summary>
+        public void toggleSpinningCylinders()
+        {
+            spinningCylinders ^= true;
+        }
+        /// <summary>
+        /// Toggles pausing the simulation.
+        /// </summary>
         public void pauseSimulation()
         {
             pauseTime ^= true;
         }
 
-        public static int CollisionCount = 0;
 
         private Timer mTimer;
         public static Random rand;
@@ -369,6 +380,8 @@ namespace Labs.ACW
         {
             float timestep = mTimer.GetElapsedSeconds();
 
+            Manager.updateObjects(timestep, accelerationDueToGravity);
+
 
             if (spinningCylinders)
                 foreach (Cylinder i in cylinderArray)
@@ -378,7 +391,7 @@ namespace Labs.ACW
                 for (int i = 0; i < sphereArray.Length; i++)
                 {
                     // UPDATE SPHERE POSITION
-                    sphereArray[i].Update(timestep, accelerationDueToGravity);
+                    //sphereArray[i].Update(timestep, accelerationDueToGravity);
 
                     // CUBE COLLISION CHECK
                     if (!releaseSpheres) // allows switching off collisions with bounding cube             
@@ -393,6 +406,8 @@ namespace Labs.ACW
                     foreach (Cylinder j in cylinderArray)
                         sphereArray[i].hasCollisedWithCylinder(j);
             }
+
+
             base.OnUpdateFrame(e);
         }
 

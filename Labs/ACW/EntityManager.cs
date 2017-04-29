@@ -27,7 +27,7 @@ namespace Labs.ACW
         {
             for (int i = 0; i < mObjects.Count; i++)
             {
-               mObjects[i].Load();
+                mObjects[i].Load();
             }
         }
 
@@ -52,6 +52,21 @@ namespace Labs.ACW
                     mObjects[i].Render();
             }
         }
+
+
+        public void updateObjects(float pTimestep, Vector3 pGravity)
+        {
+            foreach (entity i in mObjects)
+            {
+                if (!i.staticObject) // if the object
+                {
+                    i.Update(pTimestep, pGravity);
+                }
+
+            }
+        }
+
+
 
         /// <summary>
         /// All the objects this entity manager is responsible for.

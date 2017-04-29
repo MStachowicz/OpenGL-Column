@@ -70,6 +70,8 @@ namespace Labs.ACW
             mRotationY = 1.0f;
             mRotationZ = 1.0f;
 
+            staticObject = false;
+
             // Next sphere instantiated will be of the other sphere type.
             changeBallType ^= true;
         }

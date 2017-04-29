@@ -33,6 +33,8 @@ namespace Labs.ACW
             cubeDimensions = new Vector3(mDimension * mScaleX, mDimension * mScaleY, mDimension * mScaleZ);
             mPosition = new Vector3(0.0f, 0.0f, 0.0f);
             mVelocity = new Vector3(0.0f, 0.0f, 0.0f);
+
+            staticObject = true;
         }
 
         public Vector3 cubeDimensions;
