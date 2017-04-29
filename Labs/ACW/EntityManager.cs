@@ -10,9 +10,9 @@ using Labs.Utility;
 
 namespace Labs.ACW
 {
-    public class entityManager
+    public class EntityManager
     {
-        public entityManager()
+        public EntityManager()
         { }
 
         public void ManageEntity(entity pEntity)

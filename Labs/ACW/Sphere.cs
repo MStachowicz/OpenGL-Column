@@ -123,9 +123,9 @@ namespace Labs.ACW
         {
             if (!isLoaded)
             {
-                VAOIndex = entityManager.VAOCount++; // set the VAO index all spheres will use.
-                VBOIndex = entityManager.VBOCount++; // set the VBO index all spheres will use.
-                entityManager.VBOCount++;
+                VAOIndex = EntityManager.VAOCount++; // set the VAO index all spheres will use.
+                VBOIndex = EntityManager.VBOCount++; // set the VBO index all spheres will use.
+                EntityManager.VBOCount++;
                 isLoaded = true;
 
                 int size;
@@ -321,11 +321,24 @@ namespace Labs.ACW
             Vector3 normal = -Opp.Normalized();
             Vector3 velocityBefore = mVelocity;
 
-            if (Vector3.Dot(normal, mVelocity) < 0)
+            if (Vector3.Dot(normal, mVelocity) < 0) // check if the new velocity is in the direction of point of collision.
             {
+                // Set new velocity
                 mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
-                mPosition = lastPosition;
+                // Move sphere back to previous position.
+                //mPosition = lastPosition; 
+
+                // backup the original last position before updating the position.
+                Vector3 positionBackup = lastPosition;
+
+
+
                 Console.WriteLine("Sphere on cylinder collision detected " + ACWWindow.CollisionCount++);
+            }
+           else
+            {
+                Console.WriteLine("collision response in direction of collision avoided.");
+                //ACWWindow.pauseSimulation();              
             }
         }
         /// <summary>
@@ -345,11 +358,7 @@ namespace Labs.ACW
             mVelocity = ((mMass * mVelocity) + (pSphere.mMass * pSphere.mVelocity) + (ACWWindow.restitution * pSphere.mMass * (pSphere.mVelocity - mVelocity))) / (mMass + pSphere.mMass);
             pSphere.mVelocity = ((pSphere.mMass * pSphere.mVelocity) + (mMass * OriginalVelocity) + (ACWWindow.restitution * mMass * (OriginalVelocity - pSphere.mVelocity))) / (pSphere.mMass + mMass);
 
-            // reuse the last timestep to move the sphere by the new velocity and check for a collision with any objects there.
-            //this.Update();
-            // what to do if find a collision with another object in the new position
-
-            // todo add check for the new position for collision detection with all other objects
+            Vector3 positionBackup = mPosition;
 
             mPosition = lastPosition;
             pSphere.mPosition = pSphere.lastPosition;

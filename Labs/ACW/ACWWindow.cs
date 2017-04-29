@@ -27,7 +27,7 @@ namespace Labs.ACW
         public Matrix4 mView;
 
         // OBJECTS
-        entityManager Manager;
+        EntityManager Manager;
         Cube cube1;
         Cylinder[] cylinderArray;
         Sphere[] sphereArray;
@@ -37,7 +37,7 @@ namespace Labs.ACW
         /// <summary>
         /// The number of spheres the sphere array will be instantiated to. 
         /// </summary>
-        const int SPHERE_COUNT = 5;
+        const int SPHERE_COUNT = 1;
         /// <summary>
         /// The number of cylinders the cylinder array will contain.
         /// </summary>
@@ -79,8 +79,9 @@ namespace Labs.ACW
         private bool spinningCylinders = false;
         /// <summary>
         /// When set to true, stops updating the scene from updating until toggled back on.
+        /// Static so can be used to debug other classes by pausing at time of event of interest.
         /// </summary>
-        private bool pauseTime = false;
+        private static bool pauseTime = false;
         /// <summary>
         /// Count of the number of collisions occuring in the scene.
         /// </summary>
@@ -97,7 +98,7 @@ namespace Labs.ACW
         /// <summary>
         /// Toggles pausing the simulation.
         /// </summary>
-        public void pauseSimulation()
+        public static void pauseSimulation()
         {
             pauseTime ^= true;
         }
@@ -173,7 +174,7 @@ namespace Labs.ACW
             #region Loading in models
             // 100 cm = 1.0f
 
-            Manager = new entityManager();
+            Manager = new EntityManager();
             rand = new Random();
 
             // CUBE
@@ -210,7 +211,7 @@ namespace Labs.ACW
             cylinderArray[5].RotateX(-(float)Math.PI / 3);
             cylinderArray[5].RotateY((float)Math.PI / 4);
 
-            testsphere = new Sphere(cylinderArray[5].mCylinderTop, 0.1f, true, false);
+            testsphere = new Sphere(cylinderArray[5].mCylinderBottom, 0.1f, true, false);
 
             foreach (Cylinder i in cylinderArray)
             {
@@ -226,7 +227,7 @@ namespace Labs.ACW
             {
                 sphereArray[i] = new Sphere(cube1);
                 // https://www.opengl.org/discussion_boards/showthread.php/132502-Color-tables
-               // sphereArray[i].mMaterial = new Material(new Vector3(0.0f, 1.0f, 0.0f), 0.3f, 0.088f);
+                // sphereArray[i].mMaterial = new Material(new Vector3(0.0f, 1.0f, 0.0f), 0.3f, 0.088f);
                 sphereArray[i].mMaterial = new Material(new Vector3(1.0f, 0.0f, 0.0f), 0.3f, 0.088f);
 
                 //GL.Color4(new Vector4(0.0f,0.0f,0.0f,1.0f));
@@ -391,10 +392,12 @@ namespace Labs.ACW
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             timestep = mTimer.GetElapsedSeconds();
-            Manager.updateObjects(timestep, accelerationDueToGravity);
 
-            // Collision detection and response.
+            // Dont perform any updating if time is paused.
             if (!pauseTime)
+            {
+                Manager.updateObjects(timestep, accelerationDueToGravity);
+
                 for (int i = 0; i < sphereArray.Length; i++)
                 {
                     // CUBE COLLISION CHECK
@@ -409,24 +412,17 @@ namespace Labs.ACW
                             if (sphereArray[i].hasCollidedWithSphere(j)) // check collision
                                 sphereArray[i].sphereOnSphereResponse(j); // perform response
 
-
                         j.hasCollidedWithSphere(doomSphere);
-
                     }
-
-
                     // SPHERE ON CYLINDER CHECK
                     foreach (Cylinder j in cylinderArray)
                         sphereArray[i].hasCollidedWithCylinder(j);
                 }
 
-
-
-
-            if (spinningCylinders)
-                foreach (Cylinder c in cylinderArray)
-                    c.RotateY(DegreeToRadian(0.2));
-
+                if (spinningCylinders)
+                    foreach (Cylinder c in cylinderArray)
+                        c.RotateY(DegreeToRadian(0.2));
+            }
             base.OnUpdateFrame(e);
         }
 

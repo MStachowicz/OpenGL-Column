@@ -23,7 +23,7 @@ namespace Labs.ACW
             mRadius = pRadius;
 
             mScaleX = pRadius;
-            mScaleY = 0.53f; // stretches the cylinder to the length of the cube
+            mScaleY = 0.53f; // stretches the cylinder to the length of the cube todo: remove dependency on hard code
             mScaleZ = pRadius;
 
             mPosition = pPosition;
@@ -39,10 +39,18 @@ namespace Labs.ACW
             staticObject = true;
         }
 
+        /// <summary>
+        /// The radius of the cylinder.
+        /// </summary>
         public float mRadius;
+        /// <summary>
+        /// The position vector for the bottom of the cylinder. Used in collision detection + response.
+        /// </summary>
         public Vector3 mCylinderBottom;
+        /// <summary>
+        /// The position vector for the top of the cylinder. Used in collision detection + response.
+        /// </summary>
         public Vector3 mCylinderTop;
-
 
         /// <summary>
         /// Has a cylinder object been loaded previously, if so following instances will use the same VAO index for their render.
@@ -138,14 +146,13 @@ namespace Labs.ACW
 
 
         public override void Load()
-        {         
+        {
             if (!isLoaded) // Stops the cylinder class ever loading the same object again
             {
-                VAOIndex = entityManager.VAOCount++; // set the VAO index all cylinders will use.
-                VBOIndex = entityManager.VBOCount++; // set the VBO index all cylinders will use.
-                entityManager.VBOCount++;
+                VAOIndex = EntityManager.VAOCount++; // set the VAO index all cylinders will use.
+                VBOIndex = EntityManager.VBOCount++; // set the VBO index all cylinders will use.
+                EntityManager.VBOCount++;
                 isLoaded = true;
-
 
                 mModelUtility = ModelUtility.LoadModel(@"Utility/Models/cylinder.bin");
                 int size;

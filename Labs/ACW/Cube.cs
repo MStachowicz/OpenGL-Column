@@ -61,9 +61,9 @@ namespace Labs.ACW
         {
             if (!isLoaded)
             {
-                VAOIndex = entityManager.VAOCount++; // set the VAO index all cubes will use.
-                VBOIndex = entityManager.VBOCount++; // set the VBO index all cubes will use.
-                entityManager.VBOCount++;
+                VAOIndex = EntityManager.VAOCount++; // set the VAO index all cubes will use.
+                VBOIndex = EntityManager.VBOCount++; // set the VBO index all cubes will use.
+                EntityManager.VBOCount++;
                 isLoaded = true;
 
 
