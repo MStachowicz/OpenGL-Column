@@ -12,7 +12,7 @@ namespace Labs.ACW
 {
     public class Cube : entity
     {
-        public Cube()
+        public Cube() 
         {
             // CUBE PROPERTIES
             mDimension = 0.5f;

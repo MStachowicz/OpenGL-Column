@@ -42,7 +42,7 @@ namespace Labs.ACW
                 if (ACWWindow.materialSet != mObjects[i].mMaterial)
                     mObjects[i].mMaterial.SetMaterial();
 
-                if (i == mObjects.Count - 1) // cube render 
+                if (mObjects[i] is Cube)
                 {
                     GL.Enable(EnableCap.CullFace);
                     mObjects[i].Render();
@@ -53,20 +53,57 @@ namespace Labs.ACW
             }
         }
 
-
-        public void updateObjects(float pTimestep, Vector3 pGravity)
+        public void CheckCollisions()
         {
-            foreach (entity i in mObjects)
-            {
-                if (!i.staticObject) // if the object
-                {
-                    i.Update();
-                }
+            //for (int i = 0; i < mObjects.Count; i++)
+            //{
+            //    // if the object is not static
+            //    if (!mObjects[i].staticObject)
+            //    {
+            //        // Sphere collision tests
+            //        if (mObjects[i] is Sphere)
+            //        {
 
+            //        }
+            //    }
+            //}
+
+            for (int i = 0; i < ACWWindow.SphereList.Count; i++)
+            {
+                // CUBE COLLISION CHECK            
+                ACWWindow.SphereList[i].hasCollidedWithCube(ACWWindow.CubeList[0]); // hard coded single cube
+
+                // SPHERE ON SPHERE COLLISION CHECK
+                foreach (Sphere j in ACWWindow.SphereList)
+                {
+                    // check for collisions with all other spheres
+                    if (!ACWWindow.SphereList[i].Equals(j)) // If this is not the same sphere
+                        if (ACWWindow.SphereList[i].hasCollidedWithSphere(j)) // check collision
+                            ACWWindow.SphereList[i].sphereOnSphereResponse(j); // perform response
+
+                    j.hasCollidedWithSphere(ACWWindow.doomSphere); // check every sphere for collision with doom sphere.
+                }
+                // SPHERE ON CYLINDER CHECK performs response too
+                foreach (Cylinder j in ACWWindow.CylinderList)
+                    ACWWindow.SphereList[i].hasCollidedWithCylinder(j);
             }
         }
 
-
+        /// <summary>
+        /// Updates every object in its list is it's not a static object.
+        /// </summary>
+        /// <param name="pTimestep"></param>
+        /// <param name="pGravity"></param>
+        public void updateObjects()
+        {
+            foreach (entity i in mObjects)
+            {
+                if (!i.staticObject) // if the object is not static.
+                {
+                    i.Update();
+                }
+            }
+        }
 
         /// <summary>
         /// All the objects this entity manager is responsible for.

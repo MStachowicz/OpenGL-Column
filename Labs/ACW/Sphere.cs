@@ -15,21 +15,17 @@ namespace Labs.ACW
         /// <param name="pRadius">The radius of the sphere in m. (1 = 1m)</param>
         /// <param name="pStaticSphere">Is this sphere static.</param>
         /// <param name="pAddToList">Should this sphere be added to the static sphere list..</param>
-        public Sphere(Vector3 pPosition, float pRadius, bool pStaticSphere, bool pAddToList)
+        public Sphere(Vector3 pPosition, float pRadius, bool pStaticSphere)
         {
             mScaleX = pRadius;
             mScaleY = pRadius;
             mScaleZ = pRadius;
 
+            mRadius = pRadius;
+
             mPosition = pPosition;
 
             staticObject = pStaticSphere;
-
-            if (!pStaticSphere)
-                mVelocity = new Vector3(1, 1, 1); // only give velocity if the sphere is not static
-            if (pAddToList)
-                sphereList.Add(this);
-
         }
         /// <summary>
         /// Creates a ball in the top cube of the scene in a random position with a random velocity.
@@ -80,7 +76,6 @@ namespace Labs.ACW
             mRotationZ = 1.0f;
 
             staticObject = false;
-            sphereList.Add(this);
 
             // Next sphere instantiated will be of the other sphere type.
             changeBallType ^= true;
@@ -114,10 +109,6 @@ namespace Labs.ACW
         /// The model utility all the spheres will use.
         /// </summary>
         private static ModelUtility mModelUtility;
-        /// <summary>
-        /// Stores all the instances of the sphere that currently exist.
-        /// </summary>
-        private static List<Sphere> sphereList = new List<Sphere>();
 
         public override void Load()
         {
@@ -175,20 +166,17 @@ namespace Labs.ACW
         /// </summary>
         public override void Update()
         {
-            Vector3 LastPositionBackup = lastPosition;
-
-            lastPosition = mPosition;
-
             if (!staticObject)
-                if (LastPositionBackup == lastPosition)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Position not changing in update for non static object.");
-                }
+            {
+                lastPosition = mPosition;
 
-            mVelocity = mVelocity + ACWWindow.accelerationDueToGravity * ACWWindow.timestep;
-            mPosition = mPosition + mVelocity * ACWWindow.timestep;
+                mVelocity = mVelocity + ACWWindow.accelerationDueToGravity * ACWWindow.timestep;
+                mPosition = mPosition + mVelocity * ACWWindow.timestep;
+
+                //Console.WriteLine("sphere cylinder after collision")
+            }
         }
+
 
 
         /// <summary>
@@ -290,30 +278,62 @@ namespace Labs.ACW
             return false;
         }
         /// <summary>
-        /// Uses the line segment of the cylinder to test if the sphere collided with the cylinder.
+        /// Uses the line segment of the cylinder to test if the sphere collided with the 
+        /// cylinder. Performs the collision response.
         /// </summary>
         /// <param name="pCylinder">Cylinder whose line segment is used to test for a collision.</param>
-        public void hasCollidedWithCylinder(Cylinder pCylinder)
+        public bool hasCollidedWithCylinder(Cylinder pCylinder)
         {
             // Line segment method
-            Vector3 Hyp = (mPosition - pCylinder.mCylinderTop); // The vector from the cylinder bottom to the sphere position. Forms the hypotenuse in right triangle.
-            Vector3 AdjNormalized = Vector3.Normalize(pCylinder.mCylinderBottom - pCylinder.mCylinderTop); // The vector direction from the cylinder bottom to point of collision. Forms the adjacent in right triangle.
+            Vector3 Hyp = (mPosition - pCylinder.mCylinderBottom); // The vector from the cylinder bottom to the sphere position. Forms the hypotenuse in right triangle.
+            Vector3 AdjNormalized = Vector3.Normalize(pCylinder.mCylinderTop - pCylinder.mCylinderBottom); // The vector direction from the cylinder bottom to point of collision. Forms the adjacent in right triangle.
 
-            float adotb = Vector3.Dot(AdjNormalized, Hyp);
+            double theta = Math.Acos(Vector3.Dot(AdjNormalized, Hyp) / Hyp.Length);
+            double oppositeDistance = Hyp.Length * Math.Sin(theta);
 
-            /// <summary>
-            /// theta
-            /// </summary>
-            double theta = Math.Acos(adotb / Hyp.Length);
-            double oppositeDistance = Math.Sin(theta) * Hyp.Length;
+            Console.WriteLine("Distance between sphere and cylinder: " + distanceToCylinder(pCylinder));
+            Console.WriteLine(distanceToCylinder(pCylinder) < 0);
 
-
-            if (oppositeDistance < mRadius + pCylinder.mRadius)
+            if (distanceToCylinder(pCylinder) < 0)
             {
-                SphereOnCylinderResponse(AdjNormalized, Hyp, theta);
+                float Adj = (Hyp.Length * (float)(Math.Cos(theta)));
+                // Vector3 Opp = Adj - Hyp;
+                Vector3 Opp = Hyp - Adj * (pCylinder.mCylinderTop - pCylinder.mCylinderBottom).Normalized();
+
+                Vector3 normal = Opp.Normalized(); // check if this is away from collision point
+
+                Console.WriteLine("Distance between sphere and cylinder: " + distanceToCylinder(pCylinder));
+                if (Vector3.Dot(normal, mVelocity) < 0) // check if the new velocity is in the direction of point of collision.
+                {
+                    Console.WriteLine("Distance between sphere and cylinder before response " + distanceToCylinder(pCylinder));
+
+                    SphereOnCylinderResponse(normal);
+
+                    Console.WriteLine("Distance between sphere and cylinder after response " + distanceToCylinder(pCylinder));
+                    return true;
+                }
+
+               
             }
+            return false;
         }
 
+        /// <summary>
+        /// Distance between a sphere and a cylinder's closest line segment. adjusted for radii of both.
+        /// </summary>
+        /// <param name="pCylinder"></param>
+        /// <returns></returns>
+        public double distanceToCylinder(Cylinder pCylinder)
+        {
+            // Line segment method
+            Vector3 Hyp = (mPosition - pCylinder.mCylinderBottom); // The vector from the cylinder bottom to the sphere position. Forms the hypotenuse in right triangle.
+            Vector3 AdjNormalized = Vector3.Normalize(pCylinder.mCylinderTop - pCylinder.mCylinderBottom); // The vector direction from the cylinder bottom to point of collision. Forms the adjacent in right triangle.
+
+            double theta = Math.Acos(Vector3.Dot(AdjNormalized, Hyp) / Hyp.Length);
+            double oppositeDistance = Math.Sin(theta) * Hyp.Length;
+
+            return oppositeDistance - (mRadius + pCylinder.mRadius);
+        }
         // COLLISION RESPONSE.
         /// <summary>
         /// Uses the positions of the cylinder and sphere to calculate a collision response 
@@ -323,34 +343,13 @@ namespace Labs.ACW
         /// Normal of vector from the cylinder bottom to collision point.</param>
         /// <param name="pHypotenuse">Vector from the cylinder bottom to the sphere center.</param>
         /// <param name="ptheta">The angle between the two previous vectors.</param>
-        public void SphereOnCylinderResponse(Vector3 pAdjacentNormalized, Vector3 pHypotenuse, double ptheta)
+        private void SphereOnCylinderResponse(Vector3 normal)
         {
-            Vector3 Adj = pAdjacentNormalized * (pHypotenuse * (float)(Math.Cos(ptheta)));
-            Vector3 Opp = Adj - pHypotenuse;
-
-            Vector3 normal = -Opp.Normalized();
-            Vector3 velocityBefore = mVelocity;
-
-            if (Vector3.Dot(normal, mVelocity) < 0) // check if the new velocity is in the direction of point of collision.
-            {
-                // Set new velocity
-                mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
-                // Move sphere back to previous position.
-                //mPosition = lastPosition; 
-
-                // backup the original last position before updating the position.
-                Vector3 positionBackup = lastPosition;
-
-
-
-
-                Console.WriteLine("Sphere on cylinder collision detected " + ACWWindow.CollisionCount++);
-            }
-            else
-            {
-                Console.WriteLine("collision response in direction of collision avoided.");
-                //ACWWindow.pauseSimulation();              
-            }
+            // Set new velocity
+            mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
+            //mVelocity.Y += 1.0f;
+            // Move sphere back to previous position.
+            mPosition = lastPosition;
         }
         /// <summary>
         /// The collision response for two moving spheres.
@@ -361,8 +360,6 @@ namespace Labs.ACW
             //Vector3 circle1Momentumbefore = mCircleMass * mCircleVelocity;
             //Vector3 circle2Momentumbefore = mCircleMass2 * mCircleVelocity2;
             //Vector3 totalmomentumbefore = circle1Momentumbefore + circle2Momentumbefore;
-
-            Console.WriteLine("Sphere on sphere collision detected " + ACWWindow.CollisionCount++);
 
             Vector3 OriginalVelocity = mVelocity;
 
@@ -378,6 +375,12 @@ namespace Labs.ACW
             //Vector3 circle2Momentumafter = mCircleMass2 * mCircleVelocity2;
             //Vector3 totalmomentumafter = circle1Momentumafter + circle2Momentumafter;
         }
+
+
+
+
+
+
         /// <summary>
         /// Moves the sphere to the top box (emitter box) of the parameter cube. 
         /// Adjusts the random location by the size of the cube and radius of sphere.
@@ -403,10 +406,8 @@ namespace Labs.ACW
                 z = NextFloat(pCube.mPosition.Z + (pCube.cubeDimensions.Z), // min
                     pCube.mPosition.Z - (pCube.cubeDimensions.Z)); // max
 
-                Console.WriteLine("x: {0}, y: {1}, z: {2}", x, y, z);
-
                 // If the position doesnt cause a collision on spawn with any other sphere in the sphere list.
-                if (!checkPositionForCollision(new Vector3(x, y, z)))
+                if (!checkPositionForCollisionSphere(new Vector3(x, y, z)))
                     break;
             }
 
@@ -415,14 +416,11 @@ namespace Labs.ACW
             if (!keepVelocity)
                 mVelocity = new Vector3(0.0f, 0.0f, 0.0f); // reset velocity
         }
-
         public void SphereOnDoomSphereResponse()
         {
             // add the collision detection from sphere on sphere to find the distance between the two centers and the 
             //proportion of overlap dictates how much to scale the sphere down by.
         }
-
-
         // improv. could caluclate the normal of the cube if check which plane is closest in vector (mposition - pCube.mposition) - closest value out of X Y Z plane
         // note. better to leave seperated otherwise create 6 different face collision response methods. consider a physics class to handle collisions.
         /// <summary>
@@ -440,18 +438,34 @@ namespace Labs.ACW
         /// Check if a sphere in the parameter position collided with any spheres other than itself.
         /// </summary>
         /// <param name="pPosition"></param>
-        private bool checkPositionForCollision(Vector3 pPosition)
+
+
+
+        private bool checkPositionForCollisionSphere(Vector3 pPosition)
         {
             // sphere created to test for a collision with the same radius as this sphere and the parameter position.
-            Sphere testSphere = new Sphere(pPosition, mRadius, true, false);
+            Sphere testSphere = new Sphere(pPosition, mRadius, true);
 
             // Test every sphere for a collision with the test sphere. 
-            foreach (Sphere s in sphereList)
+            foreach (Sphere s in ACWWindow.SphereList)
             {
                 if (testSphere.hasCollidedWithSphere(s))
                 {
-                    //Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("collision at new position detected and avoided.");
+                    return true;
+                }
+            }
+            return false;
+        }
+        private bool checkPositionForCollisionCyl(Vector3 pPosition)
+        {
+            // sphere created to test for a collision with the same radius as this sphere and the parameter position.
+            Sphere testSphere = new Sphere(pPosition, mRadius, true);
+
+            // Test every sphere for a collision with the test sphere. 
+            foreach (Cylinder c in ACWWindow.CylinderList)
+            {
+                if (testSphere.hasCollidedWithCylinder(c))
+                {
                     return true;
                 }
             }
