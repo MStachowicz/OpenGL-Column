@@ -12,13 +12,46 @@ namespace Labs.ACW
 {
     public class EntityManager
     {
+        private List<Sphere> Spheres = new List<Sphere>();
+        private List<Cube> Cubes = new List<Cube>();
+        private List<Cylinder> Cylinders = new List<Cylinder>();
+        /// <summary>
+        /// All the objects this entity manager is responsible for.
+        /// </summary>
+        public List<entity> mObjects = new List<entity>();
+
+        /// <summary>
+        /// All the objects contained by all instances of the entity manager class.
+        /// </summary>
+        public static List<entity> AllObjects = new List<entity>();
+
+        public static int VAOCount = 0;
+        public static int VBOCount = 0;
+
         public EntityManager()
         { }
-
         public void ManageEntity(entity pEntity)
         {
+            // Add the entity to the list of objects this manager controls.
             mObjects.Add(pEntity);
+            // Add to the static list of all objects in the scene.
+            AllObjects.Add(pEntity);
+
+            // Add the entity to the correct sub list containing specific types.
+            if (pEntity is Sphere)
+            {
+                Spheres.Add((Sphere)pEntity);
+            }
+            else if (pEntity is Cylinder)
+            {
+                Cylinders.Add((Cylinder)pEntity);
+            }
+            else if (pEntity is Cube)
+            {
+                Cubes.Add((Cube)pEntity);
+            }
         }
+
 
         /// <summary>
         /// Calls the load method of all the objects contained by this entity manager.
@@ -53,39 +86,34 @@ namespace Labs.ACW
             }
         }
 
+        /// <summary>
+        /// Performs collision detection and response for all the spheres managed by this entity manager.
+        /// </summary>
         public void CheckCollisions()
         {
-            //for (int i = 0; i < mObjects.Count; i++)
-            //{
-            //    // if the object is not static
-            //    if (!mObjects[i].staticObject)
-            //    {
-            //        // Sphere collision tests
-            //        if (mObjects[i] is Sphere)
-            //        {
-
-            //        }
-            //    }
-            //}
-
-            for (int i = 0; i < ACWWindow.SphereList.Count; i++)
+            // Sphere collision checks
+            for (int i = 0; i < Spheres.Count; i++)
             {
-                // CUBE COLLISION CHECK            
-                ACWWindow.SphereList[i].hasCollidedWithCube(ACWWindow.CubeList[0]); // hard coded single cube
+                // Sphere on cube collision detection and response. (inside of static cube)
+                Spheres[i].hasCollidedWithCube(Cubes[0]);
 
-                // SPHERE ON SPHERE COLLISION CHECK
-                foreach (Sphere j in ACWWindow.SphereList)
+                // Sphere on sphere detection and response.
+                for (int s = 0; s < Spheres.Count; s++)
                 {
-                    // check for collisions with all other spheres
-                    if (!ACWWindow.SphereList[i].Equals(j)) // If this is not the same sphere
-                        if (ACWWindow.SphereList[i].hasCollidedWithSphere(j)) // check collision
-                            ACWWindow.SphereList[i].sphereOnSphereResponse(j); // perform response
-
-                    j.hasCollidedWithSphere(ACWWindow.doomSphere); // check every sphere for collision with doom sphere.
+                        if (i != s) // If this is not the same sphere
+                            if (Spheres[i].hasCollidedWithSphere(Spheres[s])) // check collision
+                                if (!Spheres[i].SphereOfDoom && Spheres[s].SphereOfDoom) // specific response to doom sphere
+                                    Spheres[i].SphereOnDoomSphereResponse();
+                                else // standard collision response for sphere on sphere collision
+                                    Spheres[i].sphereOnSphereResponse(Spheres[s]); // perform response
                 }
-                // SPHERE ON CYLINDER CHECK performs response too
-                foreach (Cylinder j in ACWWindow.CylinderList)
-                    ACWWindow.SphereList[i].hasCollidedWithCylinder(j);
+
+                // sphere on cylinder detection and response.
+                for (int c = 0; c < Cylinders.Count; c++)
+                {
+                    // Sphere on cylinder collision detection and response. (static cylinder)
+                    Spheres[i].hasCollidedWithCylinder(Cylinders[c]);
+                }
             }
         }
 
@@ -96,22 +124,15 @@ namespace Labs.ACW
         /// <param name="pGravity"></param>
         public void updateObjects()
         {
-            foreach (entity i in mObjects)
+            for (int i = 0; i < mObjects.Count; i++)
             {
-                if (!i.staticObject) // if the object is not static.
+                if (!mObjects[i].staticObject)
                 {
-                    i.Update();
+                    mObjects[i].Update();
                 }
             }
         }
 
-        /// <summary>
-        /// All the objects this entity manager is responsible for.
-        /// </summary>
-        public List<entity> mObjects = new List<entity>();
-
-        public static int VAOCount = 0;
-        public static int VBOCount = 0;
     }
 
 }

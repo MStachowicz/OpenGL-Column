@@ -33,6 +33,11 @@ namespace Labs.ACW
         public Material mMaterial;
 
         /// <summary>
+        /// The manager this entity belongs to.
+        /// </summary>
+        public EntityManager mManager;
+
+        /// <summary>
         /// If the object is static then it is not updated.
         /// </summary>
         public bool staticObject;

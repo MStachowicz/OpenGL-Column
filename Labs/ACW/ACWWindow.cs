@@ -27,22 +27,11 @@ namespace Labs.ACW
         public Matrix4 mView;
 
         // OBJECTS
-        EntityManager Manager;
-        /// <summary>
-        /// List containing all the spheres.
-        /// </summary>
-        public static List<Sphere> SphereList;
-        /// <summary>
-        /// List containing all the cylinders.
-        /// </summary>
-        public static List<Cylinder> CylinderList;
-        /// <summary>
-        /// List containing all the cubes.
-        /// </summary>
-        public static List<Cube> CubeList;
+        EntityManager level1Manager;
+        EntityManager level2Manager;
+        EntityManager level3Manager;
 
-        Cube cube1;
-        //Sphere testsphere;
+        public static Cube cube1;
         public static Sphere doomSphere;
 
         /// <summary>
@@ -177,80 +166,63 @@ namespace Labs.ACW
             #region Loading in models
             // 100 cm = 1.0f
 
-            Manager = new EntityManager();
+            level1Manager = new EntityManager();
             rand = new Random();
 
             // CUBE
-            CubeList = new List<Cube>();
             cube1 = new Cube();
             cube1.mPosition = new Vector3(0.0f, 0.0f, -5.0f);
             cube1.mMaterial = Material.pearl;
-            CubeList.Add(cube1);
+            level1Manager.ManageEntity(cube1); // cube added last for cull fix in the entity manager render method.
 
             Vector3 centerlevel1 = new Vector3(cube1.mPosition.X, cube1.mPosition.Y + 0.5f, cube1.mPosition.Z);
             Vector3 centerlevel2 = new Vector3(cube1.mPosition.X, cube1.mPosition.Y - 0.5f, cube1.mPosition.Z);
             Vector3 centerlevel3 = new Vector3(cube1.mPosition.X, cube1.mPosition.Y - 1.5f, cube1.mPosition.Z);
 
             // CYLINDERS
-            CylinderList = new List<Cylinder>(); // + 1 test sphere. todo remove
-
             // LEVEL 1
-            CylinderList.Add(new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y + 0.25f, centerlevel1.Z), 0.075f));
-            CylinderList[0].RotateX((float)Math.PI / 2);
-            CylinderList.Add(new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y + 0.25f, centerlevel1.Z), 0.075f));
-            CylinderList[1].RotateZ((float)Math.PI / 2);
+            Cylinder cylinder0 = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y + 0.25f, centerlevel1.Z), 0.075f);
+            level1Manager.ManageEntity(cylinder0);
+            cylinder0.RotateX((float)Math.PI / 2);
 
-            CylinderList.Add(new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y - 0.25f, centerlevel1.Z), 0.15f));
-            CylinderList[2].RotateX((float)Math.PI / 2);
-            CylinderList.Add(new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y - 0.25f, centerlevel1.Z), 0.15f));
-            CylinderList[3].RotateZ((float)Math.PI / 2);
+            Cylinder cylinder1 = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y + 0.25f, centerlevel1.Z), 0.075f);
+            level1Manager.ManageEntity(cylinder1);
+            cylinder1.RotateZ((float)Math.PI / 2);
+
+            Cylinder cylinder2 = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y - 0.25f, centerlevel1.Z), 0.15f);
+            level1Manager.ManageEntity(cylinder2);
+            cylinder2.RotateX((float)Math.PI / 2);
+
+            Cylinder cylinder3 = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y - 0.25f, centerlevel1.Z), 0.15f);
+            level1Manager.ManageEntity(cylinder3);
+            cylinder3.RotateZ((float)Math.PI / 2);
 
             // LEVEL 2
-            CylinderList.Add(new Cylinder(new Vector3(centerlevel2.X, centerlevel2.Y, centerlevel2.Z), 0.10f));
-            CylinderList[4].scale(new Vector3(1.0f, 1.3f, 1.0f));
-            CylinderList[4].RotateX(DegreeToRadian(90));
-            CylinderList[4].RotateY(DegreeToRadian(135));
+            Cylinder cylinder4 = new Cylinder(new Vector3(centerlevel2.X, centerlevel2.Y, centerlevel2.Z), 0.10f);
+            level1Manager.ManageEntity(cylinder4);
+            cylinder4.scale(new Vector3(1.0f, 1.3f, 1.0f));
+            cylinder4.RotateX(DegreeToRadian(90));
+            cylinder4.RotateY(DegreeToRadian(135));
 
-            CylinderList.Add(new Cylinder(new Vector3(centerlevel2.X, centerlevel2.Y, centerlevel2.Z), 0.15f));
-            CylinderList[5].scale(new Vector3(1.0f, 1.6f, 1.0f));
-            CylinderList[5].RotateX(DegreeToRadian(300));
-            CylinderList[5].RotateY(DegreeToRadian(45));
-
-            foreach (Cylinder i in CylinderList)
-            {
-                //i.mMaterial = new Material(new Vector3(1.0f,0.0f,0.0f), 0.5f);
-                i.mMaterial = Material.silver;
-                Manager.ManageEntity(i);
-            }
+            Cylinder cylinder5 = new Cylinder(new Vector3(centerlevel2.X, centerlevel2.Y, centerlevel2.Z), 0.15f);
+            cylinder5.scale(new Vector3(1.0f, 1.6f, 1.0f));
+            cylinder5.RotateX(DegreeToRadian(300));
+            cylinder5.RotateY(DegreeToRadian(45));
+            level1Manager.ManageEntity(cylinder5);
 
             // SPHERES
-            SphereList = new List<Sphere>();
-
             for (int i = 0; i < SPHERE_COUNT; i++)
             {
-                SphereList.Add(new Sphere(cube1));
-                // https://www.opengl.org/discussion_boards/showthread.php/132502-Color-tables
-                // sphereArray[i].mMaterial = new Material(new Vector3(0.0f, 1.0f, 0.0f), 0.3f, 0.088f);
-
-                SphereList[i].mMaterial = new Material(new Vector3(1.0f, 0.0f, 0.0f), 0.3f, 0.088f);
-                Manager.ManageEntity(SphereList[i]);
+                spawnSphere();
             }
 
-            //testsphere = new Sphere(
-            //    new Vector3(CylinderList[5].mPosition.X + 0.3f, CylinderList[5].mPosition.Y + 0.3f, CylinderList[5].mPosition.Z + 0.3f),
-            //    0.08f,
-            //    false);
-            //testsphere.mMaterial = new Material(new Vector3(0.0f, 1.0f, 0.0f), 0.5f, 0.5f);
-            //Manager.ManageEntity(testsphere);
-            //testsphere.MoveToEmitterBox(cube1, false);
-            //SphereList.Add(testsphere);
-
-            doomSphere = new Sphere(centerlevel3, 0.25f, true);
+            doomSphere = new Sphere(centerlevel3, 0.25f, true, true);
             doomSphere.mMaterial = Material.emerald;
-            Manager.ManageEntity(doomSphere);
+            level1Manager.ManageEntity(doomSphere);
 
-            Manager.ManageEntity(cube1); // cube added last for cull fix in the entity manager render method.
-            Manager.loadObjects();
+
+
+            level1Manager.loadObjects();
 
             #endregion
 
@@ -338,12 +310,13 @@ namespace Labs.ACW
         /// </summary>
         private void spawnSphere()
         {
-            Sphere newSphere = new Sphere(cube1);
-            newSphere.mMaterial = new Material(new Vector3(1.0f, 0.0f, 0.0f), 0.3f, 0.088f);
-
-            SphereList.Add(newSphere);
-            Manager.ManageEntity(newSphere);
+            level1Manager.ManageEntity(new Sphere(cube1));
         }
+
+        private void ResetSpheres()
+        {
+        }
+
 
         private float DegreeToRadian(double angle)
         {
@@ -387,6 +360,9 @@ namespace Labs.ACW
                 case 'p':
                     pauseSimulation();
                     break;
+                case 'r':
+                    ResetSpheres();
+                    break;
                 default:
                     break;
             }
@@ -413,19 +389,14 @@ namespace Labs.ACW
             // Dont perform any updating if time is paused.
             if (!pauseTime)
             {
-                Manager.updateObjects();
-                Manager.CheckCollisions();
+                level1Manager.updateObjects();
+                level1Manager.CheckCollisions();
 
-
-                //testsphere.Update();
-
-                //testsphere.hasCollidedWithCylinder(CylinderList[5]);
-                //testsphere.hasCollidedWithCube(cube1);
-
-
-                if (spinningCylinders)
-                    foreach (Cylinder c in CylinderList)
-                        c.RotateY(DegreeToRadian(0.2));
+                //if (spinningCylinders)
+                //{
+                //}
+                //    foreach (Cylinder c in CylinderList)
+                //        c.RotateY(DegreeToRadian(0.2));
             }
             base.OnUpdateFrame(e);
         }
@@ -435,7 +406,7 @@ namespace Labs.ACW
             base.OnRenderFrame(e);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            Manager.renderObjects();
+            level1Manager.renderObjects();
             //testsphere.Render();
 
             GL.BindVertexArray(0);
