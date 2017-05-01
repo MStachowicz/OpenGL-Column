@@ -9,84 +9,151 @@ namespace Labs.ACW
     public class Sphere : entity
     {
         /// <summary>
-        /// Constructor used to create sphere of doom and test sphere in collision response/detection.
+        /// Constructor used to create sphere of doom and any particle spheres.
         /// </summary>
         /// <param name="pPosition">Position of the sphere</param>
         /// <param name="pRadius">The radius of the sphere in m. (1 = 1m)</param>
         /// <param name="pStaticSphere">Is this sphere static.</param>
         /// <param name="pAddToList">Should this sphere be added to the static sphere list..</param>
-        public Sphere(Vector3 pPosition, float pRadius, bool pStaticSphere, bool pSphereOfDoom)
+        public Sphere(Vector3 pPosition, float pRadius, bool pStaticSphere, SphereType pType)
         {
-            mScaleX = pRadius;
-            mScaleY = pRadius;
-            mScaleZ = pRadius;
-
-            mRadius = pRadius;
-
+            SetRadius(pRadius);
             mPosition = pPosition;
 
-            staticObject = pStaticSphere;
-            SphereOfDoom = pSphereOfDoom;
+            switch (pType)
+            {
+                case SphereType.doom:
+                    sphereType = SphereType.doom;
+                    staticObject = true;
+                    mMaterial = new Material(new Vector3(0.576f, 0.439f, 0.859f), 0.5f, 0.5f);
+                    break;
+                case SphereType.particle:
+                    staticObject = false;
+                    sphereType = SphereType.particle;
+                    mMaterial = new Material(new Vector3(1.0f, 0.0f, 0.0f), 0.8f, 0.5f);
+
+                    mVelocity = new Vector3(
+                        NextFloat(1, 2),
+                        NextFloat(1, 2),
+                        NextFloat(1, 2));
+                    break;
+                case SphereType.test:
+                    // todo add code here or create seperate constructor for the two test methods creating spheres.
+                    break;
+
+                default:
+                    throw new Exception("Sphere being created using an incorrect constructor");
+            }
+
+            // Set the matrix for rendering.
+            mMatrix = Matrix4.CreateScale(mScaleX, mScaleY, mScaleZ) * Matrix4.CreateTranslation(mPosition);
         }
         /// <summary>
-        /// Creates a ball in the top cube of the scene in a random position with a random velocity.
+        /// Creates a ball in the top cube of the scene in a random position. Alternates two ball types.
         /// </summary>
         /// <param name="pCube">The cube whos top box all the spheres will be translated to.</param>
         public Sphere(Cube pCube)
         {
             // SPHERE PROPERTIES
 
-            mVelocity = new Vector3(0, 0, 0);
-
-            #region Translation
-
-            // Set all the spheres to random locations inside emitter box.
-            MoveToEmitterBox(pCube, false);
-
-            #endregion
-
             #region Scale + mass for 2 different balls
 
             if (!changeBallType)
             { // 4cm radius ball
-                mScaleX = 0.04f;
-                mScaleY = 0.04f;
-                mScaleZ = 0.04f;
-
-                mRadius = 0.04f; // radius = 4 cm = 0.04m
-
-                mMaterial = new Material(new Vector3(1.0f, 1.0f, 0.0f), 0.5f, 1.0f); // shiny yellow
-
-                mVolume = (float)((4 / 3) * Math.PI * Math.Pow(mRadius, 3));
                 mDensity = 1400f; // density =  0.0014 kg per centimetre cubed = 1400 kg per metre cubed
-                mMass = mDensity * mVolume;
+                SetRadius(0.04f); // radius = 4 cm = 0.04m
+                mMaterial = new Material(new Vector3(1.0f, 1.0f, 0.0f), 0.5f, 1.0f); // shiny yellow
+                sphereType = SphereType.yellow;
             }
             else
             {// 8cm radius ball
-                mScaleX = 0.08f;
-                mScaleY = 0.08f;
-                mScaleZ = 0.08f;
-
-                mRadius = 0.08f; // radius = 8 cm = 0.08m
-
-                mMaterial = new Material(new Vector3(0.6f, 0.0f, 0.0f), 0.5f, 0.1f); // matt crimson
-
-                mVolume = (float)((4 / 3) * Math.PI * Math.Pow(mRadius, 3));
                 mDensity = 0.001f; // density = 0.001 kg per metre cubed
-                mMass = mDensity * mVolume;
+                SetRadius(0.08f); // radius = 8 cm = 0.08m
+                mMaterial = new Material(new Vector3(0.6f, 0.0f, 0.0f), 0.5f, 0.1f); // matt crimson
+                sphereType = SphereType.red;
             }
 
             #endregion
 
-            mRotationX = 1.0f;
-            mRotationY = 1.0f;
-            mRotationZ = 1.0f;
-
             staticObject = false;
-            SphereOfDoom = false;
+            MoveToEmitterBox(pCube, false);
+            mMatrix = Matrix4.CreateScale(mScaleX, mScaleY, mScaleZ) * Matrix4.CreateTranslation(mPosition);
 
             // Next sphere instantiated will be of the other sphere type.
             changeBallType ^= true;
+        }
+
+        /// <summary>
+        /// The type of sphere.
+        /// </summary>
+        public enum SphereType
+        {
+            /// <summary>
+            /// 4cm radius shiny yellow sphere with high density.
+            /// </summary>
+            yellow,
+            /// <summary>
+            /// 8cm radius matt red sphere with low density.
+            /// </summary>
+            red,
+            /// <summary>
+            /// 25 cm radius medium purple sphere. Reduces radius of spheres which collide with it.
+            /// </summary>
+            doom,
+            /// <summary>
+            /// Used in particle effects, no collision response or detection is performed on these spheres.
+            /// </summary>
+            particle,
+            /// <summary>
+            /// Sphere type used for testing
+            /// </summary>
+            test
+        };
+        /// <summary>
+        /// Stores which type of sphere this was originally instantiated to be.
+        /// </summary>
+        public SphereType sphereType;
+
+        /// <summary>
+        /// Updates all the members related to the radius of the sphere. (mScale, mVolume, mMass). 
+        /// If the radius being set is negative the sphere is reset and moved to the emitter box.
+        /// </summary>
+        /// <param name="pRadius">The new radius being assigned to the sphere.</param>
+        private void SetRadius(float pRadius)
+        {
+            // if radius is negative sphere is reset and moved back to the emitter box.
+            if (pRadius < 0)
+            {
+                switch (sphereType)
+                {
+                    case SphereType.yellow:
+                        mDensity = 1400f; // density =  0.0014 kg per centimetre cubed = 1400 kg per metre cubed
+                        SetRadius(0.04f); // radius = 4 cm = 0.04m
+                        mMaterial = new Material(new Vector3(1.0f, 1.0f, 0.0f), 0.5f, 1.0f); // shiny yellow
+                        break;
+                    case SphereType.red:
+                        mDensity = 0.001f; // density = 0.001 kg per metre cubed
+                        SetRadius(0.08f); // radius = 8 cm = 0.08m
+                        mMaterial = new Material(new Vector3(0.6f, 0.0f, 0.0f), 0.5f, 0.1f); // matt crimson
+                        break;
+                    default:
+                        break;
+                }
+
+                // move sphere back up
+                MoveToEmitterBox(ACWWindow.cube1, false);
+            }
+            else
+            {
+                mRadius = pRadius;
+
+                mScaleX = pRadius;
+                mScaleY = pRadius;
+                mScaleZ = pRadius;
+
+                mVolume = (float)((4 / 3) * Math.PI * Math.Pow(pRadius, 3));
+                mMass = mDensity * mVolume;
+            }
         }
 
         /// <summary>
@@ -97,10 +164,6 @@ namespace Labs.ACW
         /// The position of the sphere in the previous frame.
         /// </summary>
         Vector3 lastPosition;
-        /// <summary>
-        /// Is this sphere the sphere of doom. Used to peform specific collision response for sphere on sphere of doom.
-        /// </summary>
-        public bool SphereOfDoom;
 
         /// <summary>
         /// Toggled to change the type of ball instantiated by the sphere constructor.
@@ -122,8 +185,6 @@ namespace Labs.ACW
         /// The model utility all the spheres will use.
         /// </summary>
         private static ModelUtility mModelUtility;
-
-
 
         public override void Load()
         {
@@ -166,14 +227,19 @@ namespace Labs.ACW
         }
         public override void Render()
         {
-            mMatrix = Matrix4.CreateScale(mScaleX, mScaleY, mScaleZ) * Matrix4.CreateTranslation(mPosition);
-
             int uModel = GL.GetUniformLocation(ACWWindow.mShader.ShaderProgramID, "uModel");
 
             GL.UniformMatrix4(uModel, true, ref mMatrix);
 
             GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
             GL.DrawElements(PrimitiveType.Triangles, mModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
+
+            mMatrix = Matrix4.CreateScale(mScaleX, mScaleY, mScaleZ) * Matrix4.CreateTranslation(mPosition);
+
+            //if (sphereType == SphereType.particle)
+            //{
+            //    Console.WriteLine("hit");
+            //}
         }
 
         /// <summary>
@@ -181,17 +247,24 @@ namespace Labs.ACW
         /// </summary>
         public override void Update()
         {
-            if (!staticObject)
+            if (sphereType == SphereType.particle) // update for particles does not apply gravity
             {
-                lastPosition = mPosition;
-
                 mVelocity = mVelocity + ACWWindow.accelerationDueToGravity * ACWWindow.timestep;
                 mPosition = mPosition + mVelocity * ACWWindow.timestep;
-
-                //Console.WriteLine("sphere cylinder after collision")
             }
+            else if (!staticObject)
+                {
+                    lastPosition = mPosition;
+
+                    mVelocity = mVelocity + ACWWindow.accelerationDueToGravity * ACWWindow.timestep;
+                    mPosition = mPosition + mVelocity * ACWWindow.timestep;
+
+                    //Console.WriteLine("sphere cylinder after collision")
+                }
+            
         }
 
+        // UTILITY METHODS
         /// <summary>
         /// Generate a floating point number between the minimum and maximum.
         /// </summary>
@@ -202,6 +275,121 @@ namespace Labs.ACW
         {
             return (float)(min + (ACWWindow.rand.NextDouble() * (max - min)));
         }
+        /// <summary>
+        /// Returns the double distance betweem the faces of the spheres adjusted for their radii.
+        /// </summary>
+        /// <param name="pSphere">The sphere to whose distance the return value is.</param>
+        /// <returns></returns>
+        private double DistanceBetweenSpheres(Sphere pSphere)
+        {
+            double x = mPosition.X - pSphere.mPosition.X;
+            double y = mPosition.Y - pSphere.mPosition.Y;
+            double z = mPosition.Z - pSphere.mPosition.Z;
+            double distance = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2) + Math.Pow(z, 2));
+
+            // adjusts the distance to ignore the radii of the sphere.
+            double distanceToSphere = distance - (mRadius + pSphere.mRadius);
+            return distanceToSphere;
+        }
+        /// <summary>
+        /// Distance between a sphere and a cylinder's closest line segment. adjusted for radii of both.
+        /// </summary>
+        /// <param name="pCylinder"></param>
+        /// <returns></returns>
+        public double distanceToCylinder(Cylinder pCylinder)
+        {
+            // Line segment method
+            Vector3 Hyp = (mPosition - pCylinder.mCylinderBottom); // The vector from the cylinder bottom to the sphere position. Forms the hypotenuse in right triangle.
+            Vector3 AdjNormalized = Vector3.Normalize(pCylinder.mCylinderTop - pCylinder.mCylinderBottom); // The vector direction from the cylinder bottom to point of collision. Forms the adjacent in right triangle.
+
+            double theta = Math.Acos(Vector3.Dot(AdjNormalized, Hyp) / Hyp.Length);
+            double oppositeDistance = Math.Sin(theta) * Hyp.Length;
+
+            return oppositeDistance - (mRadius + pCylinder.mRadius);
+        }
+        /// <summary>
+        /// Moves the sphere to the top box (emitter box) of the parameter cube. 
+        /// Adjusts the random location by the size of the cube and radius of sphere.
+        /// </summary>
+        /// <param name="pCube">The cube whos top box is the emitter box.</param>
+        /// <param name="keepVelocity">Whether the sphere will keep its velocity after being translated .</param>
+        public void MoveToEmitterBox(Cube pCube, bool keepVelocity)
+        {
+            // The positions in coordinate space the sphere will be translated to.
+            float x;
+            float y;
+            float z;
+
+            while (true)
+            {
+                // Random x y and z positions created adjusted for cube and sphere size
+                x = NextFloat(pCube.mPosition.X - pCube.cubeDimensions.X + mRadius, // min / left
+                    pCube.mPosition.X + (pCube.cubeDimensions.X) - mRadius); // max / right
+
+                y = NextFloat((2.0f - 0.96f), // min
+                    2.0f - 0.04f); // max
+
+                z = NextFloat(pCube.mPosition.Z - pCube.cubeDimensions.Z + mRadius, // min / outside
+                    pCube.mPosition.Z + pCube.cubeDimensions.Z - mRadius); // max / inside
+
+                // If the position doesnt cause a collision on spawn with any other sphere in the sphere list.
+                if (!checkPositionForCollisionSphere(new Vector3(x, y, z)))
+                    break;
+            }
+
+            mPosition = new Vector3(x, y, z);
+
+            if (!keepVelocity)
+                mVelocity = new Vector3(0.0f, 0.0f, 0.0f); // reset velocity
+        }
+
+
+        // todo fix next two methods.
+        /// <summary>
+        /// Creates a temporary sphere to test for a collision with a sphere at the parameter position.
+        /// </summary>
+        /// <param name="pPosition"></param>
+        /// <returns></returns>
+        private bool checkPositionForCollisionSphere(Vector3 pPosition)
+        {
+            // sphere created to test for a collision with the same radius as this sphere and the parameter position.
+            Sphere testSphere = new Sphere(pPosition, mRadius, true, SphereType.test);
+
+            // Test every sphere for a collision with the test sphere. 
+            foreach (entity e in EntityManager.AllObjects)
+            {
+                if (e is Sphere) // check all spheres
+                    if (testSphere.hasCollidedWithSphere((Sphere)e))
+                    {
+                        return true;
+                    }
+            }
+            return false;
+        }
+        /// <summary>
+        /// Creates a temporary sphere to test for a collision with a cylinder at the parameter position.
+        /// </summary>
+        /// <param name="pPosition"></param>
+        /// <returns></returns>
+        private bool checkPositionForCollisionCyl(Vector3 pPosition)
+        {
+            // sphere created to test for a collision with the same radius as this sphere and the parameter position.
+            Sphere testSphere = new Sphere(pPosition, mRadius, true, SphereType.test);
+
+            // Test every sphere for a collision with the test sphere. 
+            foreach (entity e in EntityManager.AllObjects)
+            {
+                if (testSphere.hasCollidedWithCylinder((Cylinder)e))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        /// <summary>
+        /// Scales the sphere by a uniform paramater in the x, y and z plane.
+        /// </summary>
+        /// <param name="pScale"></param>
 
         #region collision detection and response
 
@@ -278,17 +466,12 @@ namespace Labs.ACW
         /// <returns></returns>
         public bool hasCollidedWithSphere(Sphere pSphere)
         {
-            double x = mPosition.X - pSphere.mPosition.X;
-            double y = mPosition.Y - pSphere.mPosition.Y;
-            double z = mPosition.Z - pSphere.mPosition.Z;
-            double distance = Math.Sqrt(Math.Pow(x, 2) + Math.Pow(y, 2) + Math.Pow(z, 2));
-
-            if (distance < mRadius + pSphere.mRadius)
+            // If the spheres intersect
+            if (DistanceBetweenSpheres(pSphere) < 0)
             {
                 Console.WriteLine("sphere on sphere collision");
                 return true;
             }
-
             return false;
         }
         /// <summary>
@@ -302,6 +485,8 @@ namespace Labs.ACW
             Vector3 Hyp = (mPosition - pCylinder.mCylinderBottom); // The vector from the cylinder bottom to the sphere position. Forms the hypotenuse in right triangle.
             Vector3 AdjNormalized = Vector3.Normalize(pCylinder.mCylinderTop - pCylinder.mCylinderBottom); // The vector direction from the cylinder bottom to point of collision. Forms the adjacent in right triangle.
 
+
+
             double theta = Math.Acos(Vector3.Dot(AdjNormalized, Hyp) / Hyp.Length);
             double oppositeDistance = Hyp.Length * Math.Sin(theta);
 
@@ -310,13 +495,13 @@ namespace Labs.ACW
 
             if (distanceToCylinder(pCylinder) < 0)
             {
-                float Adj = (Hyp.Length * (float)(Math.Cos(theta)));
+                float AdjLength = (Hyp.Length * (float)(Math.Cos(theta)));
                 // Vector3 Opp = Adj - Hyp;
-                Vector3 Opp = Hyp - Adj * (pCylinder.mCylinderTop - pCylinder.mCylinderBottom).Normalized();
+                Vector3 Opp = Hyp - AdjLength * (pCylinder.mCylinderTop - pCylinder.mCylinderBottom).Normalized();
 
                 Vector3 normal = Opp.Normalized(); // check if this is away from collision point
 
-               // Console.WriteLine("Distance between sphere and cylinder: " + distanceToCylinder(pCylinder));
+                // Console.WriteLine("Distance between sphere and cylinder: " + distanceToCylinder(pCylinder));
                 if (Vector3.Dot(normal, mVelocity) < 0) // check if the new velocity is in the direction of point of collision.
                 {
                     //Console.WriteLine("Distance between sphere and cylinder before response " + distanceToCylinder(pCylinder));
@@ -332,22 +517,6 @@ namespace Labs.ACW
             return false;
         }
 
-        /// <summary>
-        /// Distance between a sphere and a cylinder's closest line segment. adjusted for radii of both.
-        /// </summary>
-        /// <param name="pCylinder"></param>
-        /// <returns></returns>
-        public double distanceToCylinder(Cylinder pCylinder)
-        {
-            // Line segment method
-            Vector3 Hyp = (mPosition - pCylinder.mCylinderBottom); // The vector from the cylinder bottom to the sphere position. Forms the hypotenuse in right triangle.
-            Vector3 AdjNormalized = Vector3.Normalize(pCylinder.mCylinderTop - pCylinder.mCylinderBottom); // The vector direction from the cylinder bottom to point of collision. Forms the adjacent in right triangle.
-
-            double theta = Math.Acos(Vector3.Dot(AdjNormalized, Hyp) / Hyp.Length);
-            double oppositeDistance = Math.Sin(theta) * Hyp.Length;
-
-            return oppositeDistance - (mRadius + pCylinder.mRadius);
-        }
         // COLLISION RESPONSE.
         /// <summary>
         /// Uses the positions of the cylinder and sphere to calculate a collision response 
@@ -361,7 +530,6 @@ namespace Labs.ACW
         {
             // Set new velocity
             mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
-            //mVelocity.Y += 1.0f;
             // Move sphere back to previous position.
             mPosition = lastPosition;
         }
@@ -390,46 +558,21 @@ namespace Labs.ACW
             //Vector3 totalmomentumafter = circle1Momentumafter + circle2Momentumafter;
         }
 
-
         /// <summary>
-        /// Moves the sphere to the top box (emitter box) of the parameter cube. 
-        /// Adjusts the random location by the size of the cube and radius of sphere.
+        /// Does not affect the trajectory of the sphere, the intersection of the sphere with the doom sphere is the amount
+        /// by which the sphere is scaled down. If falls through doom sphere it is destroyed.
         /// </summary>
-        /// <param name="pCube">The cube whos top box is the emitter box.</param>
-        /// <param name="keepVelocity">Whether the sphere will keep its velocity after being translated .</param>
-        public void MoveToEmitterBox(Cube pCube, bool keepVelocity)
+        public void SphereOnDoomSphereResponse(Sphere pDoomSphere)
         {
-            // The positions in coordinate space the sphere will be translated to.
-            float x;
-            float y;
-            float z;
+            double overlap = Math.Abs(DistanceBetweenSpheres(pDoomSphere));
 
-            while (true)
-            {
-                // Random x y and z positions created adjusted for cube and sphere size
-                x = NextFloat(pCube.mPosition.X + (pCube.cubeDimensions.X), // min
-                    pCube.mPosition.X - (pCube.cubeDimensions.X)); // max
+            SetRadius(mRadius - (float)overlap);
 
-                y = NextFloat((2.0f - 0.96f), // min
-                    2.0f - 0.04f); // max
+            //mPosition = lastPosition;
 
-                z = NextFloat(pCube.mPosition.Z + (pCube.cubeDimensions.Z), // min
-                    pCube.mPosition.Z - (pCube.cubeDimensions.Z)); // max
+            // translate away by the overlap distance in the direction of the normal from the 
+            // point of collision vector (from sphere center to doomsphere).
 
-                // If the position doesnt cause a collision on spawn with any other sphere in the sphere list.
-                if (!checkPositionForCollisionSphere(new Vector3(x, y, z)))
-                    break;
-            }
-
-            mPosition = new Vector3(x, y, z);
-
-            if (!keepVelocity)
-                mVelocity = new Vector3(0.0f, 0.0f, 0.0f); // reset velocity
-        }
-        public void SphereOnDoomSphereResponse()
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("hit");
             // add the collision detection from sphere on sphere to find the distance between the two centers and the 
             //proportion of overlap dictates how much to scale the sphere down by.
         }
@@ -453,37 +596,7 @@ namespace Labs.ACW
 
 
 
-        private bool checkPositionForCollisionSphere(Vector3 pPosition)
-        {
-            // sphere created to test for a collision with the same radius as this sphere and the parameter position.
-            Sphere testSphere = new Sphere(pPosition, mRadius, true, false);
 
-            // Test every sphere for a collision with the test sphere. 
-            foreach (entity e in EntityManager.AllObjects)
-            {
-                if (e is Sphere) // check all spheres
-                    if (testSphere.hasCollidedWithSphere((Sphere)e))
-                    {
-                        return true;
-                    }
-            }
-            return false;
-        }
-        private bool checkPositionForCollisionCyl(Vector3 pPosition)
-        {
-            // sphere created to test for a collision with the same radius as this sphere and the parameter position.
-            Sphere testSphere = new Sphere(pPosition, mRadius, true, false);
-
-            // Test every sphere for a collision with the test sphere. 
-            foreach (entity e in EntityManager.AllObjects)
-            {
-                if (testSphere.hasCollidedWithCylinder((Cylinder)e))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
         #endregion
     }
 }

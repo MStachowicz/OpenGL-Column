@@ -19,6 +19,11 @@ namespace Labs.ACW
         /// All the objects this entity manager is responsible for.
         /// </summary>
         public List<entity> mObjects = new List<entity>();
+        /// <summary>
+        /// List containing all the particles this entity manager is controlling.
+        /// </summary>
+        public List<Sphere> mParticles = new List<Sphere>();
+
 
         /// <summary>
         /// All the objects contained by all instances of the entity manager class.
@@ -50,6 +55,31 @@ namespace Labs.ACW
             {
                 Cubes.Add((Cube)pEntity);
             }
+        }
+
+        public const int NoOfParticles = 10;
+
+        /// <summary>
+        /// Creates particles at the parameter position and gives them random velocities.
+        /// </summary>
+        /// <param name="pCollisionPoint">The point from which the spheres will be emitted.</param>
+        public void ParticleEffectSpheres(Vector3 pCollisionPoint)
+        {
+            for (int i = 0; i < NoOfParticles; i++)
+            {
+                mParticles.Add(new Sphere(pCollisionPoint, 0.01f, false, Sphere.SphereType.particle));                         
+            }
+        }
+
+        /// <summary>
+        /// Generate a floating point number between the minimum and maximum.
+        /// </summary>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
+        /// <returns></returns>
+        private float NextFloat(float min, float max)
+        {
+            return (float)(min + (ACWWindow.rand.NextDouble() * (max - min)));
         }
 
 
@@ -84,6 +114,12 @@ namespace Labs.ACW
                 else // every other object render
                     mObjects[i].Render();
             }
+
+
+            for (int i = 0; i < mParticles.Count; i++)
+            {
+                mParticles[i].Render();
+            }
         }
 
         /// <summary>
@@ -91,7 +127,7 @@ namespace Labs.ACW
         /// </summary>
         public void CheckCollisions()
         {
-            // Sphere collision checks
+            // i is the sphere being checked for collisions with all other objects.
             for (int i = 0; i < Spheres.Count; i++)
             {
                 // Sphere on cube collision detection and response. (inside of static cube)
@@ -100,19 +136,46 @@ namespace Labs.ACW
                 // Sphere on sphere detection and response.
                 for (int s = 0; s < Spheres.Count; s++)
                 {
-                        if (i != s) // If this is not the same sphere
-                            if (Spheres[i].hasCollidedWithSphere(Spheres[s])) // check collision
-                                if (!Spheres[i].SphereOfDoom && Spheres[s].SphereOfDoom) // specific response to doom sphere
-                                    Spheres[i].SphereOnDoomSphereResponse();
-                                else // standard collision response for sphere on sphere collision
-                                    Spheres[i].sphereOnSphereResponse(Spheres[s]); // perform response
+                    if (i != s) // If this is not the same sphere
+                        if (Spheres[i].hasCollidedWithSphere(Spheres[s])) // check collision
+                        {
+                            // if neither sphere is a sphere of doom
+                            if (Spheres[i].sphereType != Sphere.SphereType.doom && Spheres[s].sphereType != Sphere.SphereType.doom)
+                            {
+                                Spheres[i].sphereOnSphereResponse(Spheres[s]); // perform standard sphere on sphere response
+                            }
+                            else if (Spheres[s].sphereType == Sphere.SphereType.doom) // if the other sphere is a sphere of doom
+                            {
+                                Spheres[i].SphereOnDoomSphereResponse(Spheres[s]); // perform the response to sphere of doom collision
+                                //ACWWindow.pauseSimulation();
+                            }
+
+                        }
                 }
 
                 // sphere on cylinder detection and response.
                 for (int c = 0; c < Cylinders.Count; c++)
                 {
-                    // Sphere on cylinder collision detection and response. (static cylinder)
-                    Spheres[i].hasCollidedWithCylinder(Cylinders[c]);
+                    if (Spheres[i].sphereType != Sphere.SphereType.doom)
+                    {
+                        // Sphere on cylinder collision detection and response. (static cylinder)
+                        if(Spheres[i].hasCollidedWithCylinder(Cylinders[c]))
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            ParticleEffectSpheres(ACWWindow.cube1.centerlevel1);
+                        }
+                    }
+                }
+            }
+        }
+
+        public void resetSpheres()
+        {
+            for (int i = 0; i < Spheres.Count; i++)
+            {
+                if (Spheres[i].sphereType != Sphere.SphereType.doom)
+                {
+                    Spheres[i].MoveToEmitterBox(ACWWindow.cube1, false);
                 }
             }
         }
@@ -130,6 +193,12 @@ namespace Labs.ACW
                 {
                     mObjects[i].Update();
                 }
+            }
+
+            // update all particles
+            for (int i = 0; i < mParticles.Count; i++)
+            {
+                mParticles[i].Update();
             }
         }
 

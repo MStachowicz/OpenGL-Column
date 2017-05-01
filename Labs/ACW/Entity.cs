@@ -18,10 +18,6 @@ namespace Labs.ACW
         public float mScaleY;
         public float mScaleZ;
 
-        public float mRotationX;
-        public float mRotationY;
-        public float mRotationZ;
-
         public float mVolume;
         public float mDensity;
         public float mMass;

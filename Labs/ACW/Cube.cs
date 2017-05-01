@@ -21,11 +21,6 @@ namespace Labs.ACW
             mScaleY = 4.0f;
             mScaleZ = 1.0f;
 
-
-            mRotationX = 1.0f;
-            mRotationY = 1.0f;
-            mRotationZ = 1.0f;
-
             mVolume = 0.0f; // TODO ADD VOLUME FOR CUBE
             mDensity = 1f;
             mMass = mDensity * mVolume;
@@ -34,9 +29,17 @@ namespace Labs.ACW
             mPosition = new Vector3(0.0f, 0.0f, 0.0f);
             mVelocity = new Vector3(0.0f, 0.0f, 0.0f);
 
+            mMaterial = Material.pearl;
             staticObject = true;
+
+            centerlevel1 = new Vector3(mPosition.X, mPosition.Y + 0.5f, mPosition.Z);
+            centerlevel2 = new Vector3(mPosition.X, mPosition.Y - 0.5f, mPosition.Z);
+            centerlevel3 = new Vector3(mPosition.X, mPosition.Y - 1.5f, mPosition.Z);
         }
 
+        public Vector3 centerlevel1;
+        public Vector3 centerlevel2;
+        public Vector3 centerlevel3;
         public Vector3 cubeDimensions;
         private float mDimension;
 

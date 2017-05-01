@@ -1,6 +1,7 @@
 ﻿using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
+using OpenTK.Input;
 using Labs.Utility;
 using System;
 using System.Collections.Generic;
@@ -96,21 +97,80 @@ namespace Labs.ACW
         }
 
 
-        private Timer mTimer;
+        public Timer mTimer;
         public static Random rand;
 
-        public void moveCamera(Vector3 Translation)
+        #region Camera
+
+        public enum CameraType
+        { cFixed, cControlled, cFollow, cPath }
+        public CameraType cameraType = CameraType.cFixed;
+
+
+        public void ViewTranslate(Vector3 pTranslation)
         {
-            // Camera movement
-            mView = mView * Matrix4.CreateTranslation(Translation);
+            mView = mView * Matrix4.CreateTranslation(pTranslation);
+
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
             GL.UniformMatrix4(uView, true, ref mView);
 
+            SetLightPositions();
+        }
+        public void ViewRotateX(float pRotation)
+        {
+            Vector3 t = mView.ExtractTranslation();
 
+            Matrix4 translation = Matrix4.CreateTranslation(t);
+            Matrix4 inverseTranslation = Matrix4.CreateTranslation(-t);
+
+            mView = mView * inverseTranslation * Matrix4.CreateRotationX(pRotation) * translation;
+
+            // Set mview in the shader
+            int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
+            GL.UniformMatrix4(uView, true, ref mView);
+
+            SetLightPositions();
+        }
+        public void ViewRotateY(float pRotation)
+        {
+            string test = this.ToString();
+            Vector3 t = mView.ExtractTranslation();
+
+            Matrix4 translation = Matrix4.CreateTranslation(t);
+            Matrix4 inverseTranslation = Matrix4.CreateTranslation(-t);
+
+            mView = mView * inverseTranslation * Matrix4.CreateRotationY(pRotation) * translation;
+            
+            // Set mview in the shader
+            int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
+            GL.UniformMatrix4(uView, true, ref mView);
+
+            SetLightPositions();
+        }
+        public void ViewRotateZ(float pRotation)
+        {
+            string test = this.ToString();
+            Vector3 t = mView.ExtractTranslation();
+
+            Matrix4 translation = Matrix4.CreateTranslation(t);
+            Matrix4 inverseTranslation = Matrix4.CreateTranslation(-t);
+
+            mView = mView * inverseTranslation * Matrix4.CreateRotationZ(pRotation) * translation;
+            
+            // Set mview in the shader
+            int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
+            GL.UniformMatrix4(uView, true, ref mView);
+
+            SetLightPositions();
+        }
+
+        #endregion
+
+        public void SetLightPositions()
+        {
             Vector4 lightPosition = new Vector4(cube1.mPosition.X, cube1.mPosition.Y + (cube1.cubeDimensions.Y / 2), cube1.mPosition.Z, 1.0f);
             Vector4 lightPosition1 = new Vector4(cube1.mPosition, 1.0f);
             Vector4 lightPosition2 = new Vector4(cube1.mPosition.X, cube1.mPosition.Y - (cube1.cubeDimensions.Y) / 2, cube1.mPosition.Z, 1.0f);
-
 
             // LIGHT 1 - TOP
             int uLightPositionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[0].Position");
@@ -149,7 +209,7 @@ namespace Labs.ACW
             vNormal = GL.GetAttribLocation(mShader.ShaderProgramID, "vNormal"); //find the index for the location of vNormal in the shader
 
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
-            mView = Matrix4.CreateTranslation(0.0f, 0.0f, 0.0f);
+            mView = Matrix4.CreateTranslation(0.0f, 0.0f, -5.0f);
             GL.UniformMatrix4(uView, true, ref mView);
 
             int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
@@ -170,41 +230,35 @@ namespace Labs.ACW
             rand = new Random();
 
             // CUBE
-            cube1 = new Cube();
-            cube1.mPosition = new Vector3(0.0f, 0.0f, -5.0f);
-            cube1.mMaterial = Material.pearl;
+            cube1 = new Cube();        
             level1Manager.ManageEntity(cube1); // cube added last for cull fix in the entity manager render method.
-
-            Vector3 centerlevel1 = new Vector3(cube1.mPosition.X, cube1.mPosition.Y + 0.5f, cube1.mPosition.Z);
-            Vector3 centerlevel2 = new Vector3(cube1.mPosition.X, cube1.mPosition.Y - 0.5f, cube1.mPosition.Z);
-            Vector3 centerlevel3 = new Vector3(cube1.mPosition.X, cube1.mPosition.Y - 1.5f, cube1.mPosition.Z);
-
+            
             // CYLINDERS
             // LEVEL 1
-            Cylinder cylinder0 = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y + 0.25f, centerlevel1.Z), 0.075f);
+            Cylinder cylinder0 = new Cylinder(new Vector3(cube1.centerlevel1.X, cube1.centerlevel1.Y + 0.25f, cube1.centerlevel1.Z), 0.075f);
             level1Manager.ManageEntity(cylinder0);
             cylinder0.RotateX((float)Math.PI / 2);
 
-            Cylinder cylinder1 = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y + 0.25f, centerlevel1.Z), 0.075f);
+            Cylinder cylinder1 = new Cylinder(new Vector3(cube1.centerlevel1.X, cube1.centerlevel1.Y + 0.25f, cube1.centerlevel1.Z), 0.075f);
             level1Manager.ManageEntity(cylinder1);
             cylinder1.RotateZ((float)Math.PI / 2);
 
-            Cylinder cylinder2 = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y - 0.25f, centerlevel1.Z), 0.15f);
+            Cylinder cylinder2 = new Cylinder(new Vector3(cube1.centerlevel1.X, cube1.centerlevel1.Y - 0.25f, cube1.centerlevel1.Z), 0.15f);
             level1Manager.ManageEntity(cylinder2);
             cylinder2.RotateX((float)Math.PI / 2);
 
-            Cylinder cylinder3 = new Cylinder(new Vector3(centerlevel1.X, centerlevel1.Y - 0.25f, centerlevel1.Z), 0.15f);
+            Cylinder cylinder3 = new Cylinder(new Vector3(cube1.centerlevel1.X, cube1.centerlevel1.Y - 0.25f, cube1.centerlevel1.Z), 0.15f);
             level1Manager.ManageEntity(cylinder3);
             cylinder3.RotateZ((float)Math.PI / 2);
 
             // LEVEL 2
-            Cylinder cylinder4 = new Cylinder(new Vector3(centerlevel2.X, centerlevel2.Y, centerlevel2.Z), 0.10f);
+            Cylinder cylinder4 = new Cylinder(new Vector3(cube1.centerlevel2.X, cube1.centerlevel2.Y, cube1.centerlevel2.Z), 0.10f);
             level1Manager.ManageEntity(cylinder4);
             cylinder4.scale(new Vector3(1.0f, 1.3f, 1.0f));
             cylinder4.RotateX(DegreeToRadian(90));
             cylinder4.RotateY(DegreeToRadian(135));
 
-            Cylinder cylinder5 = new Cylinder(new Vector3(centerlevel2.X, centerlevel2.Y, centerlevel2.Z), 0.15f);
+            Cylinder cylinder5 = new Cylinder(new Vector3(cube1.centerlevel2.X, cube1.centerlevel2.Y, cube1.centerlevel2.Z), 0.15f);
             cylinder5.scale(new Vector3(1.0f, 1.6f, 1.0f));
             cylinder5.RotateX(DegreeToRadian(300));
             cylinder5.RotateY(DegreeToRadian(45));
@@ -216,10 +270,8 @@ namespace Labs.ACW
                 spawnSphere();
             }
 
-            doomSphere = new Sphere(centerlevel3, 0.25f, true, true);
-            doomSphere.mMaterial = Material.emerald;
-            level1Manager.ManageEntity(doomSphere);
-
+            // sphere of doom
+            level1Manager.ManageEntity(new Sphere(cube1.centerlevel3, 0.25f, true, Sphere.SphereType.doom));
 
 
             level1Manager.loadObjects();
@@ -313,14 +365,27 @@ namespace Labs.ACW
             level1Manager.ManageEntity(new Sphere(cube1));
         }
 
-        private void ResetSpheres()
-        {
-        }
-
-
         private float DegreeToRadian(double angle)
         {
             return (float)(Math.PI * angle / 180.0);
+        }
+
+        protected override void OnMouseDown(MouseButtonEventArgs e)
+        {
+            switch (e.Button)
+            {
+                case MouseButton.Left:
+                    spawnSphere();
+                    break;
+                case MouseButton.Middle:
+                    break;
+                case MouseButton.Right:
+                    break;
+                default:
+                    break;
+            }
+
+            base.OnMouseDown(e);
         }
 
         protected override void OnKeyPress(KeyPressEventArgs e)
@@ -337,32 +402,51 @@ namespace Labs.ACW
                 case '2':
                     spawnSphere();
                     break;
-                case '3':
+                case '3': // update the simulation by 0.1 seconds 
+                    pauseSimulation();
+                    OnUpdateFrame(new FrameEventArgs(0.1));
+                    pauseSimulation();
                     break;
-                case 'w':
-                    moveCamera(new Vector3(0.0f, -cameraSpeed, 0.0f));
+
+                case '4':
+                    ViewRotateX(cameraSpeed);
                     break;
-                case 'a':
-                    moveCamera(new Vector3(cameraSpeed, 0.0f, 0.0f));
+                case '5':
+                    ViewRotateY(cameraSpeed);
                     break;
-                case 's':
-                    moveCamera(new Vector3(0.0f, cameraSpeed, 0.0f));
-                    break;
-                case 'd':
-                    moveCamera(new Vector3(-cameraSpeed, 0.0f, 0.0f));
-                    break;
-                case 'q':
-                    moveCamera(new Vector3(0.0f, 0.0f, -cameraSpeed));
-                    break;
-                case 'e':
-                    moveCamera(new Vector3(0.0f, 0.0f, cameraSpeed));
+                case '6':
+                    ViewRotateZ(cameraSpeed);
                     break;
                 case 'p':
                     pauseSimulation();
                     break;
                 case 'r':
-                    ResetSpheres();
+                    level1Manager.resetSpheres();
                     break;
+
+
+                    // Camera 
+                case 'w':
+                    ViewTranslate(new Vector3(0.0f, -cameraSpeed, 0.0f));
+                    break;
+                case 'a':
+                    ViewTranslate(new Vector3(cameraSpeed, 0.0f, 0.0f));
+                    break;
+                case 's':
+                    ViewTranslate(new Vector3(0.0f, cameraSpeed, 0.0f));
+                    break;
+                case 'd':
+                    ViewTranslate(new Vector3(-cameraSpeed, 0.0f, 0.0f));
+                    break;
+                case 'q':
+                    ViewTranslate(new Vector3(0.0f, 0.0f, -cameraSpeed));
+                    break;
+                case 'e':
+                    ViewTranslate(new Vector3(0.0f, 0.0f, cameraSpeed));
+                    break;
+                
+
+
                 default:
                     break;
             }
@@ -407,7 +491,6 @@ namespace Labs.ACW
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             level1Manager.renderObjects();
-            //testsphere.Render();
 
             GL.BindVertexArray(0);
 
@@ -445,6 +528,12 @@ namespace Labs.ACW
                 return (float)elasped.Ticks / TimeSpan.TicksPerSecond;
             }
         }
+
+
+
+
+
+
     }
 
     public class lightManager

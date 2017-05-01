@@ -128,7 +128,8 @@ namespace Labs.ACW
             Vector4 test4 = new Vector4(mCylinderTop, 1);
             Vector4 test5 = test4 * inverseTranslation * Matrix4.CreateRotationZ(pRotation) * translation;
             mCylinderTop = new Vector3(test5.X, test5.Y, test5.Z);
-        }
+        }        
+
         public void scale(Vector3 pScale)
         {
             Vector3 t = mMatrix.ExtractTranslation();
