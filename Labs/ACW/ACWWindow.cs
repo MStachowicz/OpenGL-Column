@@ -32,6 +32,9 @@ namespace Labs.ACW
         EntityManager level2Manager;
         EntityManager level3Manager;
 
+        // single particle manager used by all 3 entity managers.
+        public static ParticleManager particleManager;
+
         public static Cube cube1;
         public static Sphere doomSphere;
 
@@ -225,7 +228,7 @@ namespace Labs.ACW
 
             #region Loading in models
             // 100 cm = 1.0f
-
+            particleManager = new ParticleManager();
             level1Manager = new EntityManager();
             rand = new Random();
 
@@ -476,6 +479,8 @@ namespace Labs.ACW
                 level1Manager.updateObjects();
                 level1Manager.CheckCollisions();
 
+                particleManager.UpdateParticles();
+
                 //if (spinningCylinders)
                 //{
                 //}
@@ -491,6 +496,7 @@ namespace Labs.ACW
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             level1Manager.renderObjects();
+            particleManager.RenderParticles();
 
             GL.BindVertexArray(0);
 

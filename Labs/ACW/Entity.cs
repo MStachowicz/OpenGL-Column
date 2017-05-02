@@ -27,6 +27,10 @@ namespace Labs.ACW
         // todo: make this private and create a set velocity method that caps the velocity at terminal velocity in positive and negative directions
         public Vector3 mVelocity;
         public Material mMaterial;
+        /// <summary>
+        /// The amount of time in seconds before this entity is removed from the simulation. Used in particles.
+        /// </summary>
+        public double mLifetime;
 
         /// <summary>
         /// The manager this entity belongs to.

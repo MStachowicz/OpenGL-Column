@@ -31,7 +31,7 @@ namespace Labs.ACW
                     staticObject = false;
                     sphereType = SphereType.particle;
                     mMaterial = new Material(new Vector3(1.0f, 0.0f, 0.0f), 0.8f, 0.5f);
-
+                    mLifetime = NextFloat(0.5f, 2f);
                     mVelocity = new Vector3(
                         NextFloat(1, 2),
                         NextFloat(1, 2),
@@ -235,11 +235,6 @@ namespace Labs.ACW
             GL.DrawElements(PrimitiveType.Triangles, mModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
 
             mMatrix = Matrix4.CreateScale(mScaleX, mScaleY, mScaleZ) * Matrix4.CreateTranslation(mPosition);
-
-            //if (sphereType == SphereType.particle)
-            //{
-            //    Console.WriteLine("hit");
-            //}
         }
 
         /// <summary>
@@ -258,8 +253,6 @@ namespace Labs.ACW
 
                     mVelocity = mVelocity + ACWWindow.accelerationDueToGravity * ACWWindow.timestep;
                     mPosition = mPosition + mVelocity * ACWWindow.timestep;
-
-                    //Console.WriteLine("sphere cylinder after collision")
                 }
             
         }
@@ -469,7 +462,7 @@ namespace Labs.ACW
             // If the spheres intersect
             if (DistanceBetweenSpheres(pSphere) < 0)
             {
-                Console.WriteLine("sphere on sphere collision");
+                //Console.WriteLine("sphere on sphere collision");
                 return true;
             }
             return false;
@@ -505,7 +498,7 @@ namespace Labs.ACW
                 if (Vector3.Dot(normal, mVelocity) < 0) // check if the new velocity is in the direction of point of collision.
                 {
                     //Console.WriteLine("Distance between sphere and cylinder before response " + distanceToCylinder(pCylinder));
-                    Console.WriteLine("sphere on cylinder collision");
+                    //Console.WriteLine("sphere on cylinder collision");
                     SphereOnCylinderResponse(normal);
 
                     //Console.WriteLine("Distance between sphere and cylinder after response " + distanceToCylinder(pCylinder));
@@ -531,7 +524,7 @@ namespace Labs.ACW
             // Set new velocity
             mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
             // Move sphere back to previous position.
-            mPosition = lastPosition;
+            //mPosition = lastPosition;
         }
         /// <summary>
         /// The collision response for two moving spheres.

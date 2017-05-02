@@ -7,6 +7,7 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using Labs.Utility;
+using System.Timers;
 
 namespace Labs.ACW
 {
@@ -19,12 +20,7 @@ namespace Labs.ACW
         /// All the objects this entity manager is responsible for.
         /// </summary>
         public List<entity> mObjects = new List<entity>();
-        /// <summary>
-        /// List containing all the particles this entity manager is controlling.
-        /// </summary>
-        public List<Sphere> mParticles = new List<Sphere>();
-
-
+        
         /// <summary>
         /// All the objects contained by all instances of the entity manager class.
         /// </summary>
@@ -35,6 +31,8 @@ namespace Labs.ACW
 
         public EntityManager()
         { }
+
+
         public void ManageEntity(entity pEntity)
         {
             // Add the entity to the list of objects this manager controls.
@@ -57,19 +55,7 @@ namespace Labs.ACW
             }
         }
 
-        public const int NoOfParticles = 10;
 
-        /// <summary>
-        /// Creates particles at the parameter position and gives them random velocities.
-        /// </summary>
-        /// <param name="pCollisionPoint">The point from which the spheres will be emitted.</param>
-        public void ParticleEffectSpheres(Vector3 pCollisionPoint)
-        {
-            for (int i = 0; i < NoOfParticles; i++)
-            {
-                mParticles.Add(new Sphere(pCollisionPoint, 0.01f, false, Sphere.SphereType.particle));                         
-            }
-        }
 
         /// <summary>
         /// Generate a floating point number between the minimum and maximum.
@@ -114,12 +100,6 @@ namespace Labs.ACW
                 else // every other object render
                     mObjects[i].Render();
             }
-
-
-            for (int i = 0; i < mParticles.Count; i++)
-            {
-                mParticles[i].Render();
-            }
         }
 
         /// <summary>
@@ -149,7 +129,6 @@ namespace Labs.ACW
                                 Spheres[i].SphereOnDoomSphereResponse(Spheres[s]); // perform the response to sphere of doom collision
                                 //ACWWindow.pauseSimulation();
                             }
-
                         }
                 }
 
@@ -162,7 +141,7 @@ namespace Labs.ACW
                         if(Spheres[i].hasCollidedWithCylinder(Cylinders[c]))
                         {
                             Console.ForegroundColor = ConsoleColor.Red;
-                            ParticleEffectSpheres(ACWWindow.cube1.centerlevel1);
+                            ACWWindow.particleManager.ParticleEffectSpheres(Spheres[i].mPosition);
                         }
                     }
                 }
@@ -193,12 +172,6 @@ namespace Labs.ACW
                 {
                     mObjects[i].Update();
                 }
-            }
-
-            // update all particles
-            for (int i = 0; i < mParticles.Count; i++)
-            {
-                mParticles[i].Update();
             }
         }
 
