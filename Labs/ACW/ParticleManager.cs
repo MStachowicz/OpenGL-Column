@@ -97,13 +97,6 @@ namespace Labs.ACW
             {
                 // Particle on cube collision detection and response. (inside of static cube)
                 mParticles[i].hasCollidedWithCube(ACWWindow.cube1);
-
-                // Particle on cylinder detection and response.
-                for (int c = 0; c < EntityManager.Cylinders.Count; c++)
-                {
-                    // Sphere on cylinder collision detection and response. (static cylinder)
-                    mParticles[i].hasCollidedWithCylinder(EntityManager.Cylinders[c]);
-                }
             }
         }
 
