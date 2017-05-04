@@ -8,6 +8,10 @@ namespace Labs.ACW
 {
     public class Sphere : entity
     {
+
+
+
+
         /// <summary>
         /// Constructor used to create sphere of doom and any particle spheres.
         /// </summary>
@@ -30,8 +34,8 @@ namespace Labs.ACW
                 case SphereType.particle:
                     staticObject = false;
                     sphereType = SphereType.particle;
-                    mMaterial = new Material(new Vector3(1.0f, 0.0f, 0.0f), 0.8f, 0.5f);
-                    mLifetime = NextFloat(0.5f, 2f);
+                    mMaterial = Material.emerald;
+                    mLifetime = NextFloat(0.5f, 0.8f);
                     mVelocity = new Vector3(
                         NextFloat(1, 2),
                         NextFloat(1, 2),
@@ -48,6 +52,15 @@ namespace Labs.ACW
             // Set the matrix for rendering.
             mMatrix = Matrix4.CreateScale(mScaleX, mScaleY, mScaleZ) * Matrix4.CreateTranslation(mPosition);
         }
+
+
+        public Sphere(Vector3 pPosition, float pRadius, bool pStaticSphere, SphereType pType, Vector3 pVelocity)
+            : this(pPosition, pRadius, pStaticSphere, pType)
+        {
+            mVelocity = pVelocity;
+        }
+
+
         /// <summary>
         /// Creates a ball in the top cube of the scene in a random position. Alternates two ball types.
         /// </summary>
@@ -62,7 +75,7 @@ namespace Labs.ACW
             { // 4cm radius ball
                 mDensity = 1400f; // density =  0.0014 kg per centimetre cubed = 1400 kg per metre cubed
                 SetRadius(0.04f); // radius = 4 cm = 0.04m
-                mMaterial = new Material(new Vector3(1.0f, 1.0f, 0.0f), 0.5f, 1.0f); // shiny yellow
+                mMaterial = new Material(new Vector3(1.0f, 1.0f, 0.0f), 0.5f, 1.0f * 128); // shiny yellow
                 sphereType = SphereType.yellow;
             }
             else
@@ -248,13 +261,13 @@ namespace Labs.ACW
                 mPosition = mPosition + mVelocity * ACWWindow.timestep;
             }
             else if (!staticObject)
-                {
-                    lastPosition = mPosition;
+            {
+                lastPosition = mPosition;
 
-                    mVelocity = mVelocity + ACWWindow.accelerationDueToGravity * ACWWindow.timestep;
-                    mPosition = mPosition + mVelocity * ACWWindow.timestep;
-                }
-            
+                mVelocity = mVelocity + ACWWindow.accelerationDueToGravity * ACWWindow.timestep;
+                mPosition = mPosition + mVelocity * ACWWindow.timestep;
+            }
+
         }
 
         // UTILITY METHODS
@@ -425,7 +438,14 @@ namespace Labs.ACW
             { // bottom collision
                 if (mVelocity.Y < 0)
                 {
-                    MoveToEmitterBox(pCube, false);
+                    if (sphereType != SphereType.particle)
+                    {
+                        MoveToEmitterBox(pCube, false);
+                    }
+                    else
+                    {
+                        SetRadius(0.0f);
+                    }
 
 
                     // Original response to collision with inside bottom of cube
@@ -557,18 +577,25 @@ namespace Labs.ACW
         /// </summary>
         public void SphereOnDoomSphereResponse(Sphere pDoomSphere)
         {
+            // PARTICLE EFFECT
+
+            // Particle effect produced before the set radius call as it may move the sphere to the emitter box
+            Vector3 normal = (mPosition - pDoomSphere.mPosition).Normalized();
+            Vector3 velocity = mVelocity * Vector3.Dot(normal, mVelocity) * normal;
+
+            int noOfParticles = 3;// (int)Math.Round((overlap / ParticleManager.sphereParticleRadius));
+
+            ACWWindow.particleManager.ParticleEffectSpheres(
+                mPosition, 
+                noOfParticles,
+                velocity);
+
+
+            // Scale the sphere down by the overlap
             double overlap = Math.Abs(DistanceBetweenSpheres(pDoomSphere));
-
             SetRadius(mRadius - (float)overlap);
-
-            //mPosition = lastPosition;
-
-            // translate away by the overlap distance in the direction of the normal from the 
-            // point of collision vector (from sphere center to doomsphere).
-
-            // add the collision detection from sphere on sphere to find the distance between the two centers and the 
-            //proportion of overlap dictates how much to scale the sphere down by.
         }
+
         // improv. could caluclate the normal of the cube if check which plane is closest in vector (mposition - pCube.mposition) - closest value out of X Y Z plane
         // note. better to leave seperated otherwise create 6 different face collision response methods. consider a physics class to handle collisions.
         /// <summary>
@@ -582,13 +609,6 @@ namespace Labs.ACW
             Vector3 normal = new Vector3(1, 0, 0);
             mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
         }
-        /// <summary>
-        /// Check if a sphere in the parameter position collided with any spheres other than itself.
-        /// </summary>
-        /// <param name="pPosition"></param>
-
-
-
 
         #endregion
     }

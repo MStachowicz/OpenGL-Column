@@ -15,7 +15,7 @@ namespace Labs.ACW
     {
         private List<Sphere> Spheres = new List<Sphere>();
         private List<Cube> Cubes = new List<Cube>();
-        private List<Cylinder> Cylinders = new List<Cylinder>();
+        public static List<Cylinder> Cylinders = new List<Cylinder>();
         /// <summary>
         /// All the objects this entity manager is responsible for.
         /// </summary>
@@ -140,8 +140,7 @@ namespace Labs.ACW
                         // Sphere on cylinder collision detection and response. (static cylinder)
                         if(Spheres[i].hasCollidedWithCylinder(Cylinders[c]))
                         {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            ACWWindow.particleManager.ParticleEffectSpheres(Spheres[i].mPosition);
+                            //ACWWindow.particleManager.ParticleEffectSpheres(Spheres[i].mPosition);
                         }
                     }
                 }
