@@ -8,10 +8,6 @@ namespace Labs.ACW
 {
     public class Sphere : entity
     {
-
-
-
-
         /// <summary>
         /// Constructor used to create sphere of doom and any particle spheres.
         /// </summary>
@@ -241,13 +237,12 @@ namespace Labs.ACW
         public override void Render()
         {
             int uModel = GL.GetUniformLocation(ACWWindow.mShader.ShaderProgramID, "uModel");
+            mMatrix = Matrix4.CreateScale(mScaleX, mScaleY, mScaleZ) * Matrix4.CreateTranslation(mPosition);
 
             GL.UniformMatrix4(uModel, true, ref mMatrix);
 
             GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
             GL.DrawElements(PrimitiveType.Triangles, mModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
-
-            mMatrix = Matrix4.CreateScale(mScaleX, mScaleY, mScaleZ) * Matrix4.CreateTranslation(mPosition);
         }
 
         /// <summary>
@@ -497,8 +492,6 @@ namespace Labs.ACW
             // Line segment method
             Vector3 Hyp = (mPosition - pCylinder.mCylinderBottom); // The vector from the cylinder bottom to the sphere position. Forms the hypotenuse in right triangle.
             Vector3 AdjNormalized = Vector3.Normalize(pCylinder.mCylinderTop - pCylinder.mCylinderBottom); // The vector direction from the cylinder bottom to point of collision. Forms the adjacent in right triangle.
-
-
 
             double theta = Math.Acos(Vector3.Dot(AdjNormalized, Hyp) / Hyp.Length);
             double oppositeDistance = Hyp.Length * Math.Sin(theta);

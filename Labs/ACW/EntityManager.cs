@@ -91,13 +91,6 @@ namespace Labs.ACW
                 if (ACWWindow.materialSet != mObjects[i].mMaterial)
                     mObjects[i].mMaterial.SetMaterial();
 
-                if (mObjects[i] is Cube)
-                {
-                    GL.Enable(EnableCap.CullFace);
-                    mObjects[i].Render();
-                    GL.Disable(EnableCap.CullFace);
-                }
-                else // every other object render
                     mObjects[i].Render();
             }
         }

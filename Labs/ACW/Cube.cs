@@ -12,7 +12,7 @@ namespace Labs.ACW
 {
     public class Cube : entity
     {
-        public Cube() 
+        public Cube()
         {
             // CUBE PROPERTIES
             mDimension = 0.5f;
@@ -64,11 +64,83 @@ namespace Labs.ACW
         {
             if (!isLoaded)
             {
-                VAOIndex = EntityManager.VAOCount++; // set the VAO index all cubes will use.
-                VBOIndex = EntityManager.VBOCount++; // set the VBO index all cubes will use.
-                EntityManager.VBOCount++;
                 isLoaded = true;
 
+                VAOIndex = EntityManager.VAOCount++; // set the VAO index all cubes will use.
+                VBOIndex = EntityManager.VBOCount++; // set the VBO index all cubes will use.
+                EntityManager.VBOCount++; // add extra vbo used for indices of cube faces
+
+                //// 8 vertices forming a cube + normals for each point
+                //float[] vertices2 = new float[]
+                //{
+                //     0.5f,  0.5f, -0.5f,
+                //     0.5f,  0.5f,  0.5f,
+                //     0.5f, -0.5f, -0.5f,
+                //     0.5f, -0.5f,  0.5f,
+                //    -0.5f,  0.5f, -0.5f,
+                //    -0.5f,  0.5f,  0.5f,
+                //    -0.5f, -0.5f, -0.5f,
+                //    -0.5f, -0.5f,  0.5f,
+                //};
+
+                //float[] vertices = vertices2;
+
+                //// 12 indices, 2 triangles per face.
+                //int[] indices = new int[]
+                //      {
+                //    0,2,1,  /*-1,0,0, // right top*/
+                //    2,1,3,  /*-1,0,0, // right bottom   */
+                //    1,3,5,  /* 0,0,-1, //  front top*/
+                //    3,5,7,  /* 0,0,-1, // front bottom*/
+                //    5,7,4,  /* 1,0,0,  // left top*/
+                //    7,4,6,  /* 1,0,0,  // left bottom */
+                //    4,6,0,  /* 0,0,1,  // back top*/
+                //    6,0,2,  /* 0,0,1,  // back bottom*/
+                //    0,1,4,  /* 0,-1,0,  // top away*/
+                //    1,4,5,  /* 0,-1,0,  // top close*/
+                //    2,3,6,  /* 0,1,0,  // bottom away*/
+                //    3,6,7  /* 0,1,0   // bottom close*/
+                //       };
+
+
+                //// Binding VAO and VBO for vertices
+                //GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]); // bind vertex array object
+
+                //// VBO 0 - VERTICES
+                //GL.BindBuffer(BufferTarget.ArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex]); // bind buffer object
+                //// buffer vertex array data
+                //GL.BufferData(BufferTarget.ArrayBuffer, (IntPtr)(vertices.Length * sizeof(float)), vertices, BufferUsageHint.StaticDraw);
+
+                //int size;
+                //GL.GetBufferParameter(BufferTarget.ArrayBuffer, BufferParameterName.BufferSize, out size);
+                //if (vertices.Length * sizeof(float) != size)
+                //{
+                //    throw new ApplicationException("Vertex data not loaded onto graphics card correctly");
+                //}
+
+                //// Set the position location in the shader
+                //GL.EnableVertexAttribArray(ACWWindow.vPositionLocation);
+                //GL.VertexAttribPointer(ACWWindow.vPositionLocation, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+
+                //// VBO 1 - INDICES + NORMALS
+                //GL.BindBuffer(BufferTarget.ElementArrayBuffer, ACWWindow.mVBO_IDs[VBOIndex + 1]);
+                //GL.BufferData(BufferTarget.ElementArrayBuffer, (IntPtr)(indices.Length * sizeof(int)), indices, BufferUsageHint.StaticDraw);
+
+                //GL.GetBufferParameter(BufferTarget.ElementArrayBuffer, BufferParameterName.BufferSize, out size);
+                //if (indices.Length * sizeof(uint) != size)
+                //{
+                //    throw new ApplicationException("Index data not loaded onto graphics card correctly");
+                //}
+
+                //GL.EnableVertexAttribArray(ACWWindow.vNormal); // enable it
+                //GL.VertexAttribPointer(ACWWindow.vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(int), 3 * sizeof(int)); //added
+
+
+
+
+
+
+                // MODEL CUBE DRAW
 
                 mModelUtility = ModelUtility.LoadModel(@"Utility/Models/cube.sjg");
                 int size;
@@ -92,27 +164,29 @@ namespace Labs.ACW
                 {
                     throw new ApplicationException("Index data not loaded onto graphics card correctly");
                 }
-
+                 //Vector4 test = new Vector4(1.0f,0.0f,0.0f);
                 GL.EnableVertexAttribArray(ACWWindow.vPositionLocation);
                 GL.VertexAttribPointer(ACWWindow.vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
 
                 GL.EnableVertexAttribArray(ACWWindow.vNormal);
-                GL.VertexAttribPointer(ACWWindow.vNormal, 3, VertexAttribPointerType.Float, true, 6 * sizeof(float), 3 * sizeof(float));
+                GL.VertexAttribPointer(ACWWindow.vNormal, 3, VertexAttribPointerType.Int, true, 6 * sizeof(int), 3 * sizeof(int));
             }
         }
         public override void Render()
         {
-            mMatrix = Matrix4.CreateScale(new Vector3(mScaleX, mScaleY, mScaleZ)) *
-            //Matrix4.CreateRotationX(mRotationX) *
-            //Matrix4.CreateRotationX(mRotationY) *
-            //Matrix4.CreateRotationX(mRotationZ) *
-            Matrix4.CreateTranslation(mPosition);
+            GL.Enable(EnableCap.CullFace);
+
+            mMatrix = Matrix4.CreateScale(new Vector3(mScaleX, mScaleY, mScaleZ)) * Matrix4.CreateTranslation(mPosition);
 
             int uModel = GL.GetUniformLocation(ACWWindow.mShader.ShaderProgramID, "uModel");
             GL.UniformMatrix4(uModel, true, ref mMatrix);
 
+
+
             GL.BindVertexArray(ACWWindow.mVAO_IDs[VAOIndex]);
             GL.DrawElements(PrimitiveType.Triangles, mModelUtility.Indices.Length, DrawElementsType.UnsignedInt, 0);
+
+            GL.Disable(EnableCap.CullFace);
         }
 
         public override void Update()

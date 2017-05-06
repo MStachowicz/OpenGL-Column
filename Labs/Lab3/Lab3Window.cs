@@ -51,10 +51,10 @@ namespace Labs.Lab3
 
             #region floor
 
-            float[] vertices = new float[] {-10, 0, -10,0,1,0,
-                                             -10, 0, 10,0,1,0,
-                                             10, 0, 10,0,1,0,
-                                             10, 0, -10,0,1,0,};
+            float[] vertices = new float[] {-10, 0, -10,    0,1,0,
+                                             -10, 0, 10,    0,1,0,
+                                             10, 0, 10,     0,1,0,
+                                             10, 0, -10,    0,1,0,};
 
             GL.BindVertexArray(mVAO_IDs[0]);
             GL.BindBuffer(BufferTarget.ArrayBuffer, mVBO_IDs[0]);

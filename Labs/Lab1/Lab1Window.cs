@@ -36,6 +36,7 @@ namespace Labs.Lab1
                                             0.0f, 0.8f,
                                             0.6f, -0.6f,
                                             0.8f, 0.4f };
+
             uint[] indices = new uint[] { 0,1,2,3,4 };
 
             GL.GenBuffers(2, mVertexBufferObjectIDArray);
