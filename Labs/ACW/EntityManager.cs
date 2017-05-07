@@ -13,21 +13,20 @@ namespace Labs.ACW
 {
     public class EntityManager
     {
-        private List<Sphere> Spheres = new List<Sphere>();
-        private List<Cube> Cubes = new List<Cube>();
-        public static List<Cylinder> Cylinders = new List<Cylinder>();
         /// <summary>
         /// All the objects this entity manager is responsible for.
         /// </summary>
         public List<entity> mObjects = new List<entity>();
-        
-        /// <summary>
-        /// All the objects contained by all instances of the entity manager class.
-        /// </summary>
-        public static List<entity> AllObjects = new List<entity>();
+
+        private List<Sphere> Spheres = new List<Sphere>();
+        private List<Cube> Cubes = new List<Cube>();
+        private List<Cylinder> Cylinders = new List<Cylinder>();
+
 
         public static int VAOCount = 0;
         public static int VBOCount = 0;
+
+        public int entityKey = 0;
 
         public EntityManager()
         { }
@@ -38,7 +37,7 @@ namespace Labs.ACW
             // Add the entity to the list of objects this manager controls.
             mObjects.Add(pEntity);
             // Add to the static list of all objects in the scene.
-            AllObjects.Add(pEntity);
+            //AllObjects.Add(pEntity);
 
             // Add the entity to the correct sub list containing specific types.
             if (pEntity is Sphere)
@@ -53,6 +52,68 @@ namespace Labs.ACW
             {
                 Cubes.Add((Cube)pEntity);
             }
+
+            // Set the entity member manager to this instance of the entity manager
+            pEntity.mManager = this;
+            pEntity.EntityKey = entityKey++;
+        }
+
+        /// <summary>
+        /// Stops the manager managing this object, finds the object by its unique key in the the lists its contained in.
+        /// Does not remove the entity from the static all objects list
+        /// </summary>
+        /// <param name="pKey"></param>
+        public void StopManaging(int pKey)
+        {
+            for (int i = 0; i < mObjects.Count; i++)
+            {
+                if (mObjects[i].EntityKey == pKey)
+                {
+                    // Add the entity to the correct sub list containing specific types.
+                    if (mObjects[i] is Sphere)
+                    {
+                        for (int j = 0; j < Spheres.Count; j++)
+                        {
+                            if (mObjects[i].EntityKey == pKey)
+                            {
+                                Spheres.RemoveAt(j);
+                            }
+                        }
+                    }
+                    else if (mObjects[i] is Cylinder)
+                    {
+                        for (int j = 0; j < Cylinders.Count; j++)
+                        {
+                            if (mObjects[i].EntityKey == pKey)
+                            {
+                                Cylinders.RemoveAt(j);
+                            }
+                        }
+                    }
+                    else if (mObjects[i] is Cube)
+                    {
+                        for (int j = 0; j < Cubes.Count; j++)
+                        {
+                            if (mObjects[i].EntityKey == pKey)
+                            {
+                                Cubes.RemoveAt(j);
+                            }
+                        }
+                    }
+
+                    mObjects.RemoveAt(i);
+                    break;
+                }
+            }
+
+
+
+
+        }
+
+        public void RemoveEntity()
+        {
+
         }
 
 
@@ -91,7 +152,7 @@ namespace Labs.ACW
                 if (ACWWindow.materialSet != mObjects[i].mMaterial)
                     mObjects[i].mMaterial.SetMaterial();
 
-                    mObjects[i].Render();
+                mObjects[i].Render();
             }
         }
 
@@ -131,7 +192,7 @@ namespace Labs.ACW
                     if (Spheres[i].sphereType != Sphere.SphereType.doom)
                     {
                         // Sphere on cylinder collision detection and response. (static cylinder)
-                        if(Spheres[i].hasCollidedWithCylinder(Cylinders[c]))
+                        if (Spheres[i].hasCollidedWithCylinder(Cylinders[c]))
                         {
                             //ACWWindow.particleManager.ParticleEffectSpheres(Spheres[i].mPosition);
                         }

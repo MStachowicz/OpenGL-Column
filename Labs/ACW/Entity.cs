@@ -36,6 +36,10 @@ namespace Labs.ACW
         /// The manager this entity belongs to.
         /// </summary>
         public EntityManager mManager;
+        /// <summary>
+        /// The key the entity manager gives the object to use as identification.
+        /// </summary>
+        public int EntityKey;
 
         /// <summary>
         /// If the object is static then it is not updated.

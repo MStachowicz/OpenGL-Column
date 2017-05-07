@@ -63,7 +63,7 @@ namespace Labs.ACW
         /// </summary>
         public void UpdateParticles()
         {
-            Console.WriteLine("number of particles: " + mParticles.Count);
+            //Console.WriteLine("number of particles: " + mParticles.Count);
             for (int i = 0; i < mParticles.Count; i++)
             {
                 // update the particle life time

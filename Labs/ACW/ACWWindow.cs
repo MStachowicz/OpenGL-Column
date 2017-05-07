@@ -12,8 +12,8 @@ namespace Labs.ACW
     {
         public ACWWindow()
             : base(
-                1920, // Width
-                1080, // Height
+                800, // Width
+                600, // Height
                 GraphicsMode.Default,
                 "Assessed Coursework",
                 GameWindowFlags.Default,
@@ -107,12 +107,21 @@ namespace Labs.ACW
 
         public enum CameraType
         { cFixed, cControlled, cFollow, cPath }
-        public CameraType cameraType = CameraType.cFixed;
+        public CameraType cameraType = CameraType.cControlled;
 
 
         public void ViewTranslate(Vector3 pTranslation)
         {
             mView = mView * Matrix4.CreateTranslation(pTranslation);
+
+            int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
+            GL.UniformMatrix4(uView, true, ref mView);
+
+            SetLightPositions();
+        }
+        public void ViewTranslateFollow(Sphere pSphere)
+        {
+            mView = Matrix4.CreateTranslation(new Vector3(-pSphere.mPosition.X, -pSphere.mPosition.Y, -pSphere.mPosition.Z - 2));
 
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
             GL.UniformMatrix4(uView, true, ref mView);
@@ -143,7 +152,7 @@ namespace Labs.ACW
             Matrix4 inverseTranslation = Matrix4.CreateTranslation(-t);
 
             mView = mView * inverseTranslation * Matrix4.CreateRotationY(pRotation) * translation;
-            
+
             // Set mview in the shader
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
             GL.UniformMatrix4(uView, true, ref mView);
@@ -159,7 +168,7 @@ namespace Labs.ACW
             Matrix4 inverseTranslation = Matrix4.CreateTranslation(-t);
 
             mView = mView * inverseTranslation * Matrix4.CreateRotationZ(pRotation) * translation;
-            
+
             // Set mview in the shader
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
             GL.UniformMatrix4(uView, true, ref mView);
@@ -233,9 +242,9 @@ namespace Labs.ACW
             rand = new Random();
 
             // CUBE
-            cube1 = new Cube();        
+            cube1 = new Cube();
             level1Manager.ManageEntity(cube1); // cube added last for cull fix in the entity manager render method.
-            
+
             // CYLINDERS
             // LEVEL 1
             Cylinder cylinder0 = new Cylinder(new Vector3(cube1.centerlevel1.X, cube1.centerlevel1.Y + 0.25f, cube1.centerlevel1.Z), 0.075f);
@@ -391,34 +400,63 @@ namespace Labs.ACW
             base.OnMouseDown(e);
         }
 
+        /// <summary>
+        /// Changes the camera type to the next one.
+        /// </summary>
+        private void cycleCameraType()
+        {
+            switch (cameraType)
+            {
+                case CameraType.cControlled: // default set 
+                    cameraType = CameraType.cFixed;
+                    break;
+                case CameraType.cFixed:
+                    if (Sphere.AllObjects.Count > 0)
+                        cameraType = CameraType.cFollow;
+                    else
+                        cameraType = CameraType.cPath;
+                    break;
+                case CameraType.cFollow:
+                    cameraType = CameraType.cPath;
+                    break;
+                case CameraType.cPath:
+                    cameraType = CameraType.cControlled;
+                    break;
+                default:
+                    throw new Exception("The camera tpye \"{0}\" has not been implemented.");
+            }
+
+            Console.WriteLine("Camera type set to: " + cameraType);
+        }
+
         protected override void OnKeyPress(KeyPressEventArgs e)
         {
             base.OnKeyPress(e);
 
             float cameraSpeed = 0.1f;
 
+            Console.WriteLine(e.KeyChar.ToString());
+
             switch (e.KeyChar)
             {
                 case '1':
-                    toggleSpinningCylinders();
                     break;
                 case '2':
-                    spawnSphere();
                     break;
-                case '3': // update the simulation by 0.1 seconds 
-                    pauseSimulation();
-                    OnUpdateFrame(new FrameEventArgs(0.1));
-                    pauseSimulation();
+                case '3':
                     break;
-
                 case '4':
-                    ViewRotateX(cameraSpeed);
                     break;
                 case '5':
-                    ViewRotateY(cameraSpeed);
                     break;
                 case '6':
-                    ViewRotateZ(cameraSpeed);
+                    break;
+
+                // SIMULATION
+                case 'o':
+                    pauseSimulation(); // update the simulation by 0.1 seconds 
+                    OnUpdateFrame(new FrameEventArgs(0.1));
+                    pauseSimulation();
                     break;
                 case 'p':
                     pauseSimulation();
@@ -428,26 +466,48 @@ namespace Labs.ACW
                     break;
 
 
-                    // Camera 
+
+                case ' ':
+                    cycleCameraType();
+                    break;
+
+                // CONTROLLED CAMERA 
                 case 'w':
-                    ViewTranslate(new Vector3(0.0f, -cameraSpeed, 0.0f));
+                    if (cameraType == CameraType.cControlled)
+                        ViewTranslate(new Vector3(0.0f, -cameraSpeed, 0.0f));
                     break;
                 case 'a':
-                    ViewTranslate(new Vector3(cameraSpeed, 0.0f, 0.0f));
+                    if (cameraType == CameraType.cControlled)
+                        ViewTranslate(new Vector3(cameraSpeed, 0.0f, 0.0f));
                     break;
                 case 's':
-                    ViewTranslate(new Vector3(0.0f, cameraSpeed, 0.0f));
+                    if (cameraType == CameraType.cControlled)
+                        ViewTranslate(new Vector3(0.0f, cameraSpeed, 0.0f));
                     break;
                 case 'd':
-                    ViewTranslate(new Vector3(-cameraSpeed, 0.0f, 0.0f));
+                    if (cameraType == CameraType.cControlled)
+                        ViewTranslate(new Vector3(-cameraSpeed, 0.0f, 0.0f));
                     break;
                 case 'q':
-                    ViewTranslate(new Vector3(0.0f, 0.0f, -cameraSpeed));
+                    if (cameraType == CameraType.cControlled)
+                        ViewTranslate(new Vector3(0.0f, 0.0f, -cameraSpeed));
                     break;
                 case 'e':
-                    ViewTranslate(new Vector3(0.0f, 0.0f, cameraSpeed));
+                    if (cameraType == CameraType.cControlled)
+                        ViewTranslate(new Vector3(0.0f, 0.0f, cameraSpeed));
                     break;
-                
+                case 'z':
+                    if (cameraType == CameraType.cControlled || cameraType == CameraType.cFollow)
+                        ViewRotateX(cameraSpeed);
+                    break;
+                case 'x':
+                    if (cameraType == CameraType.cControlled || cameraType == CameraType.cFollow)
+                        ViewRotateY(cameraSpeed);
+                    break;
+                case 'c':
+                    if (cameraType == CameraType.cControlled || cameraType == CameraType.cFollow)
+                        ViewRotateZ(cameraSpeed);
+                    break;
 
 
                 default:
@@ -469,8 +529,51 @@ namespace Labs.ACW
             }
         }
 
+
+        float CameraTranslate = 0.01f;
+        float CameraRotate = 0.01f;
+        int ballFollowIndex = 1;
+
+
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
+            #region Camera
+
+            // PATH CAMERA
+            if (cameraType == CameraType.cPath)
+            {
+                Vector3 viewPosition = mView.ExtractTranslation();
+
+                // Reverse the camera whenever it is above or below the cube 
+                if (-viewPosition.Y > cube1.cubeDimensions.Y)
+                    CameraTranslate = -CameraTranslate;
+                else if (-viewPosition.Y < -cube1.cubeDimensions.Y) // bottom
+                    CameraTranslate = -CameraTranslate;
+
+                ViewTranslate(new Vector3(0.0f, CameraTranslate, 0.0f));
+                ViewRotateY(CameraRotate);
+
+                Vector3 viewPosition2 = mView.ExtractTranslation();
+            }
+
+            // FOLLOW CAMERA
+            if (cameraType == CameraType.cFollow)
+            {
+                if (ballFollowIndex < Sphere.AllObjects.Count - 1)
+                {
+                    ViewTranslateFollow(Sphere.AllObjects[ballFollowIndex]);
+                }
+                else
+                {
+                    // Reset camera type if the ball to follow index is greater than count of spheres.
+                    Console.WriteLine("Sphere being followed deleted, reseting to controlled camera.");
+                    cameraType = CameraType.cControlled;
+                }
+            }
+
+            #endregion
+
+            // SIMULATION
             timestep = mTimer.GetElapsedSeconds();
 
             // Dont perform any updating if time is paused.

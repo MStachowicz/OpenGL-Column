@@ -9,6 +9,11 @@ namespace Labs.ACW
     public class Sphere : entity
     {
         /// <summary>
+        /// List containing all the spheres in the scene.
+        /// </summary>
+        public static List<Sphere> AllObjects = new List<Sphere>();
+
+        /// <summary>
         /// Constructor used to create sphere of doom and any particle spheres.
         /// </summary>
         /// <param name="pPosition">Position of the sphere</param>
@@ -47,6 +52,7 @@ namespace Labs.ACW
 
             // Set the matrix for rendering.
             mMatrix = Matrix4.CreateScale(mScaleX, mScaleY, mScaleZ) * Matrix4.CreateTranslation(mPosition);
+            AllObjects.Add(this);
         }
 
 
@@ -88,6 +94,7 @@ namespace Labs.ACW
             MoveToEmitterBox(pCube, false);
             mMatrix = Matrix4.CreateScale(mScaleX, mScaleY, mScaleZ) * Matrix4.CreateTranslation(mPosition);
 
+            AllObjects.Add(this);
             // Next sphere instantiated will be of the other sphere type.
             changeBallType ^= true;
         }
@@ -334,8 +341,8 @@ namespace Labs.ACW
                     pCube.mPosition.Z + pCube.cubeDimensions.Z - mRadius); // max / inside
 
                 // If the position doesnt cause a collision on spawn with any other sphere in the sphere list.
-                if (!checkPositionForCollisionSphere(new Vector3(x, y, z)))
-                    break;
+                //if (!checkPositionForCollisionSphere(new Vector3(x, y, z)))
+                break;
             }
 
             mPosition = new Vector3(x, y, z);
@@ -345,52 +352,48 @@ namespace Labs.ACW
         }
 
 
-        // todo fix next two methods.
-        /// <summary>
-        /// Creates a temporary sphere to test for a collision with a sphere at the parameter position.
-        /// </summary>
-        /// <param name="pPosition"></param>
-        /// <returns></returns>
-        private bool checkPositionForCollisionSphere(Vector3 pPosition)
-        {
-            // sphere created to test for a collision with the same radius as this sphere and the parameter position.
-            Sphere testSphere = new Sphere(pPosition, mRadius, true, SphereType.test);
+        //// todo fix next two methods.
+        ///// <summary>
+        ///// Creates a temporary sphere to test for a collision with a sphere at the parameter position.
+        ///// </summary>
+        ///// <param name="pPosition"></param>
+        ///// <returns></returns>
+        //private bool checkPositionForCollisionSphere(Vector3 pPosition)
+        //{
+        //    // sphere created to test for a collision with the same radius as this sphere and the parameter position.
+        //    Sphere testSphere = new Sphere(pPosition, mRadius, true, SphereType.test);
 
-            // Test every sphere for a collision with the test sphere. 
-            foreach (entity e in EntityManager.AllObjects)
-            {
-                if (e is Sphere) // check all spheres
-                    if (testSphere.hasCollidedWithSphere((Sphere)e))
-                    {
-                        return true;
-                    }
-            }
-            return false;
-        }
-        /// <summary>
-        /// Creates a temporary sphere to test for a collision with a cylinder at the parameter position.
-        /// </summary>
-        /// <param name="pPosition"></param>
-        /// <returns></returns>
-        private bool checkPositionForCollisionCyl(Vector3 pPosition)
-        {
-            // sphere created to test for a collision with the same radius as this sphere and the parameter position.
-            Sphere testSphere = new Sphere(pPosition, mRadius, true, SphereType.test);
+        //    // Test every sphere for a collision with the test sphere. 
+        //    foreach (entity e in EntityManager.AllObjects)
+        //    {
+        //        if (e is Sphere) // check all spheres
+        //            if (testSphere.hasCollidedWithSphere((Sphere)e))
+        //            {
+        //                return true;
+        //            }
+        //    }
+        //    return false;
+        //}
+        ///// <summary>
+        ///// Creates a temporary sphere to test for a collision with a cylinder at the parameter position.
+        ///// </summary>
+        ///// <param name="pPosition"></param>
+        ///// <returns></returns>
+        //private bool checkPositionForCollisionCyl(Vector3 pPosition)
+        //{
+        //    // sphere created to test for a collision with the same radius as this sphere and the parameter position.
+        //    Sphere testSphere = new Sphere(pPosition, mRadius, true, SphereType.test);
 
-            // Test every sphere for a collision with the test sphere. 
-            foreach (entity e in EntityManager.AllObjects)
-            {
-                if (testSphere.hasCollidedWithCylinder((Cylinder)e))
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-        /// <summary>
-        /// Scales the sphere by a uniform paramater in the x, y and z plane.
-        /// </summary>
-        /// <param name="pScale"></param>
+        //    // Test every sphere for a collision with the test sphere. 
+        //    foreach (entity e in EntityManager.AllObjects)
+        //    {
+        //        if (testSphere.hasCollidedWithCylinder((Cylinder)e))
+        //        {
+        //            return true;
+        //        }
+        //    }
+        //    return false;
+        //}
 
         #region collision detection and response
 
@@ -579,7 +582,7 @@ namespace Labs.ACW
             int noOfParticles = 3;// (int)Math.Round((overlap / ParticleManager.sphereParticleRadius));
 
             ACWWindow.particleManager.ParticleEffectSpheres(
-                mPosition, 
+                mPosition,
                 noOfParticles,
                 velocity);
 
