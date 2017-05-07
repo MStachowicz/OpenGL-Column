@@ -434,6 +434,7 @@ namespace Labs.ACW
                 {
                     Vector3 normal = new Vector3(1, 0, 0);
                     mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
+                    mPosition = lastPosition;
                 }
             }
             if ((mPosition.X - mRadius < (pCube.mPosition.X - (pCube.cubeDimensions.X)))) // Left inside of pCube
@@ -442,6 +443,7 @@ namespace Labs.ACW
                 {
                     Vector3 normal = new Vector3(-1, 0, 0);
                     mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
+                    mPosition = lastPosition;
                 }
             }
             // Y PLANE
@@ -451,6 +453,7 @@ namespace Labs.ACW
                 {
                     Vector3 normal = new Vector3(0, 1, 0);
                     mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
+                    mPosition = lastPosition;
                 }
             }
             if ((mPosition.Y - mRadius) < (pCube.mPosition.Y - (pCube.cubeDimensions.Y)))
@@ -479,6 +482,7 @@ namespace Labs.ACW
                 {
                     Vector3 normal = new Vector3(0, 0, 1);
                     mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
+                    mPosition = lastPosition;
                 }
             }
             if ((mPosition.Z - mRadius) < (pCube.mPosition.Z - (pCube.cubeDimensions.Z)))
@@ -487,6 +491,7 @@ namespace Labs.ACW
                 {
                     Vector3 normal = new Vector3(0, 0, -1);
                     mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
+                    mPosition = lastPosition;
                 }
             }
         }
