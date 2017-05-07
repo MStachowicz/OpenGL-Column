@@ -48,7 +48,7 @@ namespace Labs.ACW
         /// <summary>
         /// The maximum number of spheres that will spawn.
         /// </summary>
-        const int MAXSPHERES = 10;
+        const int MAXSPHERES = 7;
 
 
         //SphereOnCylinderResponse(normal);
