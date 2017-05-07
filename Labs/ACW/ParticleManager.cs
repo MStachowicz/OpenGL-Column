@@ -69,6 +69,8 @@ namespace Labs.ACW
                 // update the particle life time
                 mParticles[i].mLifetime -= ACWWindow.timestep;
 
+                //scale spheres slowly - dissolve
+
                 if (mParticles[i].mLifetime < 0)
                 {
                     mParticles.RemoveAt(i);
