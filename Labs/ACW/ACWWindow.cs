@@ -67,18 +67,7 @@ namespace Labs.ACW
         /// The most recent timestep returned by the timer class used in the acw update method.
         /// </summary>
         public static float timestep = 0.0f;
-        /// <summary>
-        /// Whether spheres should be moved back to a previous position upon collision with cube.
-        /// </summary>
-        public static bool MoveBackOnCollisionCube = false;
-        /// <summary>
-        /// Whether spheres should be moved back to a previous position upon collision with sphere.
-        /// </summary>
-        public static bool MoveBackOnCollisionSphere = false;
-        /// <summary>
-        /// Whether spheres should be moved back to a previous position upon collision with cylinder.
-        /// </summary>
-        public static bool MoveBackOnCollisionCylinder = false;
+
         /// <summary>
         /// The current material set in the shader. Used to prevent setting the 
         /// material again in entity manager render.

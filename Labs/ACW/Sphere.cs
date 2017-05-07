@@ -192,6 +192,18 @@ namespace Labs.ACW
 
         // STATIC VARIABLES
         /// <summary>
+        /// Whether spheres should be moved back to a previous position upon collision with cube.
+        /// </summary>
+        public bool MoveBackOnCollisionCube = false;
+        /// <summary>
+        /// Whether spheres should be moved back to a previous position upon collision with sphere.
+        /// </summary>
+        public bool MoveBackOnCollisionSphere = false;
+        /// <summary>
+        /// Whether spheres should be moved back to a previous position upon collision with cylinder.
+        /// </summary>
+        public bool MoveBackOnCollisionCylinder = false;
+        /// <summary>
         /// Toggled to change the type of ball instantiated by the sphere constructor.
         /// </summary>
         private static bool changeBallType = true;
@@ -434,7 +446,7 @@ namespace Labs.ACW
                 {
                     Vector3 normal = new Vector3(1, 0, 0);
                     mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
-                    if (ACWWindow.MoveBackOnCollisionCube)
+                    if (MoveBackOnCollisionCube)
                         mPosition = lastPosition;
                 }
             }
@@ -444,7 +456,7 @@ namespace Labs.ACW
                 {
                     Vector3 normal = new Vector3(-1, 0, 0);
                     mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
-                    if (ACWWindow.MoveBackOnCollisionCube)
+                    if (MoveBackOnCollisionCube)
                         mPosition = lastPosition;
                 }
             }
@@ -455,7 +467,7 @@ namespace Labs.ACW
                 {
                     Vector3 normal = new Vector3(0, 1, 0);
                     mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
-                    if (ACWWindow.MoveBackOnCollisionCube)
+                    if (MoveBackOnCollisionCube)
                         mPosition = lastPosition;
                 }
             }
@@ -485,7 +497,7 @@ namespace Labs.ACW
                 {
                     Vector3 normal = new Vector3(0, 0, 1);
                     mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
-                    if (ACWWindow.MoveBackOnCollisionCube)
+                    if (MoveBackOnCollisionCube)
                         mPosition = lastPosition;
                 }
             }
@@ -495,7 +507,7 @@ namespace Labs.ACW
                 {
                     Vector3 normal = new Vector3(0, 0, -1);
                     mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
-                    if (ACWWindow.MoveBackOnCollisionCube)
+                    if (MoveBackOnCollisionCube)
                         mPosition = lastPosition;
                 }
             }
@@ -572,7 +584,7 @@ namespace Labs.ACW
             // Set new velocity
             mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
             // Move sphere back to previous position.
-            if (ACWWindow.MoveBackOnCollisionCylinder)
+            if (MoveBackOnCollisionCylinder)
                 mPosition = lastPosition;
         }
 
@@ -592,9 +604,11 @@ namespace Labs.ACW
             mVelocity = ((mMass * mVelocity) + (pSphere.mMass * pSphere.mVelocity) + (ACWWindow.restitution * pSphere.mMass * (pSphere.mVelocity - mVelocity))) / (mMass + pSphere.mMass);
             pSphere.mVelocity = ((pSphere.mMass * pSphere.mVelocity) + (mMass * OriginalVelocity) + (ACWWindow.restitution * mMass * (OriginalVelocity - pSphere.mVelocity))) / (pSphere.mMass + mMass);
 
-            if (ACWWindow.MoveBackOnCollisionSphere)
+            if (MoveBackOnCollisionSphere)
+            {
                 mPosition = lastPosition;
-            pSphere.mPosition = pSphere.lastPosition;
+                pSphere.mPosition = pSphere.lastPosition;
+            }
 
             //Vector3 circle1Momentumafter = mCircleMass * mCircleVelocity;
             //Vector3 circle2Momentumafter = mCircleMass2 * mCircleVelocity2;
