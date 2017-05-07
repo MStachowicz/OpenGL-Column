@@ -43,9 +43,9 @@ namespace Labs.ACW
                     mMaterial = Material.emerald;
                     mLifetime = NextFloat(1.5f, 3.0f);
                     mVelocity = new Vector3(
-                        NextFloat(1, 2),
-                        NextFloat(1, 2),
-                        NextFloat(1, 2));
+                        NextFloat(-1, -1),
+                        NextFloat(-1, -1),
+                        NextFloat(-1, -1));
                     break;
                 case SphereType.test:
                     staticObject = pStaticSphere;
