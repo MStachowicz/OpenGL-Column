@@ -434,7 +434,8 @@ namespace Labs.ACW
                 {
                     Vector3 normal = new Vector3(1, 0, 0);
                     mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
-                    mPosition = lastPosition;
+                    if (ACWWindow.MoveBackOnCollisionCube)
+                        mPosition = lastPosition;
                 }
             }
             if ((mPosition.X - mRadius < (pCube.mPosition.X - (pCube.cubeDimensions.X)))) // Left inside of pCube
@@ -443,7 +444,8 @@ namespace Labs.ACW
                 {
                     Vector3 normal = new Vector3(-1, 0, 0);
                     mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
-                    mPosition = lastPosition;
+                    if (ACWWindow.MoveBackOnCollisionCube)
+                        mPosition = lastPosition;
                 }
             }
             // Y PLANE
@@ -453,7 +455,8 @@ namespace Labs.ACW
                 {
                     Vector3 normal = new Vector3(0, 1, 0);
                     mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
-                    mPosition = lastPosition;
+                    if (ACWWindow.MoveBackOnCollisionCube)
+                        mPosition = lastPosition;
                 }
             }
             if ((mPosition.Y - mRadius) < (pCube.mPosition.Y - (pCube.cubeDimensions.Y)))
@@ -482,7 +485,8 @@ namespace Labs.ACW
                 {
                     Vector3 normal = new Vector3(0, 0, 1);
                     mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
-                    mPosition = lastPosition;
+                    if (ACWWindow.MoveBackOnCollisionCube)
+                        mPosition = lastPosition;
                 }
             }
             if ((mPosition.Z - mRadius) < (pCube.mPosition.Z - (pCube.cubeDimensions.Z)))
@@ -491,7 +495,8 @@ namespace Labs.ACW
                 {
                     Vector3 normal = new Vector3(0, 0, -1);
                     mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
-                    mPosition = lastPosition;
+                    if (ACWWindow.MoveBackOnCollisionCube)
+                        mPosition = lastPosition;
                 }
             }
         }
@@ -567,7 +572,8 @@ namespace Labs.ACW
             // Set new velocity
             mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
             // Move sphere back to previous position.
-            mPosition = lastPosition;
+            if (ACWWindow.MoveBackOnCollisionCylinder)
+                mPosition = lastPosition;
         }
 
 
@@ -586,7 +592,8 @@ namespace Labs.ACW
             mVelocity = ((mMass * mVelocity) + (pSphere.mMass * pSphere.mVelocity) + (ACWWindow.restitution * pSphere.mMass * (pSphere.mVelocity - mVelocity))) / (mMass + pSphere.mMass);
             pSphere.mVelocity = ((pSphere.mMass * pSphere.mVelocity) + (mMass * OriginalVelocity) + (ACWWindow.restitution * mMass * (OriginalVelocity - pSphere.mVelocity))) / (pSphere.mMass + mMass);
 
-            mPosition = lastPosition;
+            if (ACWWindow.MoveBackOnCollisionSphere)
+                mPosition = lastPosition;
             pSphere.mPosition = pSphere.lastPosition;
 
             //Vector3 circle1Momentumafter = mCircleMass * mCircleVelocity;
@@ -600,7 +607,7 @@ namespace Labs.ACW
         /// by which the sphere is scaled down. If falls through doom sphere it is destroyed.
         /// </summary>
         public void SphereOnDoomSphereResponse(Sphere pDoomSphere)
-        {          
+        {
             double overlap = Math.Abs(DistanceBetweenSpheres(pDoomSphere));
 
             // PARTICLE EFFECT
