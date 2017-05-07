@@ -42,9 +42,9 @@ namespace Labs.ACW
         /// </summary>
         const int UNIQUE_OBJECTS = 3;
         /// <summary>
-        /// The time in ms between to the next sphere spawn.
+        /// The time in seconds between to the next sphere spawn.
         /// </summary>
-        public double sphereCountdown = 3;
+        public double sphereCountdown = 1.5;
         /// <summary>
         /// The maximum number of spheres that will spawn.
         /// </summary>
@@ -83,11 +83,6 @@ namespace Labs.ACW
         /// Static so can be used to debug other classes by pausing at time of event of interest.
         /// </summary>
         private static bool pauseTime = false;
-        /// <summary>
-        /// Count of the number of collisions occuring in the scene.
-        /// </summary>
-        public static int CollisionCount = 0;
-
 
         /// <summary>
         /// Toggles all the cylinders spinning in their y axis.
@@ -618,8 +613,6 @@ namespace Labs.ACW
             {
                 Vector3 viewPosition = mView.ExtractTranslation();
 
-
-
                 // Reverse the camera whenever it is above or below the cube 
                 if (-viewPosition.Y > cube.cubeDimensions.Y)
                     cameraSpeed = -cameraSpeed;
@@ -667,7 +660,7 @@ namespace Labs.ACW
                 if (sphereCountdown < 0)
                 {
                     spawnSphere();
-                    sphereCountdown = 3;
+                    sphereCountdown = 1.5f;
                 }
 
                 // Updating all sphere positions
