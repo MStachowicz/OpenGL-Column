@@ -219,8 +219,14 @@ namespace Labs.ACW
         {
             for (int i = 0; i < Spheres.Count; i++)
             {
-                if (Spheres[i].sphereType != Sphere.SphereType.doom)
+                if (Spheres[i].sphereType == Sphere.SphereType.red)
                 {
+                    Spheres[i].SetRadius(0.08f);
+                    Spheres[i].MoveToEmitterBox(ACWWindow.cube, false);
+                }
+                if (Spheres[i].sphereType == Sphere.SphereType.yellow)
+                {
+                    Spheres[i].SetRadius(0.04f);
                     Spheres[i].MoveToEmitterBox(ACWWindow.cube, false);
                 }
             }

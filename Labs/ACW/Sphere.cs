@@ -144,7 +144,7 @@ namespace Labs.ACW
         /// If the radius being set is negative the sphere is reset and moved to the emitter box.
         /// </summary>
         /// <param name="pRadius">The new radius being assigned to the sphere.</param>
-        private void SetRadius(float pRadius)
+        public void SetRadius(float pRadius)
         {
             // if radius is negative sphere is reset and moved back to the emitter box.
             if (pRadius < 0)
