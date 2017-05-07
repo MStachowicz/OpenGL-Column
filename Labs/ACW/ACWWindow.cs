@@ -12,8 +12,8 @@ namespace Labs.ACW
     {
         public ACWWindow()
             : base(
-                800, // Width
-                600, // Height
+                1600, // Width
+                900, // Height
                 GraphicsMode.Default,
                 "Assessed Coursework",
                 GameWindowFlags.Default,
@@ -31,7 +31,7 @@ namespace Labs.ACW
         public static EntityManager level1Manager;
         public static EntityManager level2Manager;
         public static EntityManager level3Manager;
-        // single particle manager used by all 3 entity managers.
+
         public static ParticleManager particleManager;
 
         public static Cube cube;
