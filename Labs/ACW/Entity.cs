@@ -33,13 +33,13 @@ namespace Labs.ACW
         public double mLifetime;
 
         /// <summary>
-        /// The manager this entity belongs to.
+        /// The manager this entity is managed by at this time.
         /// </summary>
         public EntityManager mManager;
         /// <summary>
-        /// The key the entity manager gives the object to use as identification.
+        /// The key used by entity managers to identify this entity instance.
         /// </summary>
-        public int EntityKey;
+        public int mEntityKey;
 
         /// <summary>
         /// If the object is static then it is not updated.

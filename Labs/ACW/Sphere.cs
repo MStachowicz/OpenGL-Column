@@ -25,6 +25,11 @@ namespace Labs.ACW
             SetRadius(pRadius);
             mPosition = pPosition;
 
+            if (pType == SphereType.red || pType == SphereType.yellow)
+            {
+                throw new Exception("incorrect constructor used to build a red or yellow sphere.");
+            }
+
             switch (pType)
             {
                 case SphereType.doom:
@@ -36,14 +41,17 @@ namespace Labs.ACW
                     staticObject = false;
                     sphereType = SphereType.particle;
                     mMaterial = Material.emerald;
-                    mLifetime = NextFloat(0.5f, 0.8f);
+                    mLifetime = NextFloat(1.5f, 3.0f);
                     mVelocity = new Vector3(
                         NextFloat(1, 2),
                         NextFloat(1, 2),
                         NextFloat(1, 2));
                     break;
                 case SphereType.test:
-                    // todo add code here or create seperate constructor for the two test methods creating spheres.
+                    staticObject = pStaticSphere;
+                    sphereType = SphereType.test;
+                    mMaterial = new Material(new Vector3(0.0f, 1.0f, 0.0f), 0.5f, 0.8f); // green
+
                     break;
 
                 default:
@@ -52,7 +60,9 @@ namespace Labs.ACW
 
             // Set the matrix for rendering.
             mMatrix = Matrix4.CreateScale(mScaleX, mScaleY, mScaleZ) * Matrix4.CreateTranslation(mPosition);
-            AllObjects.Add(this);
+
+            if (pType == SphereType.red) // particle manager controls these spheres using particle list.
+                AllObjects.Add(this);
         }
 
 
@@ -64,13 +74,12 @@ namespace Labs.ACW
 
 
         /// <summary>
-        /// Creates a ball in the top cube of the scene in a random position. Alternates two ball types.
+        /// Constructor for creating red and yellow spheres inside the emitter box.
         /// </summary>
         /// <param name="pCube">The cube whos top box all the spheres will be translated to.</param>
         public Sphere(Cube pCube)
         {
             // SPHERE PROPERTIES
-
             #region Scale + mass for 2 different balls
 
             if (!changeBallType)
@@ -100,7 +109,7 @@ namespace Labs.ACW
         }
 
         /// <summary>
-        /// The type of sphere.
+        /// All the types of spheres used in the simulation.
         /// </summary>
         public enum SphereType
         {
@@ -157,7 +166,7 @@ namespace Labs.ACW
                 }
 
                 // move sphere back up
-                MoveToEmitterBox(ACWWindow.cube1, false);
+                MoveToEmitterBox(ACWWindow.cube, false);
             }
             else
             {
@@ -181,6 +190,7 @@ namespace Labs.ACW
         /// </summary>
         Vector3 lastPosition;
 
+        // STATIC VARIABLES
         /// <summary>
         /// Toggled to change the type of ball instantiated by the sphere constructor.
         /// </summary>
@@ -206,10 +216,11 @@ namespace Labs.ACW
         {
             if (!isLoaded)
             {
+                isLoaded = true;
+
                 VAOIndex = EntityManager.VAOCount++; // set the VAO index all spheres will use.
                 VBOIndex = EntityManager.VBOCount++; // set the VBO index all spheres will use.
                 EntityManager.VBOCount++;
-                isLoaded = true;
 
                 int size;
                 mModelUtility = ModelUtility.LoadModel(@"Utility/Models/sphere.bin");
@@ -257,7 +268,7 @@ namespace Labs.ACW
         /// </summary>
         public override void Update()
         {
-            if (sphereType == SphereType.particle) // update for particles does not apply gravity
+            if (sphereType == SphereType.particle) // update for particles randomizes the velocity every frame
             {
                 mVelocity = mVelocity + ACWWindow.accelerationDueToGravity * ACWWindow.timestep;
                 mPosition = mPosition + mVelocity * ACWWindow.timestep;
@@ -269,7 +280,6 @@ namespace Labs.ACW
                 mVelocity = mVelocity + ACWWindow.accelerationDueToGravity * ACWWindow.timestep;
                 mPosition = mPosition + mVelocity * ACWWindow.timestep;
             }
-
         }
 
         // UTILITY METHODS
@@ -328,72 +338,83 @@ namespace Labs.ACW
             float y;
             float z;
 
+            // brute force search for a location with no collisions in the emitter box.
             while (true)
             {
-                // Random x y and z positions created adjusted for cube and sphere size
+                // Random x y and z positions created adjusted for cube and sphere size forming an emitter box.
                 x = NextFloat(pCube.mPosition.X - pCube.cubeDimensions.X + mRadius, // min / left
-                    pCube.mPosition.X + (pCube.cubeDimensions.X) - mRadius); // max / right
+                    pCube.mPosition.X + pCube.cubeDimensions.X - mRadius); // max / right
 
-                y = NextFloat((2.0f - 0.96f), // min
-                    2.0f - 0.04f); // max
+                y = NextFloat(1 + mRadius, 2 - mRadius);
 
                 z = NextFloat(pCube.mPosition.Z - pCube.cubeDimensions.Z + mRadius, // min / outside
                     pCube.mPosition.Z + pCube.cubeDimensions.Z - mRadius); // max / inside
 
                 // If the position doesnt cause a collision on spawn with any other sphere in the sphere list.
-                //if (!checkPositionForCollisionSphere(new Vector3(x, y, z)))
-                break;
+                if (!checkPositionForCollisionSphere(new Vector3(x, y, z)))
+                {
+                    mPosition = new Vector3(x, y, z);
+                    //Console.WriteLine("position found");
+                    break;
+                }
+                else
+                {
+                    //Console.WriteLine("Collision found for randomly generated position.");
+                }
             }
 
-            mPosition = new Vector3(x, y, z);
 
             if (!keepVelocity)
                 mVelocity = new Vector3(0.0f, 0.0f, 0.0f); // reset velocity
         }
 
 
-        //// todo fix next two methods.
-        ///// <summary>
-        ///// Creates a temporary sphere to test for a collision with a sphere at the parameter position.
-        ///// </summary>
-        ///// <param name="pPosition"></param>
-        ///// <returns></returns>
-        //private bool checkPositionForCollisionSphere(Vector3 pPosition)
-        //{
-        //    // sphere created to test for a collision with the same radius as this sphere and the parameter position.
-        //    Sphere testSphere = new Sphere(pPosition, mRadius, true, SphereType.test);
 
-        //    // Test every sphere for a collision with the test sphere. 
-        //    foreach (entity e in EntityManager.AllObjects)
-        //    {
-        //        if (e is Sphere) // check all spheres
-        //            if (testSphere.hasCollidedWithSphere((Sphere)e))
-        //            {
-        //                return true;
-        //            }
-        //    }
-        //    return false;
-        //}
-        ///// <summary>
-        ///// Creates a temporary sphere to test for a collision with a cylinder at the parameter position.
-        ///// </summary>
-        ///// <param name="pPosition"></param>
-        ///// <returns></returns>
-        //private bool checkPositionForCollisionCyl(Vector3 pPosition)
-        //{
-        //    // sphere created to test for a collision with the same radius as this sphere and the parameter position.
-        //    Sphere testSphere = new Sphere(pPosition, mRadius, true, SphereType.test);
+        /// <summary>
+        /// Creates a temporary sphere to test for a collision with a sphere at the parameter position.
+        /// Returns true if a collision is found.
+        /// </summary>
+        /// <param name="pPosition"></param>
+        /// <returns></returns>
+        private bool checkPositionForCollisionSphere(Vector3 pPosition)
+        {
+            // sphere created to test for a collision with the same radius as this sphere and the parameter position.
+            Sphere testSphere = new Sphere(pPosition, mRadius, true, SphereType.test);
 
-        //    // Test every sphere for a collision with the test sphere. 
-        //    foreach (entity e in EntityManager.AllObjects)
-        //    {
-        //        if (testSphere.hasCollidedWithCylinder((Cylinder)e))
-        //        {
-        //            return true;
-        //        }
-        //    }
-        //    return false;
-        //}
+            for (int i = 0; i < AllObjects.Count; i++)
+            {
+                if (AllObjects[i].sphereType == SphereType.red || AllObjects[i].sphereType == SphereType.yellow)
+                {
+                    if (testSphere.hasCollidedWithSphere(AllObjects[i]))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+        /// <summary>
+        /// Creates a temporary sphere to test for a collision with a cylinder at the parameter position.
+        /// </summary>
+        /// <param name="pPosition"></param>
+        /// <returns></returns>
+        private bool checkPositionForCollisionCyl(Vector3 pPosition)
+        {
+            //// sphere created to test for a collision with the same radius as this sphere and the parameter position.
+            //Sphere testSphere = new Sphere(pPosition, mRadius, true, SphereType.test);
+
+            //// Test every sphere for a collision with the test sphere. 
+            //foreach (entity e in EntityManager.AllObjects)
+            //{
+            //    if (testSphere.hasCollidedWithCylinder((Cylinder)e))
+            //    {
+            //        return true;
+            //    }
+            //}
+            return false;
+        }
+
+
 
         #region collision detection and response
 
@@ -470,6 +491,7 @@ namespace Labs.ACW
                 }
             }
         }
+
         /// <summary>
         /// Collision detection for sphere on sphere.
         /// </summary>
@@ -485,6 +507,7 @@ namespace Labs.ACW
             }
             return false;
         }
+
         /// <summary>
         /// Uses the line segment of the cylinder to test if the sphere collided with the 
         /// cylinder. Performs the collision response.
@@ -542,6 +565,8 @@ namespace Labs.ACW
             // Move sphere back to previous position.
             //mPosition = lastPosition;
         }
+
+
         /// <summary>
         /// The collision response for two moving spheres.
         /// </summary>
@@ -567,6 +592,7 @@ namespace Labs.ACW
             //Vector3 totalmomentumafter = circle1Momentumafter + circle2Momentumafter;
         }
 
+
         /// <summary>
         /// Does not affect the trajectory of the sphere, the intersection of the sphere with the doom sphere is the amount
         /// by which the sphere is scaled down. If falls through doom sphere it is destroyed.
@@ -591,6 +617,9 @@ namespace Labs.ACW
             double overlap = Math.Abs(DistanceBetweenSpheres(pDoomSphere));
             SetRadius(mRadius - (float)overlap);
         }
+
+
+
 
         // improv. could caluclate the normal of the cube if check which plane is closest in vector (mposition - pCube.mposition) - closest value out of X Y Z plane
         // note. better to leave seperated otherwise create 6 different face collision response methods. consider a physics class to handle collisions.

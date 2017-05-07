@@ -27,25 +27,30 @@ namespace Labs.ACW
         public static ShaderUtility mShader;
         public Matrix4 mView;
 
-        // OBJECTS
-        EntityManager level1Manager;
-        EntityManager level2Manager;
-        EntityManager level3Manager;
-
+        // STATIC MANAGERS 
+        public static EntityManager level1Manager;
+        public static EntityManager level2Manager;
+        public static EntityManager level3Manager;
         // single particle manager used by all 3 entity managers.
         public static ParticleManager particleManager;
 
-        public static Cube cube1;
+        public static Cube cube;
         public static Sphere doomSphere;
 
-        /// <summary>
-        /// The number of spheres the sphere array will be instantiated to. 
-        /// </summary>
-        const int SPHERE_COUNT = 0;
         /// <summary>
         /// The number of unique object types the scene will contain, also used to reduce VAO + VBO usage.
         /// </summary>
         const int UNIQUE_OBJECTS = 3;
+        /// <summary>
+        /// The time in ms between to the next sphere spawn.
+        /// </summary>
+        public double sphereCountdown = 3;
+        /// <summary>
+        /// The maximum number of spheres that will spawn.
+        /// </summary>
+        const int MAXSPHERES = 100;
+
+
         //SphereOnCylinderResponse(normal);
         public static int[] mVAO_IDs = new int[UNIQUE_OBJECTS];
         public static int[] mVBO_IDs = new int[UNIQUE_OBJECTS * 2]; // each object has 2 vbo index'
@@ -55,7 +60,7 @@ namespace Labs.ACW
 
         // Physics todo: move to physics manager class
         public static Vector3 accelerationDueToGravity = new Vector3(0.0f, -9.81f, 0.0f);
-        //public Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
+        //public static Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
         public static float restitution = 0.7f;
         /// <summary>
         /// The most recent timestep returned by the timer class used in the acw update method.
@@ -104,12 +109,17 @@ namespace Labs.ACW
         public static Random rand;
 
         #region Camera
+        float cameraSpeed = 0.1f;
 
         public enum CameraType
         { cFixed, cControlled, cFollow, cPath }
         public CameraType cameraType = CameraType.cControlled;
 
-
+        /// <summary>
+        /// Translate the mView by a translation and sets the uView in the shader, 
+        /// reset the light positions to original positions.
+        /// </summary>
+        /// <param name="pTranslation"></param>
         public void ViewTranslate(Vector3 pTranslation)
         {
             mView = mView * Matrix4.CreateTranslation(pTranslation);
@@ -117,11 +127,19 @@ namespace Labs.ACW
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
             GL.UniformMatrix4(uView, true, ref mView);
 
+            //int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
+            //Vector4 eyePosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
+            //GL.Uniform4(uEyePosition, eyePosition);
+
             SetLightPositions();
         }
-        public void ViewTranslateFollow(Sphere pSphere)
+        /// <summary>
+        /// Sets the mView to a translation and sets the uView in the shader.
+        /// </summary>
+        /// <param name="pTranslation"></param>
+        public void setViewPosition(Vector3 pTranslation)
         {
-            mView = Matrix4.CreateTranslation(new Vector3(-pSphere.mPosition.X, -pSphere.mPosition.Y, -pSphere.mPosition.Z - 2));
+            mView = Matrix4.CreateTranslation(pTranslation);
 
             int uView = GL.GetUniformLocation(mShader.ShaderProgramID, "uView");
             GL.UniformMatrix4(uView, true, ref mView);
@@ -180,9 +198,9 @@ namespace Labs.ACW
 
         public void SetLightPositions()
         {
-            Vector4 lightPosition = new Vector4(cube1.mPosition.X, cube1.mPosition.Y + (cube1.cubeDimensions.Y / 2), cube1.mPosition.Z, 1.0f);
-            Vector4 lightPosition1 = new Vector4(cube1.mPosition, 1.0f);
-            Vector4 lightPosition2 = new Vector4(cube1.mPosition.X, cube1.mPosition.Y - (cube1.cubeDimensions.Y) / 2, cube1.mPosition.Z, 1.0f);
+            Vector4 lightPosition = new Vector4(cube.mPosition.X, cube.mPosition.Y + (cube.cubeDimensions.Y / 2), cube.mPosition.Z, 1.0f);
+            Vector4 lightPosition1 = new Vector4(cube.mPosition, 1.0f);
+            Vector4 lightPosition2 = new Vector4(cube.mPosition.X, cube.mPosition.Y - (cube.cubeDimensions.Y) / 2, cube.mPosition.Z, 1.0f);
 
             // LIGHT 1 - TOP
             int uLightPositionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[0].Position");
@@ -198,10 +216,6 @@ namespace Labs.ACW
             int uLightPositionLocation2 = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[2].Position");
             lightPosition2 = Vector4.Transform(lightPosition2, mView);
             GL.Uniform4(uLightPositionLocation2, lightPosition2);
-
-            int uEyePosition = GL.GetUniformLocation(mShader.ShaderProgramID, "uEyePosition");
-            Vector4 eyePosition = Vector4.Transform(new Vector4(2, 1, -8.5f, 1), mView);
-            GL.Uniform4(uEyePosition, eyePosition);
         }
 
         protected override void OnLoad(EventArgs e)
@@ -235,61 +249,62 @@ namespace Labs.ACW
             GL.GenVertexArrays(mVAO_IDs.Length, mVAO_IDs);
             GL.GenBuffers(mVBO_IDs.Length, mVBO_IDs);
 
-            #region Loading in models
-            // 100 cm = 1.0f
+
             particleManager = new ParticleManager();
+
             level1Manager = new EntityManager();
+            level2Manager = new EntityManager();
+            level3Manager = new EntityManager();
+
             rand = new Random();
 
             // CUBE
-            cube1 = new Cube();
-            level1Manager.ManageEntity(cube1); // cube added last for cull fix in the entity manager render method.
+            cube = new Cube();
+
+            // Added to one manager for rendering once, collisions are checked using static cube1 instance
+            level1Manager.ManageEntity(cube);
+
 
             // CYLINDERS
             // LEVEL 1
-            Cylinder cylinder0 = new Cylinder(new Vector3(cube1.centerlevel1.X, cube1.centerlevel1.Y + 0.25f, cube1.centerlevel1.Z), 0.075f);
-            level1Manager.ManageEntity(cylinder0);
+            Cylinder cylinder0 = new Cylinder(new Vector3(cube.centerlevel1.X, cube.centerlevel1.Y + 0.25f, cube.centerlevel1.Z), 0.075f);
             cylinder0.RotateX((float)Math.PI / 2);
 
-            Cylinder cylinder1 = new Cylinder(new Vector3(cube1.centerlevel1.X, cube1.centerlevel1.Y + 0.25f, cube1.centerlevel1.Z), 0.075f);
-            level1Manager.ManageEntity(cylinder1);
+            Cylinder cylinder1 = new Cylinder(new Vector3(cube.centerlevel1.X, cube.centerlevel1.Y + 0.25f, cube.centerlevel1.Z), 0.075f);
             cylinder1.RotateZ((float)Math.PI / 2);
 
-            Cylinder cylinder2 = new Cylinder(new Vector3(cube1.centerlevel1.X, cube1.centerlevel1.Y - 0.25f, cube1.centerlevel1.Z), 0.15f);
-            level1Manager.ManageEntity(cylinder2);
+            Cylinder cylinder2 = new Cylinder(new Vector3(cube.centerlevel1.X, cube.centerlevel1.Y - 0.25f, cube.centerlevel1.Z), 0.15f);
             cylinder2.RotateX((float)Math.PI / 2);
 
-            Cylinder cylinder3 = new Cylinder(new Vector3(cube1.centerlevel1.X, cube1.centerlevel1.Y - 0.25f, cube1.centerlevel1.Z), 0.15f);
-            level1Manager.ManageEntity(cylinder3);
+            Cylinder cylinder3 = new Cylinder(new Vector3(cube.centerlevel1.X, cube.centerlevel1.Y - 0.25f, cube.centerlevel1.Z), 0.15f);
             cylinder3.RotateZ((float)Math.PI / 2);
 
+            level1Manager.ManageEntity(cylinder0);
+            level1Manager.ManageEntity(cylinder1);
+            level1Manager.ManageEntity(cylinder2);
+            level1Manager.ManageEntity(cylinder3);
+
             // LEVEL 2
-            Cylinder cylinder4 = new Cylinder(new Vector3(cube1.centerlevel2.X, cube1.centerlevel2.Y, cube1.centerlevel2.Z), 0.10f);
-            level1Manager.ManageEntity(cylinder4);
+            Cylinder cylinder4 = new Cylinder(new Vector3(cube.centerlevel2.X, cube.centerlevel2.Y, cube.centerlevel2.Z), 0.10f);
             cylinder4.scale(new Vector3(1.0f, 1.3f, 1.0f));
             cylinder4.RotateX(DegreeToRadian(90));
             cylinder4.RotateY(DegreeToRadian(135));
 
-            Cylinder cylinder5 = new Cylinder(new Vector3(cube1.centerlevel2.X, cube1.centerlevel2.Y, cube1.centerlevel2.Z), 0.15f);
+            Cylinder cylinder5 = new Cylinder(new Vector3(cube.centerlevel2.X, cube.centerlevel2.Y, cube.centerlevel2.Z), 0.15f);
             cylinder5.scale(new Vector3(1.0f, 1.6f, 1.0f));
             cylinder5.RotateX(DegreeToRadian(300));
             cylinder5.RotateY(DegreeToRadian(45));
-            level1Manager.ManageEntity(cylinder5);
 
-            // SPHERES
-            for (int i = 0; i < SPHERE_COUNT; i++)
-            {
-                spawnSphere();
-            }
+            level2Manager.ManageEntity(cylinder4);
+            level2Manager.ManageEntity(cylinder5);
 
-            // sphere of doom
-            level1Manager.ManageEntity(new Sphere(cube1.centerlevel3, 0.25f, true, Sphere.SphereType.doom));
-
+            // LEVEL 3 sphere of doom
+            level3Manager.ManageEntity(new Sphere(cube.centerlevel3, 0.25f, true, Sphere.SphereType.doom));
 
             level1Manager.loadObjects();
-
-            #endregion
-
+            level2Manager.loadObjects();
+            level3Manager.loadObjects();
+  
 
             #region Loading in the lights and binding shader light variables
 
@@ -297,9 +312,9 @@ namespace Labs.ACW
             float DiffuseIntensity = 0.8f;
             float SpecularIntensity = 0.1f;
 
-            Vector4 lightPosition = new Vector4(cube1.mPosition.X, cube1.mPosition.Y + (cube1.cubeDimensions.Y / 2), cube1.mPosition.Z, 1.0f);
-            Vector4 lightPosition1 = new Vector4(cube1.mPosition, 1.0f);
-            Vector4 lightPosition2 = new Vector4(cube1.mPosition.X, cube1.mPosition.Y - (cube1.cubeDimensions.Y / 2), cube1.mPosition.Z, 1.0f);
+            Vector4 lightPosition = new Vector4(cube.mPosition.X, cube.mPosition.Y + (cube.cubeDimensions.Y / 2), cube.mPosition.Z, 1.0f);
+            Vector4 lightPosition1 = new Vector4(cube.mPosition, 1.0f);
+            Vector4 lightPosition2 = new Vector4(cube.mPosition.X, cube.mPosition.Y - (cube.cubeDimensions.Y / 2), cube.mPosition.Z, 1.0f);
 
             #region Red Light 1
             int uLightPositionLocation = GL.GetUniformLocation(mShader.ShaderProgramID, "uLight[0].Position");
@@ -374,7 +389,22 @@ namespace Labs.ACW
         /// </summary>
         private void spawnSphere()
         {
-            level1Manager.ManageEntity(new Sphere(cube1));
+            int noOfSpheres = 0;
+
+            for (int i = 0; i < Sphere.AllObjects.Count; i++)
+            {
+                if (Sphere.AllObjects[i].sphereType == Sphere.SphereType.red || Sphere.AllObjects[i].sphereType == Sphere.SphereType.yellow)
+                {
+                    noOfSpheres++; // only count the red and yellow spheres.
+                }
+            }
+
+
+            if (noOfSpheres < MAXSPHERES)
+            {
+                //Console.WriteLine("Sphere spawned. Sphere count: " + Sphere.AllObjects.Count);
+                level1Manager.ManageEntity(new Sphere(cube));
+            }
         }
 
         private float DegreeToRadian(double angle)
@@ -382,23 +412,6 @@ namespace Labs.ACW
             return (float)(Math.PI * angle / 180.0);
         }
 
-        protected override void OnMouseDown(MouseButtonEventArgs e)
-        {
-            switch (e.Button)
-            {
-                case MouseButton.Left:
-                    spawnSphere();
-                    break;
-                case MouseButton.Middle:
-                    break;
-                case MouseButton.Right:
-                    break;
-                default:
-                    break;
-            }
-
-            base.OnMouseDown(e);
-        }
 
         /// <summary>
         /// Changes the camera type to the next one.
@@ -408,38 +421,56 @@ namespace Labs.ACW
             switch (cameraType)
             {
                 case CameraType.cControlled: // default set 
-                    cameraType = CameraType.cFixed;
-                    break;
-                case CameraType.cFixed:
-                    if (Sphere.AllObjects.Count > 0)
-                        cameraType = CameraType.cFollow;
-                    else
-                        cameraType = CameraType.cPath;
-                    break;
-                case CameraType.cFollow:
                     cameraType = CameraType.cPath;
                     break;
                 case CameraType.cPath:
+                    cameraSpeed = 0.1f; // reset the camera speed back
+                    cameraType = CameraType.cFixed;
+                    break;
+                case CameraType.cFixed:
+                    if (FindBallFollowIndex())
+                    {
+                        cameraType = CameraType.cFollow;
+                    }
+                    else
+                    {
+                        cameraType = CameraType.cControlled;
+                    }
+                    break;
+                case CameraType.cFollow:
                     cameraType = CameraType.cControlled;
                     break;
+
                 default:
-                    throw new Exception("The camera tpye \"{0}\" has not been implemented.");
+                    throw new Exception(string.Format("The camera type \"{0}\" has not been implemented.", cameraType));
             }
 
             Console.WriteLine("Camera type set to: " + cameraType);
+        }
+
+        /// <summary>
+        /// Reset all the spheres to the emitter box and reset the camera position and type to controlled camera
+        /// </summary>
+        public void resetSimulation()
+        {
+            // Reset sphere positions
+            level1Manager.resetSpheres();
+            level2Manager.resetSpheres();
+            level3Manager.resetSpheres();
+
+            setViewPosition(new Vector3(0.0f, 0.0f, -5.0f));
+            cameraType = CameraType.cControlled;
         }
 
         protected override void OnKeyPress(KeyPressEventArgs e)
         {
             base.OnKeyPress(e);
 
-            float cameraSpeed = 0.1f;
-
-            Console.WriteLine(e.KeyChar.ToString());
-
             switch (e.KeyChar)
             {
+                // SPECIAL FEATURES
                 case '1':
+                    toggleSpinningCylinders();
                     break;
                 case '2':
                     break;
@@ -452,6 +483,7 @@ namespace Labs.ACW
                 case '6':
                     break;
 
+
                 // SIMULATION
                 case 'o':
                     pauseSimulation(); // update the simulation by 0.1 seconds 
@@ -462,7 +494,19 @@ namespace Labs.ACW
                     pauseSimulation();
                     break;
                 case 'r':
-                    level1Manager.resetSpheres();
+                    resetSimulation();
+                    break;
+
+
+
+                case '0': // reverse camera direction of movemenent
+                    cameraSpeed = -cameraSpeed;
+                    break;
+                case '-':
+                    cameraSpeed -= 0.001f;
+                    break;
+                case '=': // reverse camera direction of movemenent
+                    cameraSpeed += 0.001f;
                     break;
 
 
@@ -515,6 +559,25 @@ namespace Labs.ACW
             }
         }
 
+
+        protected override void OnMouseDown(MouseButtonEventArgs e)
+        {
+            switch (e.Button)
+            {
+                case MouseButton.Left:
+                    spawnSphere();
+                    break;
+                case MouseButton.Middle:
+                    break;
+                case MouseButton.Right:
+                    break;
+                default:
+                    break;
+            }
+
+            base.OnMouseDown(e);
+        }
+
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
@@ -530,10 +593,21 @@ namespace Labs.ACW
         }
 
 
-        float CameraTranslate = 0.01f;
-        float CameraRotate = 0.01f;
-        int ballFollowIndex = 1;
 
+        int ballFollowIndex = 0;
+
+        public bool FindBallFollowIndex()
+        {
+            for (int i = ballFollowIndex; i < Sphere.AllObjects.Count; i++)
+            {
+                if (Sphere.AllObjects[i].sphereType == Sphere.SphereType.yellow || Sphere.AllObjects[i].sphereType == Sphere.SphereType.red)
+                {
+                    ballFollowIndex = i;
+                    return true;
+                }
+            }
+            return false;
+        }
 
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
@@ -544,14 +618,16 @@ namespace Labs.ACW
             {
                 Vector3 viewPosition = mView.ExtractTranslation();
 
-                // Reverse the camera whenever it is above or below the cube 
-                if (-viewPosition.Y > cube1.cubeDimensions.Y)
-                    CameraTranslate = -CameraTranslate;
-                else if (-viewPosition.Y < -cube1.cubeDimensions.Y) // bottom
-                    CameraTranslate = -CameraTranslate;
 
-                ViewTranslate(new Vector3(0.0f, CameraTranslate, 0.0f));
-                ViewRotateY(CameraRotate);
+
+                // Reverse the camera whenever it is above or below the cube 
+                if (-viewPosition.Y > cube.cubeDimensions.Y)
+                    cameraSpeed = -cameraSpeed;
+                else if (-viewPosition.Y < -cube.cubeDimensions.Y) // bottom
+                    cameraSpeed = -cameraSpeed;
+
+                ViewTranslate(new Vector3(0.0f, cameraSpeed / 10, 0.0f));
+                ViewRotateY(Math.Abs(cameraSpeed / 10));
 
                 Vector3 viewPosition2 = mView.ExtractTranslation();
             }
@@ -561,13 +637,16 @@ namespace Labs.ACW
             {
                 if (ballFollowIndex < Sphere.AllObjects.Count - 1)
                 {
-                    ViewTranslateFollow(Sphere.AllObjects[ballFollowIndex]);
+                    setViewPosition(new Vector3(
+                        -Sphere.AllObjects[ballFollowIndex].mPosition.X,
+                        -Sphere.AllObjects[ballFollowIndex].mPosition.Y,
+                        -Sphere.AllObjects[ballFollowIndex].mPosition.Z - 1));
                 }
                 else
                 {
                     // Reset camera type if the ball to follow index is greater than count of spheres.
-                    Console.WriteLine("Sphere being followed deleted, reseting to controlled camera.");
-                    cameraType = CameraType.cControlled;
+                    Console.WriteLine("No sphere to follow exists, cycling camera type.");
+                    cycleCameraType();
                 }
             }
 
@@ -576,19 +655,42 @@ namespace Labs.ACW
             // SIMULATION
             timestep = mTimer.GetElapsedSeconds();
 
+
+
             // Dont perform any updating if time is paused.
             if (!pauseTime)
             {
+                sphereCountdown -= timestep;
+
+                //Console.WriteLine("countdown to next sphere: " + sphereCountdown);
+
+                if (sphereCountdown < 0)
+                {
+                    spawnSphere();
+                    sphereCountdown = 3;
+                }
+
+                // Updating all sphere positions
                 level1Manager.updateObjects();
+                level2Manager.updateObjects();
+                level3Manager.updateObjects();
+
+                // Checking for 
+                level1Manager.CheckSpherePositions();
+                level2Manager.CheckSpherePositions();
+                level3Manager.CheckSpherePositions();
+
                 level1Manager.CheckCollisions();
+                level2Manager.CheckCollisions();
+                level3Manager.CheckCollisions();
 
                 particleManager.UpdateParticles();
 
-                //if (spinningCylinders)
-                //{
-                //}
-                //    foreach (Cylinder c in CylinderList)
-                //        c.RotateY(DegreeToRadian(0.2));
+                if (spinningCylinders)
+                {
+                    foreach (Cylinder c in Cylinder.AllObjects)
+                        c.RotateY(DegreeToRadian(0.2));
+                }
             }
             base.OnUpdateFrame(e);
         }
@@ -599,6 +701,8 @@ namespace Labs.ACW
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             level1Manager.renderObjects();
+            level2Manager.renderObjects();
+            level3Manager.renderObjects();
             particleManager.RenderParticles();
 
             GL.BindVertexArray(0);

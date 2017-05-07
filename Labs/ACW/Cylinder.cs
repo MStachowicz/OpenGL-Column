@@ -39,6 +39,8 @@ namespace Labs.ACW
             mMaterial = Material.pearl;// Material.silver;
 
             staticObject = true;
+
+            AllObjects.Add(this);
         }
 
         /// <summary>
@@ -54,6 +56,12 @@ namespace Labs.ACW
         /// </summary>
         public Vector3 mCylinderTop;
 
+
+        // STATIC VARIABLES
+        /// <summary>
+        /// List containing all the cylinders in the scene.
+        /// </summary>
+        public static List<Cylinder> AllObjects = new List<Cylinder>();
         /// <summary>
         /// Has a cylinder object been loaded previously, if so following instances will use the same VAO index for their render.
         /// </summary>

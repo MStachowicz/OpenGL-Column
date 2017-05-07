@@ -164,7 +164,7 @@ namespace Labs.ACW
                 {
                     throw new ApplicationException("Index data not loaded onto graphics card correctly");
                 }
-                 //Vector4 test = new Vector4(1.0f,0.0f,0.0f);
+                //Vector4 test = new Vector4(1.0f,0.0f,0.0f);
                 GL.EnableVertexAttribArray(ACWWindow.vPositionLocation);
                 GL.VertexAttribPointer(ACWWindow.vPositionLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
 

@@ -24,7 +24,7 @@ namespace Labs.ACW
         /// <summary>
         /// Number of particles created every time a particle effect is used
         /// </summary>
-        public const int NoOfParticles = 3;
+        public const int NoOfParticles = 5;
         /// <summary>
         /// Maximum number of particles allowed to exist in the simulation.
         /// </summary>
@@ -43,7 +43,7 @@ namespace Labs.ACW
             {
                 if (mParticles.Count < MaxParticles)
                 {
-                    mParticles.Add(new Sphere(pCollisionPoint, sphereParticleRadius, false, Sphere.SphereType.particle, pVelocity));
+                    mParticles.Add(new Sphere(pCollisionPoint, sphereParticleRadius, false, Sphere.SphereType.particle));
                 }
             }
         }
@@ -79,29 +79,12 @@ namespace Labs.ACW
                 }
             }
 
-
             if (CheckCollisions)
                 for (int i = 0; i < mParticles.Count; i++)
                 {
-                    CheckCollisions2();
+                    mParticles[i].hasCollidedWithCube(ACWWindow.cube);
                 }
         }
-
-        /// <summary>
-        /// Checks every particle for collisions with the cube
-        /// </summary>
-        public void CheckCollisions2()
-        {
-            // i is the sphere being checked for collisions with all other objects.
-            for (int i = 0; i < mParticles.Count; i++)
-            {
-                // Particle on cube collision detection and response. (inside of static cube)
-                mParticles[i].hasCollidedWithCube(ACWWindow.cube1);
-            }
-        }
-
-
-
     }
 }
 
