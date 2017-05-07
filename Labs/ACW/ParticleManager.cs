@@ -24,7 +24,7 @@ namespace Labs.ACW
         /// <summary>
         /// Number of particles created every time a particle effect is used
         /// </summary>
-        public const int NoOfParticles = 10;
+        public const int NoOfParticles = 5;
         /// <summary>
         /// Maximum number of particles allowed to exist in the simulation.
         /// </summary>

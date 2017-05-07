@@ -69,7 +69,7 @@ namespace Labs.ACW
         public Sphere(Vector3 pPosition, float pRadius, bool pStaticSphere, SphereType pType, Vector3 pVelocity)
             : this(pPosition, pRadius, pStaticSphere, pType)
         {
-            mVelocity = pVelocity;
+            //mVelocity = pVelocity;
         }
 
 
