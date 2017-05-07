@@ -39,22 +39,25 @@ namespace Labs.ACW
         /// <param name="pNumberOfParticles">The number of particles to be released from the point.</param>
         public void ParticleEffectSpheres(Vector3 pCollisionPoint, int pNumberOfParticles, Vector3 pVelocity)
         {
-            for (int i = 0; i < NoOfParticles; i++)
+            for (int i = 0; i < pNumberOfParticles; i++)
             {
                 if (mParticles.Count < MaxParticles)
                 {
-                    mParticles.Add(new Sphere(pCollisionPoint, sphereParticleRadius, false, Sphere.SphereType.particle));
+                    mParticles.Add(new Sphere(pCollisionPoint, sphereParticleRadius, false, Sphere.SphereType.particle, pVelocity));
                 }
             }
         }
 
         /// <summary>
-        /// Renders all the particles
+        /// Renders all the particles and sets the material properties if they are not set in the shader currently.
         /// </summary>
         public void RenderParticles()
         {
             for (int i = 0; i < mParticles.Count; i++)
             {
+                if (ACWWindow.materialSet != mParticles[i].mMaterial)
+                    mParticles[i].mMaterial.SetMaterial();
+
                 mParticles[i].Render();
             }
         }

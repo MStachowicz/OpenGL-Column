@@ -598,14 +598,14 @@ namespace Labs.ACW
         /// by which the sphere is scaled down. If falls through doom sphere it is destroyed.
         /// </summary>
         public void SphereOnDoomSphereResponse(Sphere pDoomSphere)
-        {
-            // PARTICLE EFFECT
+        {          
+            double overlap = Math.Abs(DistanceBetweenSpheres(pDoomSphere));
 
-            // Particle effect produced before the set radius call as it may move the sphere to the emitter box
+            // PARTICLE EFFECT
             Vector3 normal = (mPosition - pDoomSphere.mPosition).Normalized();
             Vector3 velocity = mVelocity * Vector3.Dot(normal, mVelocity) * normal;
 
-            int noOfParticles = 3;// (int)Math.Round((overlap / ParticleManager.sphereParticleRadius));
+            int noOfParticles = (int)Math.Round((overlap / ParticleManager.sphereParticleRadius));
 
             ACWWindow.particleManager.ParticleEffectSpheres(
                 mPosition,
@@ -613,8 +613,8 @@ namespace Labs.ACW
                 velocity);
 
 
+
             // Scale the sphere down by the overlap
-            double overlap = Math.Abs(DistanceBetweenSpheres(pDoomSphere));
             SetRadius(mRadius - (float)overlap);
         }
 
