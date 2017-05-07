@@ -13,7 +13,7 @@ namespace Labs.ACW
     {
 
         /// <summary>
-        /// When enabled collision checking is performed in the entity manager uppate function.
+        /// When enabled collision checking is performed in the entity manager update function.
         /// </summary>
         public static bool CheckCollisions = true;
 
@@ -24,7 +24,7 @@ namespace Labs.ACW
         /// <summary>
         /// Number of particles created every time a particle effect is used
         /// </summary>
-        public const int NoOfParticles = 5;
+        public const int NoOfParticles = 10;
         /// <summary>
         /// Maximum number of particles allowed to exist in the simulation.
         /// </summary>

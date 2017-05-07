@@ -280,18 +280,37 @@ namespace Labs.ACW
         /// </summary>
         public override void Update()
         {
-            if (sphereType == SphereType.particle) // update for particles randomizes the velocity every frame
+            if (ACWWindow.integrationMethod == ACWWindow.IntegrationMethod.symplecticEuler)
             {
-                mVelocity = mVelocity + ACWWindow.accelerationDueToGravity * ACWWindow.timestep;
-                mPosition = mPosition + mVelocity * ACWWindow.timestep;
-            }
-            else if (!staticObject)
-            {
-                lastPosition = mPosition;
+                if (sphereType == SphereType.particle)
+                {
+                    mVelocity = mVelocity + ACWWindow.accelerationDueToGravity * ACWWindow.timestep;
+                    mPosition = mPosition + mVelocity * ACWWindow.timestep;
+                }
+                else if (!staticObject)
+                {
+                    lastPosition = mPosition;
 
-                mVelocity = mVelocity + ACWWindow.accelerationDueToGravity * ACWWindow.timestep;
-                mPosition = mPosition + mVelocity * ACWWindow.timestep;
+                    mVelocity = mVelocity + ACWWindow.accelerationDueToGravity * ACWWindow.timestep;
+                    mPosition = mPosition + mVelocity * ACWWindow.timestep;
+                }
             }
+            else if (ACWWindow.integrationMethod == ACWWindow.IntegrationMethod.euler)
+            {
+                if (sphereType == SphereType.particle) 
+                {
+                    mPosition = mPosition + mVelocity * ACWWindow.timestep;
+                    mVelocity = mVelocity + ACWWindow.accelerationDueToGravity * ACWWindow.timestep;
+                }
+                else if (!staticObject)
+                {
+                    lastPosition = mPosition;
+
+                    mPosition = mPosition + mVelocity * ACWWindow.timestep;
+                    mVelocity = mVelocity + ACWWindow.accelerationDueToGravity * ACWWindow.timestep;
+                }
+            }
+
         }
 
         // UTILITY METHODS
@@ -601,8 +620,11 @@ namespace Labs.ACW
 
             Vector3 OriginalVelocity = mVelocity;
 
-            mVelocity = ((mMass * mVelocity) + (pSphere.mMass * pSphere.mVelocity) + (ACWWindow.restitution * pSphere.mMass * (pSphere.mVelocity - mVelocity))) / (mMass + pSphere.mMass);
-            pSphere.mVelocity = ((pSphere.mMass * pSphere.mVelocity) + (mMass * OriginalVelocity) + (ACWWindow.restitution * mMass * (OriginalVelocity - pSphere.mVelocity))) / (pSphere.mMass + mMass);
+            mVelocity = ((mMass * mVelocity) + (pSphere.mMass * pSphere.mVelocity) + (ACWWindow.restitution * pSphere.mMass * (pSphere.mVelocity - mVelocity)))
+                / (mMass + pSphere.mMass);
+
+            pSphere.mVelocity = ((pSphere.mMass * pSphere.mVelocity) + (mMass * OriginalVelocity) + (ACWWindow.restitution * mMass * (OriginalVelocity - pSphere.mVelocity)))
+                / (pSphere.mMass + mMass);
 
             if (MoveBackOnCollisionSphere)
             {
@@ -654,6 +676,8 @@ namespace Labs.ACW
             // example collision response for the top inside of the cube.
 
             // could check here if the object is static or moving to base response off of.
+
+            // applying the coefficient of restitution when one object (cube) is perfectly rigid and elastic.
             Vector3 normal = new Vector3(1, 0, 0);
             mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
         }

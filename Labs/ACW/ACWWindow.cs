@@ -50,7 +50,7 @@ namespace Labs.ACW
         /// </summary>
         const int MAXSPHERES = 7;
 
-        
+
 
         //SphereOnCylinderResponse(normal);
         public static int[] mVAO_IDs = new int[UNIQUE_OBJECTS];
@@ -62,11 +62,43 @@ namespace Labs.ACW
         // Physics todo: move to physics manager class
         public static Vector3 accelerationDueToGravity = new Vector3(0.0f, -9.81f, 0.0f);
         //public static Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
+        /// <summary>
+        /// energy converted from kinetic (movement) energy to other types of energy. A coefficient of restitution 
+        /// of 1 will result in a perfectly elastic collision where all energy involved in the collision is retained.
+        /// A coefficient of 0 will result in all energy in the collision being lost.
+        /// </summary>
         public static float restitution = 0.7f;
         /// <summary>
         /// The most recent timestep returned by the timer class used in the acw update method.
         /// </summary>
         public static float timestep = 0.0f;
+
+        public enum IntegrationMethod
+        {
+            /// <summary>
+            /// Assumes that the timestep is so small that the change in velocity during the timestep is constant.
+            /// Has a tendency to increase the amount of energy in the system.
+            /// Calculates the new velocity After calculating new position. 
+            /// Position -> velocity.
+            /// </summary>
+            euler,
+
+            /// <summary>
+            /// Calculates the new velocity before calculating the new position.
+            /// Velocity -> position
+            /// </summary>
+            symplecticEuler
+
+            // todo search: 
+            // Verlet integration - constant accelaration and stable timesteps
+            // fourth order Runge Kutta (RK4) - costly
+
+        };
+        /// <summary>
+        /// The method of integration used to update the position and velocity of the spheres in the sphere
+        /// update method.
+        /// </summary>
+        public static IntegrationMethod integrationMethod = IntegrationMethod.symplecticEuler;
 
         /// <summary>
         /// The current material set in the shader. Used to prevent setting the 
@@ -99,6 +131,7 @@ namespace Labs.ACW
         {
             pauseTime ^= true;
         }
+
 
 
         public Timer mTimer;
@@ -300,7 +333,7 @@ namespace Labs.ACW
             level1Manager.loadObjects();
             level2Manager.loadObjects();
             level3Manager.loadObjects();
-  
+
 
             #region Loading in the lights and binding shader light variables
 
@@ -444,6 +477,26 @@ namespace Labs.ACW
             Console.WriteLine("Camera type set to: " + cameraType);
         }
 
+        private void cycleIntegrationMethod()
+        {
+            switch (integrationMethod)
+            {
+                case IntegrationMethod.euler:
+                    integrationMethod = IntegrationMethod.symplecticEuler;
+                    break;
+                case IntegrationMethod.symplecticEuler:
+                    integrationMethod = IntegrationMethod.euler;
+                    break;
+
+
+
+                default:
+                    throw new Exception("This integration method has not been implemented yet.");
+            }
+
+            Console.WriteLine("Integration method changed to: " + integrationMethod);
+        }
+
         /// <summary>
         /// Reset all the spheres to the emitter box and reset the camera position and type to controlled camera
         /// </summary>
@@ -492,9 +545,12 @@ namespace Labs.ACW
                 case 'r':
                     resetSimulation();
                     break;
+                case 'i':
+                    cycleIntegrationMethod();
+                    break;
 
 
-
+                // CAMERA
                 case '0': // reverse camera direction of movemenent
                     cameraSpeed = -cameraSpeed;
                     break;
@@ -506,10 +562,10 @@ namespace Labs.ACW
                     break;
 
 
-
                 case ' ':
                     cycleCameraType();
                     break;
+
 
                 // CONTROLLED CAMERA 
                 case 'w':
