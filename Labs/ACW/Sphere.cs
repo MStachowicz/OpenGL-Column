@@ -461,14 +461,13 @@ namespace Labs.ACW
                     {
                         MoveToEmitterBox(pCube, false);
                     }
-                    else
+                    else // particles are set to 0 radius on exit of cube.
                     {
-                        SetRadius(0.0f);
+                        mLifetime = 0;
                     }
 
 
                     // Original response to collision with inside bottom of cube
-                    // improv. fix spheres sinking through - thread.sleep
                     //Vector3 normal = new Vector3(0, -1, 0);
                     //mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
                 }
