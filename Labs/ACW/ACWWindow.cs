@@ -98,7 +98,7 @@ namespace Labs.ACW
         /// The method of integration used to update the position and velocity of the spheres in the sphere
         /// update method.
         /// </summary>
-        public static IntegrationMethod integrationMethod = IntegrationMethod.symplecticEuler;
+        public static IntegrationMethod integrationMethod = IntegrationMethod.euler;
 
         /// <summary>
         /// The current material set in the shader. Used to prevent setting the 
