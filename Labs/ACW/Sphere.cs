@@ -563,7 +563,7 @@ namespace Labs.ACW
             // Set new velocity
             mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
             // Move sphere back to previous position.
-            //mPosition = lastPosition;
+            mPosition = lastPosition;
         }
 
 
@@ -581,8 +581,6 @@ namespace Labs.ACW
 
             mVelocity = ((mMass * mVelocity) + (pSphere.mMass * pSphere.mVelocity) + (ACWWindow.restitution * pSphere.mMass * (pSphere.mVelocity - mVelocity))) / (mMass + pSphere.mMass);
             pSphere.mVelocity = ((pSphere.mMass * pSphere.mVelocity) + (mMass * OriginalVelocity) + (ACWWindow.restitution * mMass * (OriginalVelocity - pSphere.mVelocity))) / (pSphere.mMass + mMass);
-
-            Vector3 positionBackup = mPosition;
 
             mPosition = lastPosition;
             pSphere.mPosition = pSphere.lastPosition;
