@@ -43,9 +43,9 @@ namespace Labs.ACW
                     mMaterial = Material.emerald;
                     mLifetime = NextFloat(1.5f, 3.0f);
                     mVelocity = new Vector3(
-                        NextFloat(-1, -1),
-                        NextFloat(-1, -1),
-                        NextFloat(-1, -1));
+                        NextFloat(-1, 1),
+                        NextFloat(-0.1f, 1),
+                        NextFloat(-1, 1));
                     break;
                 case SphereType.test:
                     staticObject = pStaticSphere;
@@ -484,10 +484,14 @@ namespace Labs.ACW
             { // top collision
                 if (mVelocity.Y > 0)
                 {
-                    Vector3 normal = new Vector3(0, 1, 0);
-                    mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
-                    if (MoveBackOnCollisionCube)
-                        mPosition = lastPosition;
+                    mPosition = new Vector3(mPosition.X, -ACWWindow.cube.cubeDimensions.Y + mRadius, mPosition.Z);
+                    mVelocity = new Vector3(mVelocity.X, 0.0f, mVelocity.Z);
+
+
+                    //Vector3 normal = new Vector3(0, 1, 0);
+                    //mVelocity = mVelocity - (1 + ACWWindow.restitution) * Vector3.Dot(normal, mVelocity) * normal;
+                    //if (MoveBackOnCollisionCube)
+                    //    mPosition = lastPosition;
                 }
             }
             if ((mPosition.Y - mRadius) < (pCube.mPosition.Y - (pCube.cubeDimensions.Y)))
@@ -496,7 +500,9 @@ namespace Labs.ACW
                 {
                     if (sphereType != SphereType.particle)
                     {
-                        MoveToEmitterBox(pCube, false);
+                        mPosition = new Vector3(mPosition.X, ACWWindow.cube.cubeDimensions.Y - mRadius, mPosition.Z);
+                        mVelocity = new Vector3(mVelocity.X, 0.0f, mVelocity.Z);
+                        //MoveToEmitterBox(pCube, false); 
                     }
                     else // particles are set to 0 radius on exit of cube.
                     {

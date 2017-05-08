@@ -39,7 +39,7 @@ namespace Labs.ACW
         /// <param name="pNumberOfParticles">The number of particles to be released from the point.</param>
         public void ParticleEffectSpheres(Vector3 pCollisionPoint, int pNumberOfParticles, Vector3 pVelocity)
         {
-            for (int i = 0; i < NoOfParticles; i++)
+            for (int i = 0; i < pNumberOfParticles; i++)
             {
                 if (mParticles.Count < MaxParticles)
                 {

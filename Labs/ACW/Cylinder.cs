@@ -18,12 +18,12 @@ namespace Labs.ACW
         /// <param name="pCube">The cube whos matrix forms the sceneGraph node </param>
         /// <param name="pPosition">The translation to apply to the cylinder matrix.</param>
         /// <param name="pRadius">The radius of the cylinder. 1 = 1 meter.</param>
-        public Cylinder(Vector3 pPosition, float pRadius)
+        public Cylinder(Vector3 pPosition, float pRadius, float pLength)
         {
             mRadius = pRadius;
 
             mScaleX = pRadius;
-            mScaleY = 0.53f; // stretches the cylinder to the length of the cube todo: remove dependency on hard code
+            mScaleY = pLength; // stretches the cylinder to the length of the cube
             mScaleZ = pRadius;
 
             mPosition = pPosition;

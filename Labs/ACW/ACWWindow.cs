@@ -48,8 +48,8 @@ namespace Labs.ACW
         /// <summary>
         /// The maximum number of spheres that will spawn.
         /// </summary>
-        const int MAXSPHERES = 7;
-
+        const int MAXSPHERES = 8;
+       
 
 
         //SphereOnCylinderResponse(normal);
@@ -61,18 +61,25 @@ namespace Labs.ACW
 
         // Physics todo: move to physics manager class
         public static Vector3 accelerationDueToGravity = new Vector3(0.0f, -9.81f, 0.0f);
-        //public static Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.0f, 0.0f);
+        //public static Vector3 accelerationDueToGravity = new Vector3(0.0f, 0.1f, 0.0f);
         /// <summary>
         /// energy converted from kinetic (movement) energy to other types of energy. A coefficient of restitution 
         /// of 1 will result in a perfectly elastic collision where all energy involved in the collision is retained.
         /// A coefficient of 0 will result in all energy in the collision being lost.
         /// </summary>
-        public static float restitution = 0.7f;
+        public static float restitution = 0.8f;
         /// <summary>
         /// The most recent timestep returned by the timer class used in the acw update method.
         /// </summary>
         public static float timestep = 0.0f;
+        /// <summary>
+        /// Used to scale the timestep on every update.
+        /// </summary>
+        public float timestepScaling = 1.0f;
 
+        /// <summary>
+        /// The methods of integration available for updating sphere positions.
+        /// </summary>
         public enum IntegrationMethod
         {
             /// <summary>
@@ -296,16 +303,16 @@ namespace Labs.ACW
 
             // CYLINDERS
             // LEVEL 1
-            Cylinder cylinder0 = new Cylinder(new Vector3(cube.centerlevel1.X, cube.centerlevel1.Y + 0.25f, cube.centerlevel1.Z), 0.075f);
+            Cylinder cylinder0 = new Cylinder(new Vector3(cube.centerlevel1.X, cube.centerlevel1.Y + 0.25f, cube.centerlevel1.Z), 0.075f, 0.5f);
             cylinder0.RotateX((float)Math.PI / 2);
 
-            Cylinder cylinder1 = new Cylinder(new Vector3(cube.centerlevel1.X, cube.centerlevel1.Y + 0.25f, cube.centerlevel1.Z), 0.075f);
+            Cylinder cylinder1 = new Cylinder(new Vector3(cube.centerlevel1.X, cube.centerlevel1.Y + 0.25f, cube.centerlevel1.Z), 0.075f, 0.5f);
             cylinder1.RotateZ((float)Math.PI / 2);
 
-            Cylinder cylinder2 = new Cylinder(new Vector3(cube.centerlevel1.X, cube.centerlevel1.Y - 0.25f, cube.centerlevel1.Z), 0.15f);
+            Cylinder cylinder2 = new Cylinder(new Vector3(cube.centerlevel1.X, cube.centerlevel1.Y - 0.25f, cube.centerlevel1.Z), 0.15f, 0.5f);
             cylinder2.RotateX((float)Math.PI / 2);
 
-            Cylinder cylinder3 = new Cylinder(new Vector3(cube.centerlevel1.X, cube.centerlevel1.Y - 0.25f, cube.centerlevel1.Z), 0.15f);
+            Cylinder cylinder3 = new Cylinder(new Vector3(cube.centerlevel1.X, cube.centerlevel1.Y - 0.25f, cube.centerlevel1.Z), 0.15f, 0.5f);
             cylinder3.RotateZ((float)Math.PI / 2);
 
             level1Manager.ManageEntity(cylinder0);
@@ -314,12 +321,12 @@ namespace Labs.ACW
             level1Manager.ManageEntity(cylinder3);
 
             // LEVEL 2
-            Cylinder cylinder4 = new Cylinder(new Vector3(cube.centerlevel2.X, cube.centerlevel2.Y, cube.centerlevel2.Z), 0.10f);
+            Cylinder cylinder4 = new Cylinder(new Vector3(cube.centerlevel2.X, cube.centerlevel2.Y, cube.centerlevel2.Z), 0.10f, 0.53f);
             cylinder4.scale(new Vector3(1.0f, 1.3f, 1.0f));
             cylinder4.RotateX(DegreeToRadian(90));
             cylinder4.RotateY(DegreeToRadian(135));
 
-            Cylinder cylinder5 = new Cylinder(new Vector3(cube.centerlevel2.X, cube.centerlevel2.Y, cube.centerlevel2.Z), 0.15f);
+            Cylinder cylinder5 = new Cylinder(new Vector3(cube.centerlevel2.X, cube.centerlevel2.Y, cube.centerlevel2.Z), 0.15f, 0.57f);
             cylinder5.scale(new Vector3(1.0f, 1.6f, 1.0f));
             cylinder5.RotateX(DegreeToRadian(300));
             cylinder5.RotateY(DegreeToRadian(45));
@@ -450,15 +457,20 @@ namespace Labs.ACW
             switch (cameraType)
             {
                 case CameraType.cControlled: // default set 
+                    setViewPosition(new Vector3(0.0f, 0.0f, -2.0f));
                     cameraType = CameraType.cPath;
                     break;
                 case CameraType.cPath:
-                    cameraSpeed = 0.1f; // reset the camera speed back
+                    cameraSpeed = 0.1f; // reset the camera speed back after path camera changes
+                    setViewPosition(new Vector3(0.0f, 0.0f, -5.0f));
+                    ViewRotateX(DegreeToRadian(90));
+                    ViewTranslate(new Vector3(0.0f, 0.0f, 2.5f));
                     cameraType = CameraType.cFixed;
                     break;
                 case CameraType.cFixed:
                     if (FindBallFollowIndex())
                     {
+                        setViewPosition(new Vector3(0.0f, 0.0f, -5.0f));
                         cameraType = CameraType.cFollow;
                     }
                     else
@@ -522,12 +534,20 @@ namespace Labs.ACW
                     toggleSpinningCylinders();
                     break;
                 case '2':
+                    restitution -= 0.05f;
+                    Console.WriteLine("Restitution: " + restitution);
                     break;
                 case '3':
+                    restitution += 0.05f;
+                    Console.WriteLine("Restitution: " + restitution);
                     break;
                 case '4':
+                    timestepScaling -= 0.05f;
+                    Console.WriteLine("Timestep being scaled by: " + timestepScaling);
                     break;
                 case '5':
+                    timestepScaling += 0.05f;
+                    Console.WriteLine("Timestep being scaled by: " + timestepScaling);
                     break;
                 case '6':
                     break;
@@ -560,8 +580,6 @@ namespace Labs.ACW
                 case '=': // reverse camera direction of movemenent
                     cameraSpeed += 0.001f;
                     break;
-
-
                 case ' ':
                     cycleCameraType();
                     break;
@@ -617,7 +635,7 @@ namespace Labs.ACW
             switch (e.Button)
             {
                 case MouseButton.Left:
-                    spawnSphere();
+                    level1Manager.ManageEntity(new Sphere(cube));
                     break;
                 case MouseButton.Middle:
                     break;
@@ -703,7 +721,7 @@ namespace Labs.ACW
             #endregion
 
             // SIMULATION
-            timestep = mTimer.GetElapsedSeconds();
+            timestep = mTimer.GetElapsedSeconds() * timestepScaling;
 
 
 
